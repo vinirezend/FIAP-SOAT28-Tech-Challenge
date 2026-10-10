@@ -18,4 +18,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Oficina.Domain\Oficina.Domain.csproj" />
+    <ProjectReference Include="..\Oficina.Application\Oficina.Application.csproj" />
+  </ItemGroup>
+
 </Project>
