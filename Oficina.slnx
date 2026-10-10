@@ -1,2 +1,7 @@
 <Solution>
+  <Project Path="Oficina.Api/Oficina.Api.csproj" />
+  <Project Path="Oficina.Application/Oficina.Application.csproj" />
+  <Project Path="Oficina.Domain/Oficina.Domain.csproj" />
+  <Project Path="Oficina.Infrastructure/Oficina.Infrastructure.csproj" />
+  <Project Path="Oficina.Tests/Oficina.Tests.csproj" />
 </Solution>
