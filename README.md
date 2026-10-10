@@ -90,9 +90,30 @@ As portas publicadas no WSL 2 ficam acessíveis pelo Windows via `localhost`.
 
 Com os containers em execução (em qualquer uma das opções):
 
-- API: <http://localhost:8080>
-- Exemplo: <http://localhost:8080/weatherforecast>
-- Documento OpenAPI (somente em `Development`): <http://localhost:8080/openapi/v1.json>
+| Recurso | URL |
+|---|---|
+| API | <http://localhost:8080> |
+| Swagger UI (somente em `Development`) | <http://localhost:8080/swagger> |
+| Documento OpenAPI (somente em `Development`) | <http://localhost:8080/openapi/v1.json> |
+| Health check — liveness | <http://localhost:8080/health/live> |
+| Health check — readiness (inclui PostgreSQL) | <http://localhost:8080/health/ready> |
+
+### Health checks
+
+- `/health/live`: indica apenas que a aplicação está no ar; não verifica dependências.
+- `/health/ready`: verifica a aplicação e suas dependências (PostgreSQL). Retorna `200` quando saudável e `503` quando alguma dependência falha.
+
+Exemplo de resposta:
+
+```json
+{
+  "status": "Healthy",
+  "totalDuration": 12.4,
+  "checks": [
+    { "name": "postgres", "status": "Healthy", "duration": 11.9, "description": null, "error": null }
+  ]
+}
+```
 
 Conexão com o PostgreSQL por um cliente externo (DBeaver, pgAdmin etc.):
 
@@ -135,7 +156,7 @@ docker compose up -d --build api
    dotnet run --project Oficina.Api
    ```
 
-   A API ficará disponível em <http://localhost:5078>.
+   A API ficará disponível em <http://localhost:5078> (Swagger em <http://localhost:5078/swagger>).
 
 3. Testes:
 
