@@ -26,8 +26,11 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      # Scripts executados (em ordem alfabética) apenas na primeira inicialização do banco
+      - ${DB_INIT_SCRIPTS_PATH:-./database/init}:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      # Via TCP (-h 127.0.0.1): durante a execução dos scripts de init o Postgres aceita apenas socket local
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10

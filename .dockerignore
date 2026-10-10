@@ -10,4 +10,5 @@
 **/docker-compose*.yml
 **/.env
 **/node_modules/
-README.md
+**/README.md
+database/

@@ -39,6 +39,19 @@ cp .env.example .env
 | `POSTGRES_USER` | `oficina` | Usuário do banco |
 | `POSTGRES_PASSWORD` | `oficina` | Senha do banco |
 | `POSTGRES_PORT` | `5432` | Porta do PostgreSQL no host |
+| `DB_INIT_SCRIPTS_PATH` | `./database/init` | Pasta com scripts de inicialização do banco |
+
+### Scripts de inicialização do banco
+
+Para criar tabelas ou inserir dados iniciais, adicione arquivos `.sql` (ou `.sh`) em [`database/init`](database/init/README.md). Eles são executados automaticamente pelo PostgreSQL, em ordem alfabética, **apenas na primeira inicialização** (volume vazio). Use prefixo numérico para controlar a ordem, ex.: `001_create_tables.sql`, `002_seed_data.sql`.
+
+Para reexecutar os scripts, recrie o volume (apaga os dados):
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
 ---
 
 ## Opção 1 — Docker Desktop (Windows / macOS)
