@@ -38,6 +38,42 @@ ScaffoldingReadMe.txt
 
 # dotenv environment variables file
 .env
+.env.*
+!.env.example
+
+# Docker Compose: overrides locais de cada desenvolvedor
+docker-compose.override.yml
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Visual Studio Code (mantém configurações compartilháveis)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Code coverage
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
 
 # Others
 ~$*
