@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Oficina.Domain.ValueObjects
 {
     public sealed record Documento
@@ -11,7 +6,7 @@ namespace Oficina.Domain.ValueObjects
         public TipoDocumento Tipo { get; }
 
         private Documento(string numero, TipoDocumento tipo) => (Numero, Tipo) = (numero, tipo);
-
+        
         public static Documento Criar(string? valor)
         {
             var caracteres = new string((valor ?? "")
