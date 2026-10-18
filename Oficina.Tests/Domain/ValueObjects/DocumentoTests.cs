@@ -1,4 +1,5 @@
 using Oficina.Domain.ValueObjects;
+using Oficina.Domain.Enum;
 using Xunit;
 
 namespace Oficina.Tests.Domain.ValueObjects
@@ -6,11 +7,11 @@ namespace Oficina.Tests.Domain.ValueObjects
     public class DocumentoTests
     {
         [Theory]
-        [InlineData("418.055.700-21", TipoDocumento.Cpf)]
-        [InlineData("48681404008", TipoDocumento.Cpf)]
-        [InlineData("14.640.091/0001-34", TipoDocumento.Cnpj)]
-        [InlineData("14640091000134", TipoDocumento.Cnpj)]
-        [InlineData("5J.8BW.BXK/0001-54", TipoDocumento.Cnpj)]
+        [InlineData("418.055.700-21", TipoDocumento.CPF)]
+        [InlineData("48681404008", TipoDocumento.CPF)]
+        [InlineData("14.640.091/0001-34", TipoDocumento.CNPJ)]
+        [InlineData("14640091000134", TipoDocumento.CNPJ)]
+        [InlineData("5J.8BW.BXK/0001-54", TipoDocumento.CNPJ)]
         public void Criar_DeveRetornarDocumentoValido(string numero, TipoDocumento tipo)
         {
 

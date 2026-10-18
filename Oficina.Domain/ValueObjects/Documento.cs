@@ -1,3 +1,5 @@
+using Oficina.Domain.Enum;
+
 namespace Oficina.Domain.ValueObjects
 {
     public sealed record Documento
@@ -6,7 +8,7 @@ namespace Oficina.Domain.ValueObjects
         public TipoDocumento Tipo { get; }
 
         private Documento(string numero, TipoDocumento tipo) => (Numero, Tipo) = (numero, tipo);
-        
+
         public static Documento Criar(string? valor)
         {
             var caracteres = new string((valor ?? "")
@@ -16,8 +18,8 @@ namespace Oficina.Domain.ValueObjects
 
             return caracteres.Length switch
             {
-                11 when caracteres.All(char.IsDigit) && CpfValido(caracteres) => new Documento(caracteres, TipoDocumento.Cpf),
-                14 when CnpjValido(caracteres) => new Documento(caracteres, TipoDocumento.Cnpj),
+                11 when caracteres.All(char.IsDigit) && CpfValido(caracteres) => new Documento(caracteres, TipoDocumento.CPF),
+                14 when CnpjValido(caracteres) => new Documento(caracteres, TipoDocumento.CNPJ),
                 _ => throw new ArgumentException("CPF/CNPJ inválido.")
             };
         }
@@ -74,5 +76,7 @@ namespace Oficina.Domain.ValueObjects
 
             return dv1 == cnpj[12] - '0' && dv2 == cnpj[13] - '0';
         }
+
+        public override string ToString() => Numero;
     }
 }
