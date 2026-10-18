@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
-using Oficina.Domain.DTOs;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Interfaces.Repositorys;
 
@@ -16,19 +15,17 @@ namespace Oficina.Infrastructure.Repositorys
 
             using (var connection = await _dataSource.OpenConnectionAsync())
             {
-                return await connection.QueryFirstOrDefaultAsync<Usuario>(sql, new { idUsuario }) 
-                    ?? throw new Exception("Não foi possível obter");
+                return await connection.QueryFirstOrDefaultAsync<Usuario>(sql, new { idUsuario });
             }
         }
 
-        public async Task<Usuario> ObterPorCredenciais(UsuarioCredenciaisDTO usuarioCredenciais)
+        public async Task<Usuario> ObterPorCredenciais(string login, string senha)
         {
             const string sql = "SELECT * FROM usuario WHERE login = @login AND senha = @senha";
 
             using (var connection = await _dataSource.OpenConnectionAsync())
             {
-                return await connection.QueryFirstOrDefaultAsync<Usuario>(sql, new { usuarioCredenciais.Login, usuarioCredenciais.Senha })
-                    ?? throw new Exception("Não foi possível obter");
+                return await connection.QueryFirstOrDefaultAsync<Usuario>(sql, new { login, senha });
             }
         }
     }

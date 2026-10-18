@@ -1,4 +1,13 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".env.example" />
+    <File Path=".gitignore" />
+    <File Path="database/init/001_example.sql" />
+    <File Path="database/init/README.md" />
+    <File Path="docker-compose.yml" />
+    <File Path="README.md" />
+  </Folder>
   <Project Path="Oficina.Api/Oficina.Api.csproj" />
   <Project Path="Oficina.Application/Oficina.Application.csproj" />
   <Project Path="Oficina.Domain/Oficina.Domain.csproj" />
