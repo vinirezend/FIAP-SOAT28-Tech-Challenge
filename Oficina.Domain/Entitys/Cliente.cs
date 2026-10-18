@@ -29,7 +29,7 @@ namespace Oficina.Domain.Entitys
             Telefone = telefone;
         }
 
-        private static string ValidarNome(string? nome)
+        private static string ValidarNome(string nome)
         {
             if (string.IsNullOrWhiteSpace(nome))
                 throw new ArgumentException("Nome do cliente é obrigatório.");
