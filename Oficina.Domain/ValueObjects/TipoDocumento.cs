@@ -1,8 +1,8 @@
-namespace Oficina.Domain.ValueObjects
+namespace Oficina.Domain.Enum
 {
     public enum TipoDocumento
     {
-        Cpf,
-        Cnpj
+        CPF,
+        CNPJ
     }
 }

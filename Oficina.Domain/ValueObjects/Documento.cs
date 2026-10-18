@@ -1,3 +1,5 @@
+using Oficina.Domain.Enum;
+
 namespace Oficina.Domain.ValueObjects
 {
     public sealed record Documento
@@ -16,8 +18,8 @@ namespace Oficina.Domain.ValueObjects
 
             return caracteres.Length switch
             {
-                11 when caracteres.All(char.IsDigit) && CpfValido(caracteres) => new Documento(caracteres, TipoDocumento.Cpf),
-                14 when CnpjValido(caracteres) => new Documento(caracteres, TipoDocumento.Cnpj),
+                11 when caracteres.All(char.IsDigit) && CpfValido(caracteres) => new Documento(caracteres, TipoDocumento.CPF),
+                14 when CnpjValido(caracteres) => new Documento(caracteres, TipoDocumento.CNPJ),
                 _ => throw new ArgumentException("CPF/CNPJ inválido.")
             };
         }
