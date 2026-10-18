@@ -8,7 +8,7 @@ namespace Oficina.Domain.ValueObjects
         public TipoDocumento Tipo { get; }
 
         private Documento(string numero, TipoDocumento tipo) => (Numero, Tipo) = (numero, tipo);
-        
+
         public static Documento Criar(string? valor)
         {
             var caracteres = new string((valor ?? "")
@@ -76,5 +76,7 @@ namespace Oficina.Domain.ValueObjects
 
             return dv1 == cnpj[12] - '0' && dv2 == cnpj[13] - '0';
         }
+
+        public override string ToString() => Numero;
     }
 }
