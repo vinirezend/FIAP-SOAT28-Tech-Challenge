@@ -1,11 +1,68 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi;
+
 namespace Oficina.Api.Extensions;
 
 public static class SwaggerExtensions
 {
-    public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
+    private const string BearerScheme = "Bearer";
+
+    public static IServiceCollection AddSwaggerDocumentation(
+        this IServiceCollection services)
     {
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        services.AddOpenApi();
+        services.AddOpenApi(options =>
+        {
+            // Registra o esquema de autenticação JWT.
+            options.AddDocumentTransformer(
+                (document, context, cancellationToken) =>
+                {
+                    document.Components ??= new OpenApiComponents();
+
+                    document.Components.SecuritySchemes ??=
+                        new Dictionary<string, IOpenApiSecurityScheme>();
+
+                    document.Components.SecuritySchemes[BearerScheme] =
+                        new OpenApiSecurityScheme
+                        {
+                            Type = SecuritySchemeType.Http,
+                            Scheme = "bearer",
+                            BearerFormat = "JWT",
+                            Description = "Informe o token JWT."
+                        };
+
+                    return Task.CompletedTask;
+                });
+
+            // Aplica a autenticação somente aos endpoints protegidos.
+            options.AddOperationTransformer(
+                (operation, context, cancellationToken) =>
+                {
+                    var metadata =
+                        context.Description.ActionDescriptor.EndpointMetadata;
+
+                    var requiresAuthorization =
+                        metadata.OfType<IAuthorizeData>().Any();
+
+                    var allowsAnonymous =
+                        metadata.OfType<IAllowAnonymous>().Any();
+
+                    if (requiresAuthorization && !allowsAnonymous)
+                    {
+                        operation.Security =
+                        [
+                            new OpenApiSecurityRequirement
+                            {
+                                {
+                                    new OpenApiSecuritySchemeReference(BearerScheme, context.Document),
+                                    new List<string>()
+                                }
+                            }
+                        ];
+                    }
+
+                    return Task.CompletedTask;
+                });
+        });
 
         return services;
     }
