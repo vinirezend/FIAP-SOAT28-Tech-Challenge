@@ -11,13 +11,13 @@ using Reqnroll;
 namespace Oficina.IntegrationTests.Steps;
 
 [Binding]
-public class LoginSteps(ApiContext api, UsuarioSeeder usuarioSeeder)
+public class LoginSteps(ApiContext api)
 {
     private const string SignInUrl = "/api/login/signin";
 
     [Given(@"que existe o usuário ""(.*)"" com senha ""(.*)""")]
-    public Task DadoQueExisteOUsuario(string login, string senha) =>
-        usuarioSeeder.CriarAsync(login, senha);
+    public static Task DadoQueExisteOUsuario(string login, string senha) =>
+        UsuarioSeeder.CriarAsync(login, senha);
 
     [When(@"eu fizer login com usuário ""(.*)"" e senha ""(.*)""")]
     public Task QuandoEuFizerLogin(string login, string senha) =>

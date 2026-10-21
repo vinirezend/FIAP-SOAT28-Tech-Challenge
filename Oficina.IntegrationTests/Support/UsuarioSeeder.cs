@@ -6,9 +6,9 @@ namespace Oficina.IntegrationTests.Support;
 /// <summary>
 /// Insere usuários diretamente no banco para preparar os cenários.
 /// </summary>
-public class UsuarioSeeder
+public static class UsuarioSeeder
 {
-    public async Task CriarAsync(string login, string senha, bool ativo = true)
+    public static async Task CriarAsync(string login, string senha, bool ativo = true)
     {
         const string sql = "INSERT INTO usuario (login, senha, ativo) VALUES (@login, @senha, @ativo)";
 
