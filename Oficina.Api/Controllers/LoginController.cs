@@ -18,14 +18,14 @@ namespace Oficina.Api.Controllers
 
         [HttpPost]
         [Route("signin")]
-        public IActionResult SignIn([FromBody] UsuarioCredenciaisDTO usuarioCredenciais)
+        public async Task<IActionResult> SignIn([FromBody] UsuarioCredenciaisDTO usuarioCredenciais)
         {
             if (usuarioCredenciais == null) return BadRequest("Request inválida");
 
-            var token = _tokenService.ValidarCredenciais(usuarioCredenciais);
+            var token = await _tokenService.ValidarCredenciais(usuarioCredenciais);
 
             if (token == null)
-                return Unauthorized();
+                return Unauthorized("Login ou senha incorretos.");
 
             return Ok(token.Token);
         }

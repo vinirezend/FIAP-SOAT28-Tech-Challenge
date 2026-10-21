@@ -38,9 +38,9 @@ namespace Oficina.Application.Implementations.Services
 
         private const string Date_Format = "yyyy-MM-ddTHH:mm:ss";
         
-        public TokenDTO ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciais)
+        public async Task<TokenDTO> ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciais)
         {
-            var usuario = _usuarioRepository.ObterPorCredenciais(usuarioCredenciais.Login, usuarioCredenciais.Senha).Result;
+            var usuario = await _usuarioRepository.ObterPorCredenciais(usuarioCredenciais.Login, usuarioCredenciais.Senha);
 
             if (usuario == null) return null;
 
