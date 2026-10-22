@@ -23,7 +23,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(option =>
 {
-    option.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    option.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
@@ -66,9 +66,17 @@ builder.Services.AddAuthorization(auth =>
 // Add services to the container.
 // REPOSITORYS
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IVeiculoRepository, VeiculoRepository>();
+builder.Services.AddScoped<IInsumoRepository, InsumoRepository>();
+builder.Services.AddScoped<IServicoRepository, ServicoRepository>();
 
 //SERVICES
 builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IVeiculoService, VeiculoService>();
+builder.Services.AddScoped<IInsumoService, InsumoService>();
+builder.Services.AddScoped<IServicoService, ServicoService>();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();
