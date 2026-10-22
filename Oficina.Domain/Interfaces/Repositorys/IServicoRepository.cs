@@ -1,6 +1,6 @@
 using Oficina.Domain.Entitys;
 
-namespace Oficina.Domain.Interfaces
+namespace Oficina.Domain.Interfaces.Repositorys
 {
     public interface IServicoRepository
     {
