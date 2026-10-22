@@ -48,7 +48,7 @@ namespace Oficina.Application.Implementations.Services
             var clienteEntity = await _clienteRepository.ObterPorDocumentoAsync(documento);
             return clienteEntity is null ? null : TransformaParaDTO(clienteEntity);
         }
-        public async Task<IEnumerable<ClienteDTO>> ObterTodosAsync()
+        public async Task<IReadOnlyList<ClienteDTO>> ObterTodosAsync()
         {
             var clientes = await _clienteRepository.ObterTodosAsync();
             return clientes.Select(TransformaParaDTO).ToList();

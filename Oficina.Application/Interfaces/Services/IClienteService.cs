@@ -4,7 +4,7 @@ namespace Oficina.Application.Interfaces.Services
 {
     public interface IClienteService
     {
-        Task<IEnumerable<ClienteDTO>> ObterTodosAsync();
+        Task<IReadOnlyList<ClienteDTO>> ObterTodosAsync();
         Task<ClienteDTO?> ObterPorIdAsync(int id);
         Task<ClienteDTO> AdicionarAsync(ClienteDTO cliente);
         Task<ClienteDTO?> AtualizarAsync(ClienteDTO cliente);
