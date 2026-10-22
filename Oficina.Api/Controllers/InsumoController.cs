@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Application.DTOs;
+using Oficina.Api.DTO.Insumo;
 
 namespace Oficina.Api.Controllers
 {
@@ -15,42 +16,43 @@ namespace Oficina.Api.Controllers
         {
             _insumoService = insumoService;
         }
-       
+
        [HttpGet("{id:int}")]
-        public async Task<ActionResult> ObterPorIdAsync(int id)
+        public async Task<IActionResult> ObterPorIdAsync(int id)
         {
             var insumo = await _insumoService.ObterPorIdAsync(id);
             if (insumo == null)
                 return NotFound();
 
-            return Ok(insumo);
+            return Ok(TransformaParaResponse(insumo));
         }
         [HttpGet]
         public async Task<IActionResult> ObterTodosAsync()
         {
             var insumos = await _insumoService.ObterTodosAsync();
-            return Ok(insumos);
+            return Ok(insumos.Select(TransformaParaResponse));
         }
         [HttpGet("pesquisar/{termo}")]
         public async Task<IActionResult> PesquisarAsync(string termo)
         {
             var insumos = await _insumoService.PesquisarAsync(termo);
-            return Ok(insumos);
+            return Ok(insumos.Select(TransformaParaResponse));
         }
         [HttpPost]
-        public async Task<IActionResult> AdicionarAsync([FromBody] InsumoDTO insumoDTO)
+        public async Task<IActionResult> AdicionarAsync([FromBody] InsumoCreateRequest request)
         {
-            var insumoCriado = await _insumoService.AdicionarAsync(insumoDTO);
-            return Created($"/api/insumo/{insumoCriado.IdInsumo}", insumoCriado);
+            var insumo = TransformaParaDTO(request);
+            var insumoCriado = await _insumoService.AdicionarAsync(insumo);
+            return Created($"/api/insumo/{insumoCriado.IdInsumo}", TransformaParaResponse(insumoCriado));
         }
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> AtualizarAsync(int id, [FromBody] InsumoDTO insumo)
+        public async Task<IActionResult> AtualizarAsync(int id, [FromBody] InsumoUpdateRequest request)
         {
-                insumo.IdInsumo = id;
-                var insumoAtualizado = await _insumoService.AtualizarAsync(insumo);
-                if (insumoAtualizado == null)
-                    return NotFound();
-                return Ok(insumoAtualizado);
+            var insumo = TransformaParaDTO(id, request);
+            var insumoAtualizado = await _insumoService.AtualizarAsync(insumo);
+            if (insumoAtualizado == null)
+                return NotFound();
+            return Ok(TransformaParaResponse(insumoAtualizado));
         }
 
         [HttpDelete("{id:int}")]
@@ -62,6 +64,43 @@ namespace Oficina.Api.Controllers
 
             await _insumoService.RemoverAsync(id);
             return NoContent();
+        }
+
+        private static InsumoDTO TransformaParaDTO(InsumoCreateRequest request)
+        {
+            return new InsumoDTO
+            {
+                Nome = request.Nome,
+                Descricao = request.Descricao,
+                ValorUnitario = request.ValorUnitario,
+                QuantidadeEstoque = request.QuantidadeEstoque
+            };
+        }
+        private static InsumoDTO TransformaParaDTO(int id, InsumoUpdateRequest request)
+        {
+            return new InsumoDTO
+            {
+                IdInsumo = id,
+                Nome = request.Nome,
+                Descricao = request.Descricao,
+                ValorUnitario = request.ValorUnitario,
+                Ativo = request.Ativo,
+                QuantidadeEstoque = request.QuantidadeEstoque,
+                QuantidadeReservada = request.QuantidadeReservada
+            };
+        }
+        private static InsumoResponse TransformaParaResponse(InsumoDTO dto)
+        {
+            return new InsumoResponse
+            {
+                IdInsumo = dto.IdInsumo,
+                Nome = dto.Nome,
+                Descricao = dto.Descricao,
+                ValorUnitario = dto.ValorUnitario,
+                Ativo = dto.Ativo,
+                QuantidadeEstoque = dto.QuantidadeEstoque,
+                QuantidadeReservada = dto.QuantidadeReservada
+            };
         }
     }
 }

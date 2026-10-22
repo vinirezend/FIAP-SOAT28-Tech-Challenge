@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Application.DTOs;
+using Oficina.Api.DTO.Cliente;
 
 namespace Oficina.Api.Controllers
 {
@@ -21,7 +22,7 @@ namespace Oficina.Api.Controllers
             var cliente = await _clienteService.ObterPorIdAsync(id);
             if (cliente is null)
                 return NotFound();
-            return Ok(cliente);
+            return Ok(TransformaParaResponse(cliente));
         }
 
         [HttpGet("documento/{documento}")]
@@ -30,31 +31,32 @@ namespace Oficina.Api.Controllers
             var cliente = await _clienteService.ObterPorDocumentoAsync(documento);
             if (cliente is null)
                 return NotFound();
-            return Ok(cliente);
+            return Ok(TransformaParaResponse(cliente));
         }
         
         [HttpGet]
         public async Task<IActionResult> ObterTodosAsync()
         {
             var clientes = await _clienteService.ObterTodosAsync();
-            return Ok(clientes);
+            return Ok(clientes.Select(c => TransformaParaResponse(c)));
         }
         
         [HttpPost]
-        public async Task<IActionResult> AdicionarAsync([FromBody] ClienteDTO cliente)
+        public async Task<IActionResult> AdicionarAsync([FromBody] ClienteCreateRequest request)
         {
+            var cliente = TransformaParaDTO(request);
             var clienteAdicionado = await _clienteService.AdicionarAsync(cliente);
-            return Created($"/api/cliente/{clienteAdicionado.IdCliente}", clienteAdicionado);
+            return Created($"/api/cliente/{clienteAdicionado.IdCliente}", TransformaParaResponse(clienteAdicionado));
         }       
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> AtualizarAsync(int id, [FromBody] ClienteDTO cliente)
+        public async Task<IActionResult> AtualizarAsync(int id, [FromBody] ClienteUpdateRequest request)
         {
-            cliente.IdCliente = id;
+            var cliente = TransformaParaDTO(id, request);
             var clienteAtualizado = await _clienteService.AtualizarAsync(cliente);
             if (clienteAtualizado is null)
                 return NotFound();
-            return Ok(clienteAtualizado);
+            return Ok(TransformaParaResponse(clienteAtualizado));
         }
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeletarAsync(int id)
@@ -64,6 +66,36 @@ namespace Oficina.Api.Controllers
                 return NotFound();
             await _clienteService.RemoverAsync(id);
             return NoContent();
+        }
+
+        private static ClienteDTO TransformaParaDTO(ClienteCreateRequest request) { 
+            return new ClienteDTO
+            {
+                Nome = request.Nome,
+                Documento = request.Documento,
+                Email = request.Email,
+                Telefone = request.Telefone
+            };
+         }
+        private static ClienteDTO TransformaParaDTO(int id, ClienteUpdateRequest request) { 
+            return new ClienteDTO
+            {
+                IdCliente = id,
+                Nome = request.Nome,
+                Email = request.Email,
+                Telefone = request.Telefone
+            };
+        }
+        private static ClienteResponse TransformaParaResponse(ClienteDTO dto) { 
+            return new ClienteResponse
+            {
+                IdCliente = dto.IdCliente,
+                Nome = dto.Nome,
+                Documento = dto.Documento,
+                TipoDocumento = dto.TipoDocumento,
+                Email = dto.Email,
+                Telefone = dto.Telefone
+            };
         }
     }
 }
