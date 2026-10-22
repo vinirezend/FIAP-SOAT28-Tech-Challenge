@@ -4,7 +4,7 @@ namespace Oficina.Application.Interfaces.Services
 {
     public interface IVeiculoService
     {
-        Task<IEnumerable<VeiculoDTO>> ObterTodosAsync();
+        Task<IReadOnlyList<VeiculoDTO>> ObterTodosAsync();
         Task<VeiculoDTO?> ObterPorIdAsync(int id);
         Task<VeiculoDTO?> ObterPorPlacaAsync(string placa);
         Task<VeiculoDTO> AdicionarAsync(VeiculoDTO veiculo);

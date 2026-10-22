@@ -38,6 +38,9 @@ namespace Oficina.Infrastructure.Repositorys
             catch (PostgresException ex) when (ex.SqlState is "23505")
             {
                 throw new InvalidOperationException("Ja existe um veiculo com essa placa.");
+            }catch (PostgresException ex) when (ex.SqlState is "23503")
+            {
+                throw new InvalidOperationException("Cliente não encontrado.");
             }
         }
         public async Task AtualizarAsync(Veiculo veiculo)
@@ -47,6 +50,7 @@ namespace Oficina.Infrastructure.Repositorys
             {
                 using (var connection = await _dataSource.OpenConnectionAsync())
                 {
+                    
                     await connection.ExecuteAsync(sql, new
                     {
                         veiculo.IdVeiculo,
@@ -62,9 +66,11 @@ namespace Oficina.Infrastructure.Repositorys
             catch (PostgresException ex) when (ex.SqlState is "23505")
             {
                 throw new InvalidOperationException("Ja existe um veiculo com essa placa.");
+            }catch (PostgresException ex) when (ex.SqlState is "23503")
+            {
+                throw new InvalidOperationException("Cliente não encontrado.");
             }
         }
-
         public async Task<Veiculo?> ObterPorIdAsync(int idVeiculo)
         {
             const string sql = $"SELECT * FROM veiculo WHERE id_veiculo = @IdVeiculo";
@@ -74,7 +80,6 @@ namespace Oficina.Infrastructure.Repositorys
                 return veiculo is null ? null : Veiculo.Reconstituir(veiculo.IdVeiculo, veiculo.IdCliente, Placa.Criar(veiculo.Placa), veiculo.Modelo, veiculo.Marca, veiculo.Ano, (TipoVeiculo)veiculo.IdTipoVeiculo);
             }
         }
-
         public async Task<Veiculo?> ObterPorPlacaAsync(string placa)
         {
             const string sql = $"SELECT * FROM veiculo WHERE placa = @Placa";
@@ -84,7 +89,6 @@ namespace Oficina.Infrastructure.Repositorys
                 return veiculo is null ? null : Veiculo.Reconstituir(veiculo.IdVeiculo, veiculo.IdCliente, Placa.Criar(veiculo.Placa), veiculo.Modelo, veiculo.Marca, veiculo.Ano, (TipoVeiculo)veiculo.IdTipoVeiculo);
             }
         }
-
         public async Task<IReadOnlyList<Veiculo>> ObterTodosAsync()
         {
             const string sql = $"SELECT * FROM veiculo";

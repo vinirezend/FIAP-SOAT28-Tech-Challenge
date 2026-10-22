@@ -58,7 +58,7 @@ namespace Oficina.Application.Implementations.Services
             return veiculo is null ? null : TransformaParaDTO(veiculo);
         }
 
-        public async Task<IEnumerable<VeiculoDTO>> ObterTodosAsync()
+        public async Task<IReadOnlyList<VeiculoDTO>> ObterTodosAsync()
         {
             var veiculos = await _veiculoRepository.ObterTodosAsync();
             return veiculos.Select(TransformaParaDTO).ToList();
