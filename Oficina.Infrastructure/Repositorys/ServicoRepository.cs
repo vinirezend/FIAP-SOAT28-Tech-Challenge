@@ -2,7 +2,7 @@ using Dapper;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Interfaces.Repositorys;
 using Microsoft.Extensions.Configuration;
-using Npgsql;
+using Oficina.Infrastructure.Models;
 
 namespace Oficina.Infrastructure.Repositorys
 {
@@ -10,19 +10,21 @@ namespace Oficina.Infrastructure.Repositorys
     {
         public ServicoRepository(IConfiguration configuration) : base(configuration) { }
 
-        public async Task AdicionarAsync(Servico servico)
+        public async Task<Servico> AdicionarAsync(Servico servico)
         {
-                const string sql = $"INSERT INTO servico (nome, descricao, ativo, valor_estipulado) VALUES (@Nome, @Descricao, @Ativo, @ValorEstipulado)";
+            const string sql = $"INSERT INTO servico (nome, descricao, ativo, valor_estipulado) VALUES (@Nome, @Descricao, @Ativo, @ValorEstipulado) RETURNING id_servico";
             using (var connection = await _dataSource.OpenConnectionAsync())
             {
-                await connection.ExecuteAsync(sql, new
+                var idServico = await connection.ExecuteScalarAsync<int>(sql, new
                 {
                     servico.Nome,
                     servico.Descricao,
                     servico.Ativo,
                     servico.ValorEstipulado
                 });
+                return Servico.Reconstituir(idServico, servico.Nome, servico.Descricao, servico.ValorEstipulado, servico.Ativo);
             }
+    
         }
 
         public async Task AtualizarAsync(Servico servico)
@@ -46,7 +48,17 @@ namespace Oficina.Infrastructure.Repositorys
             const string sql = $"SELECT * FROM servico WHERE id_servico = @IdServico";
             using (var connection = await _dataSource.OpenConnectionAsync())
             {
-                return await connection.QueryFirstOrDefaultAsync<Servico>(sql, new { IdServico = idServico });
+                var row = await connection.QueryFirstOrDefaultAsync<ServicoRow>(sql, new { IdServico = idServico });
+                if(row == null)
+                    return null;
+
+                return Servico.Reconstituir(
+                    row.IdServico,
+                    row.Nome,
+                    row.Descricao,
+                    row.ValorEstipulado,
+                    row.Ativo
+                );
             }
         }
 
@@ -55,7 +67,14 @@ namespace Oficina.Infrastructure.Repositorys
             const string sql = $"SELECT * FROM servico";
             using (var connection = await _dataSource.OpenConnectionAsync())
             {
-                return (await connection.QueryAsync<Servico>(sql)).AsList();
+                var rows = await connection.QueryAsync<ServicoRow>(sql);
+                return rows.Select(row => Servico.Reconstituir(
+                    row.IdServico,
+                    row.Nome,
+                    row.Descricao,
+                    row.ValorEstipulado,
+                    row.Ativo
+                )).ToList();
             }
         }
 
@@ -64,7 +83,14 @@ namespace Oficina.Infrastructure.Repositorys
             const string sql = $"SELECT * FROM servico WHERE nome LIKE @Termo OR descricao LIKE @Termo";
             using (var connection = await _dataSource.OpenConnectionAsync())
             {
-                return (await connection.QueryAsync<Servico>(sql, new { Termo = $"%{termo}%" })).AsList();
+                var rows = await connection.QueryAsync<ServicoRow>(sql, new { Termo = $"%{termo}%" });
+                return rows.Select(row => Servico.Reconstituir(
+                    row.IdServico,
+                    row.Nome,
+                    row.Descricao,
+                    row.ValorEstipulado,
+                    row.Ativo
+                )).ToList();
             }
         }
 
