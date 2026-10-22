@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Application.DTOs;
+using Oficina.Api.DTO.Servico;
+
 namespace Oficina.Api.Controllers
 {
     
@@ -16,43 +18,42 @@ namespace Oficina.Api.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult> ObterPorIdAsync(int id){
+        public async Task<IActionResult> ObterPorIdAsync(int id){
             var servico = await _servicoService.ObterPorIdAsync(id);
             if (servico == null)
                 return NotFound();
 
-            return Ok(servico);
+            return Ok(TransformaParaResponse(servico));
         }
         [HttpGet]
-        public async Task<ActionResult> ObterTodosAsync()
+        public async Task<IActionResult> ObterTodosAsync()
         {
             var servicos = await _servicoService.ObterTodosAsync();
-            return Ok(servicos);
+            return Ok(servicos.Select(s => TransformaParaResponse(s)));
         }
         [HttpGet("pesquisar/{termo}")]
-        public async Task<ActionResult> PesquisarAsync(string termo)
+        public async Task<IActionResult> PesquisarAsync(string termo)
         {
             var servicos = await _servicoService.PesquisarAsync(termo);
-            return Ok(servicos);
+            return Ok(servicos.Select(s => TransformaParaResponse(s)));
         }
         [HttpPost]
-        public async Task<ActionResult> AdicionarAsync([FromBody] ServicoDTO servico)
+        public async Task<IActionResult> AdicionarAsync([FromBody] ServicoCreateRequest servico)
         {
-            var servicoAdicionado = await _servicoService.AdicionarAsync(servico);
-            return Created($"/api/servico/{servicoAdicionado.IdServico}", servicoAdicionado);
+            var servicoAdicionado = await _servicoService.AdicionarAsync(TransformaParaDTO(servico));
+            return Created($"/api/servico/{servicoAdicionado.IdServico}", TransformaParaResponse(servicoAdicionado));
         }
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> AtualizarAsync(int id, [FromBody] ServicoDTO servico)
+        public async Task<IActionResult> AtualizarAsync(int id, [FromBody] ServicoUpdateRequest servico)
         {
-            servico.IdServico = id;
-            var servicoAtualizado = await _servicoService.AtualizarAsync(servico);
+            var servicoAtualizado = await _servicoService.AtualizarAsync(TransformaParaDTO(id, servico));
             if (servicoAtualizado == null)
                 return NotFound();
 
-            return Ok(servicoAtualizado);
+            return Ok(TransformaParaResponse(servicoAtualizado));
         }
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeletarAsync(int id)
+        public async Task<IActionResult> DeletarAsync(int id)
         {
             var servico = await _servicoService.ObterPorIdAsync(id);
             if (servico == null)
@@ -60,6 +61,40 @@ namespace Oficina.Api.Controllers
 
             await _servicoService.RemoverAsync(id);
             return NoContent();
+        }
+
+        private ServicoDTO TransformaParaDTO(ServicoCreateRequest request)
+        {
+            return new ServicoDTO
+            {
+                Nome = request.Nome,
+                Descricao = request.Descricao,
+                ValorEstipulado = request.ValorEstipulado,
+                Ativo = true
+            };
+        }
+        private ServicoDTO TransformaParaDTO(int id, ServicoUpdateRequest request)
+        {
+            return new ServicoDTO
+            {
+                IdServico = id,
+                Nome = request.Nome,
+                Descricao = request.Descricao,
+                ValorEstipulado = request.ValorEstipulado,
+                Ativo = request.Ativo
+            };
+        }
+
+        private ServicoResponse TransformaParaResponse(ServicoDTO response)
+        {
+            return new ServicoResponse
+            {
+                IdServico = response.IdServico,
+                Nome = response.Nome,
+                Descricao = response.Descricao,
+                ValorEstipulado = response.ValorEstipulado,
+                Ativo = response.Ativo
+            };
         }
     }
 }
