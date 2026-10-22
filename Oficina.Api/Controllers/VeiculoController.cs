@@ -22,7 +22,7 @@ namespace Oficina.Api.Controllers
             return Ok(veiculos);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> ObterPorIdAsync(int id)
         {
             var veiculo = await _veiculoService.ObterPorIdAsync(id);
@@ -42,10 +42,10 @@ namespace Oficina.Api.Controllers
         public async Task<IActionResult> AdicionarAsync(VeiculoDTO veiculo)
         {
             var veiculoAdicionado = await _veiculoService.AdicionarAsync(veiculo);
-            return CreatedAtAction(nameof(ObterPorIdAsync), new { id = veiculoAdicionado.IdVeiculo }, veiculoAdicionado);
+            return Created($"/api/veiculo/{veiculoAdicionado.IdVeiculo}", veiculoAdicionado);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> AtualizarAsync(int id, VeiculoDTO veiculo)
         {
             if (id != veiculo.IdVeiculo) return BadRequest();
@@ -54,7 +54,7 @@ namespace Oficina.Api.Controllers
             return Ok(veiculoAtualizado);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> RemoverAsync(int id)
         {   var veiculo = await _veiculoService.ObterPorIdAsync(id);
             if (veiculo is null) return NotFound();

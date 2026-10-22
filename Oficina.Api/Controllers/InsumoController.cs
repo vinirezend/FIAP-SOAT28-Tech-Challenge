@@ -16,7 +16,7 @@ namespace Oficina.Api.Controllers
             _insumoService = insumoService;
         }
        
-       [HttpGet("{id}")]
+       [HttpGet("{id:int}")]
         public async Task<ActionResult> ObterPorIdAsync(int id)
         {
             var insumo = await _insumoService.ObterPorIdAsync(id);
@@ -41,9 +41,9 @@ namespace Oficina.Api.Controllers
         public async Task<IActionResult> AdicionarAsync([FromBody] InsumoDTO insumoDTO)
         {
             var insumoCriado = await _insumoService.AdicionarAsync(insumoDTO);
-            return CreatedAtAction(nameof(ObterPorIdAsync), new { id = insumoCriado.IdInsumo }, insumoCriado);
+            return Created($"/api/insumo/{insumoCriado.IdInsumo}", insumoCriado);
         }
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> AtualizarAsync(int id, [FromBody] InsumoDTO insumo)
         {
                 insumo.IdInsumo = id;
@@ -53,7 +53,7 @@ namespace Oficina.Api.Controllers
                 return Ok(insumoAtualizado);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeletarAsync(int id)
         {
             var insumo = await _insumoService.ObterPorIdAsync(id);

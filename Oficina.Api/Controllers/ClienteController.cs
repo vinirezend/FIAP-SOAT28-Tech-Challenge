@@ -15,7 +15,7 @@ namespace Oficina.Api.Controllers
             _clienteService = clienteService;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> ObterPorIdAsync(int id)
         {
             var cliente = await _clienteService.ObterPorIdAsync(id);
@@ -44,10 +44,10 @@ namespace Oficina.Api.Controllers
         public async Task<IActionResult> AdicionarAsync([FromBody] ClienteDTO cliente)
         {
             var clienteAdicionado = await _clienteService.AdicionarAsync(cliente);
-            return CreatedAtAction(nameof(ObterPorIdAsync), new { id = clienteAdicionado.IdCliente }, clienteAdicionado);
-        }
+            return Created($"/api/cliente/{clienteAdicionado.IdCliente}", clienteAdicionado);
+        }       
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> AtualizarAsync(int id, [FromBody] ClienteDTO cliente)
         {
             cliente.IdCliente = id;
@@ -56,7 +56,7 @@ namespace Oficina.Api.Controllers
                 return NotFound();
             return Ok(clienteAtualizado);
         }
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeletarAsync(int id)
         {
             var cliente = await _clienteService.ObterPorIdAsync(id);
