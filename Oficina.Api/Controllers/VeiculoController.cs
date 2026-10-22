@@ -5,8 +5,8 @@ using Oficina.Api.DTO.Veiculo;
 
 namespace Oficina.Api.Controllers
 {
-        [ApiController]
-        [Route("api/[controller]")]
+    [ApiController]
+    [Route("api/[controller]")]
     public class VeiculoController : ControllerBase
     {
         private readonly IVeiculoService _veiculoService;
@@ -20,7 +20,7 @@ namespace Oficina.Api.Controllers
         public async Task<IActionResult> ObterTodosAsync()
         {
             var veiculos = await _veiculoService.ObterTodosAsync();
-            return Ok(veiculos);
+            return Ok(veiculos.Select(TransformaParaResponse));
         }
 
         [HttpGet("{id:int}")]
@@ -28,7 +28,7 @@ namespace Oficina.Api.Controllers
         {
             var veiculo = await _veiculoService.ObterPorIdAsync(id);
             if (veiculo is null) return NotFound();
-            return Ok(veiculo);
+            return Ok(TransformaParaResponse(veiculo));
         }
 
         [HttpGet("placa/{placa}")]
@@ -36,7 +36,7 @@ namespace Oficina.Api.Controllers
         {
             var veiculo = await _veiculoService.ObterPorPlacaAsync(placa);
             if (veiculo is null) return NotFound();
-            return Ok(veiculo);
+            return Ok(TransformaParaResponse(veiculo));
         }
 
         [HttpPost]
@@ -50,16 +50,17 @@ namespace Oficina.Api.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> AtualizarAsync(int id, [FromBody] VeiculoRequest veiculoRequest)
         {
-            var veiculo = TransformaParaDTO(veiculoRequest);
-            if (id != veiculo.IdVeiculo) return BadRequest();
+            var veiculo = TransformaParaDTO(id, veiculoRequest);
             var veiculoAtualizado = await _veiculoService.AtualizarAsync(veiculo);
-            if (veiculoAtualizado is null) return NotFound();
+            if (veiculoAtualizado is null)
+                return NotFound();
             return Ok(TransformaParaResponse(veiculoAtualizado));
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> RemoverAsync(int id)
-        {   var veiculo = await _veiculoService.ObterPorIdAsync(id);
+        {
+            var veiculo = await _veiculoService.ObterPorIdAsync(id);
             if (veiculo is null) return NotFound();
             await _veiculoService.RemoverAsync(id);
             return NoContent();
@@ -69,6 +70,19 @@ namespace Oficina.Api.Controllers
         {
             return new VeiculoDTO
             {
+                Placa = request.Placa,
+                Modelo = request.Modelo,
+                Marca = request.Marca,
+                Ano = request.Ano,
+                IdCliente = request.IdCliente,
+                IdTipoVeiculo = request.IdTipoVeiculo
+            };
+        }
+        private VeiculoDTO TransformaParaDTO(int id, VeiculoRequest request)
+        {
+            return new VeiculoDTO
+            {
+                IdVeiculo = id,
                 Placa = request.Placa,
                 Modelo = request.Modelo,
                 Marca = request.Marca,
