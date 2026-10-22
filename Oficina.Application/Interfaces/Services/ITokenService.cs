@@ -7,6 +7,6 @@ namespace Oficina.Application.Interfaces.Services
     {
         string GerarTokenAcesso(IEnumerable<Claim> claims);
 
-        TokenDTO ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciaisDTO);
+        Task<TokenDTO?> ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciaisDTO);
     }
 }
