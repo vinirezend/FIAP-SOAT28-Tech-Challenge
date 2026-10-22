@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Application.DTOs;
+using Oficina.Api.DTO.Veiculo;
 
 namespace Oficina.Api.Controllers
 {
-            [ApiController]
+        [ApiController]
         [Route("api/[controller]")]
     public class VeiculoController : ControllerBase
     {
@@ -39,19 +40,21 @@ namespace Oficina.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AdicionarAsync(VeiculoDTO veiculo)
+        public async Task<IActionResult> AdicionarAsync([FromBody] VeiculoRequest veiculoRequest)
         {
+            var veiculo = TransformaParaDTO(veiculoRequest);
             var veiculoAdicionado = await _veiculoService.AdicionarAsync(veiculo);
-            return Created($"/api/veiculo/{veiculoAdicionado.IdVeiculo}", veiculoAdicionado);
+            return Created($"/api/veiculo/{veiculoAdicionado.IdVeiculo}", TransformaParaResponse(veiculoAdicionado));
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> AtualizarAsync(int id, VeiculoDTO veiculo)
+        public async Task<IActionResult> AtualizarAsync(int id, [FromBody] VeiculoRequest veiculoRequest)
         {
+            var veiculo = TransformaParaDTO(veiculoRequest);
             if (id != veiculo.IdVeiculo) return BadRequest();
             var veiculoAtualizado = await _veiculoService.AtualizarAsync(veiculo);
             if (veiculoAtualizado is null) return NotFound();
-            return Ok(veiculoAtualizado);
+            return Ok(TransformaParaResponse(veiculoAtualizado));
         }
 
         [HttpDelete("{id:int}")]
@@ -60,6 +63,32 @@ namespace Oficina.Api.Controllers
             if (veiculo is null) return NotFound();
             await _veiculoService.RemoverAsync(id);
             return NoContent();
+        }
+
+        private VeiculoDTO TransformaParaDTO(VeiculoRequest request)
+        {
+            return new VeiculoDTO
+            {
+                Placa = request.Placa,
+                Modelo = request.Modelo,
+                Marca = request.Marca,
+                Ano = request.Ano,
+                IdCliente = request.IdCliente,
+                IdTipoVeiculo = request.IdTipoVeiculo
+            };
+        }
+        private VeiculoResponse TransformaParaResponse(VeiculoDTO veiculo)
+        {
+            return new VeiculoResponse
+            {
+                IdVeiculo = veiculo.IdVeiculo,
+                Placa = veiculo.Placa,
+                Modelo = veiculo.Modelo,
+                Marca = veiculo.Marca,
+                Ano = veiculo.Ano,
+                IdCliente = veiculo.IdCliente,
+                IdTipoVeiculo = veiculo.IdTipoVeiculo
+            };
         }
     }
 }
