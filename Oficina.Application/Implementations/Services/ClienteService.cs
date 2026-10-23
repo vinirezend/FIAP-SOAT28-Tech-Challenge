@@ -1,18 +1,21 @@
 using Oficina.Application.DTOs;
+using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
-using Oficina.Domain.ValueObjects;
-using Oficina.Domain.Interfaces.Repositorys;
 using Oficina.Domain.Entitys;
+using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.ValueObjects;
 
 namespace Oficina.Application.Implementations.Services
 {
     public class ClienteService : IClienteService
     {
         private readonly IClienteRepository _clienteRepository;
+        private readonly ICurrentUser _currentUser;
 
-        public ClienteService(IClienteRepository clienteRepository)
+        public ClienteService(IClienteRepository clienteRepository, ICurrentUser currentUser)
         {
             _clienteRepository = clienteRepository;
+            _currentUser = currentUser;
         }
         public async Task<ClienteDTO> AdicionarAsync(ClienteDTO cliente)
         {

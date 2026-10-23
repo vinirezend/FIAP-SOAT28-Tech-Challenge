@@ -1,4 +1,4 @@
-﻿namespace Oficina.Domain.Configurations
+﻿namespace Oficina.Infrastructure.Configurations
 {
     public class TokenConfiguration
     {

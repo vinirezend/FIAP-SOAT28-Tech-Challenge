@@ -1,4 +1,4 @@
-﻿using Oficina.Domain.Contracts;
+﻿using Oficina.Domain.Interfaces.Contracts;
 using System.Security.Cryptography;
 using System.Text;
 

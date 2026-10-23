@@ -4,7 +4,7 @@
 -- =============================================================================
 
 CREATE TABLE IF NOT EXISTS usuario (
-    idusuario   SERIAL       PRIMARY KEY,
+    id_usuario   SERIAL       PRIMARY KEY,
     login       VARCHAR(100) NOT NULL UNIQUE,
     senha       VARCHAR(255) NOT NULL,
     ativo       BOOLEAN      NOT NULL DEFAULT TRUE

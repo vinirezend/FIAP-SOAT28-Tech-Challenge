@@ -1,9 +1,9 @@
 ﻿using Oficina.Application.DTOs;
 using System.Security.Claims;
 
-namespace Oficina.Application.Interfaces.Services
+namespace Oficina.Application.Interfaces.Resources
 {
-    public interface ITokenService
+    public interface ITokenGenerator
     {
         string GerarTokenAcesso(IEnumerable<Claim> claims);
 
