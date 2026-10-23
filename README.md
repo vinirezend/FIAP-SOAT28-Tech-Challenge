@@ -11,6 +11,7 @@ API de gestão de oficina desenvolvida em **.NET 10**, com **PostgreSQL** como b
 | `Oficina.Domain` | Entidades e regras de domínio |
 | `Oficina.Infrastructure` | Acesso a dados (Dapper + Npgsql) |
 | `Oficina.Tests` | Testes unitários (xUnit) |
+| `Oficina.IntegrationTests` | Testes integrados em BDD (Reqnroll + Testcontainers) — ver [Testes](#testes) |
 
 ## Containers
 
@@ -171,8 +172,74 @@ docker compose up -d --build api
 
    A API ficará disponível em <http://localhost:5078> (Swagger em <http://localhost:5078/swagger>).
 
-3. Testes:
+3. Testes: ver a seção [Testes](#testes).
+
+## Testes
+
+```bash
+# Todos os testes (unitários + integrados) — os integrados exigem Docker acessível
+dotnet test
+
+# Apenas os unitários (não precisam de Docker)
+dotnet test Oficina.Tests
+
+# Apenas os integrados
+dotnet test Oficina.IntegrationTests
+```
+
+### Testes integrados
+
+Os testes em `Oficina.IntegrationTests` sobem a API em memória (`WebApplicationFactory`) contra um **PostgreSQL real** criado pelo [Testcontainers](https://dotnet.testcontainers.org/), e os cenários são escritos em Gherkin (português) com o [Reqnroll](https://reqnroll.net/) (sucessor do SpecFlow).
+
+Como funciona:
+
+1. No início da execução, um container `postgres:17-alpine` é criado e os scripts de [`database/init`](database/init/README.md) são executados — o schema dos testes é o mesmo do `docker-compose`.
+2. Antes de cada cenário, o [Respawn](https://github.com/jbogard/Respawn) apaga os dados de todas as tabelas (o schema é mantido).
+3. Ao final, o container é removido. Nada é gravado no banco do `docker-compose`.
+
+Estrutura:
+
+```
+Oficina.IntegrationTests/
+├── Features/          # cenários .feature em português (ex.: Login.feature)
+├── Steps/             # step definitions (Dado / Quando / Então)
+├── Hooks/             # sobe banco + API uma vez; limpa o banco antes de cada cenário
+├── Infrastructure/    # PostgresDatabase (Testcontainers + Respawn) e OficinaApiFactory
+└── Support/           # ApiContext (HttpClient por cenário) e seeders de dados
+```
+
+Para criar um novo cenário: adicione um `.feature` em `Features/` (começando com `# language: pt`), implemente os passos em `Steps/` e, se precisar de dados, crie um seeder em `Support/`. Os cenários não rodam em paralelo, pois compartilham o mesmo banco.
+
+#### Pré-requisito: Docker acessível pelo processo de teste
+
+O Testcontainers precisa falar com um daemon Docker **a partir do mesmo ambiente em que o `dotnet test` roda**:
+
+| Onde roda o `dotnet test` | Requisito |
+|---|---|
+| Windows (Visual Studio, Rider, PowerShell) | **Docker Desktop** instalado e em execução ([Opção 1](#opção-1--docker-desktop-windows--macos)) |
+| Dentro do WSL | Docker Engine no WSL ([Opção 2](#opção-2--wsl-docker-engine-dentro-do-linux-sem-docker-desktop)) **e** o .NET 10 SDK instalado no WSL (abaixo) |
+| GitHub Actions (`ubuntu-latest`) | Nada — o runner já tem Docker |
+
+Se o Docker só existir dentro do WSL e os testes forem executados pelo Windows, todos falham com `DockerUnavailableException: Failed to connect to Docker endpoint at 'npipe://./pipe/docker_engine'`.
+
+#### Executando pelo WSL (sem Docker Desktop)
+
+1. Instale o .NET 10 SDK no WSL (apenas para o seu usuário, sem `sudo`):
 
    ```bash
-   dotnet test
+   curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+   bash /tmp/dotnet-install.sh --channel 10.0 --install-dir "$HOME/.dotnet"
+   cat >> ~/.bashrc <<'EOF'
+   export DOTNET_ROOT=$HOME/.dotnet
+   export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+   EOF
+   source ~/.bashrc
    ```
+
+2. Rode os testes a partir de um clone no sistema de arquivos do Linux (ex.: `~/repos/FIAP-SOAT28-Tech-Challenge`):
+
+   ```bash
+   dotnet test Oficina.IntegrationTests
+   ```
+
+> Evite rodar `dotnet test` no WSL diretamente em `/mnt/c/...` sobre o mesmo checkout usado no Windows: as pastas `bin/` e `obj/` passam a ser compartilhadas entre Linux e Windows e o build de um quebra o do outro (exige `dotnet restore` a cada troca).
