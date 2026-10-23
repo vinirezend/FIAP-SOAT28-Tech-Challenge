@@ -21,6 +21,8 @@ namespace Oficina.Application.Implementations.Services
             _usuarioRepository = usuarioRepository;
         }
 
+        private const string Date_Format = "yyyy-MM-ddTHH:mm:ss";
+
         public string GerarTokenAcesso(IEnumerable<Claim> claims)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.Secret));
@@ -30,17 +32,15 @@ namespace Oficina.Application.Implementations.Services
                     issuer: _configuration.Issuer,
                     audience: _configuration.Audience,
                     claims: claims,
-                    expires: DateTime.Now.AddMinutes(_configuration.Minutes),
+                    expires: DateTime.UtcNow.AddMinutes(_configuration.Minutes),
                     signingCredentials: signCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(options);
         }
 
-        private const string Date_Format = "yyyy-MM-ddTHH:mm:ss";
-        
-        public TokenDTO ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciais)
+        public async Task<TokenDTO?> ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciais)
         {
-            var usuario = _usuarioRepository.ObterPorCredenciais(usuarioCredenciais.Login, usuarioCredenciais.Senha).Result;
+            var usuario = await _usuarioRepository.ObterPorCredenciais(usuarioCredenciais.Login, usuarioCredenciais.Senha);
 
             if (usuario == null) return null;
 
@@ -52,7 +52,7 @@ namespace Oficina.Application.Implementations.Services
 
             var token = GerarTokenAcesso(claims);
 
-            DateTime dataCriacao = DateTime.Now;
+            DateTime dataCriacao = DateTime.UtcNow;
             DateTime DataExpiracao = dataCriacao.AddMinutes(_configuration.Minutes);
 
             return new TokenDTO(
