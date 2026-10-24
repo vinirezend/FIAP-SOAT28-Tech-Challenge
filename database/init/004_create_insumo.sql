@@ -6,5 +6,6 @@ CREATE TABLE insumo (
     quantidade_estoque    integer,
     quantidade_reservada  integer,
     valor_unitario        numeric,
+
     CONSTRAINT pk_insumo PRIMARY KEY (id_insumo)
 );

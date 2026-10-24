@@ -12,3 +12,5 @@ CREATE TABLE colaborador (
     CONSTRAINT uq_colaborador_email UNIQUE (email),
     CONSTRAINT fk_colaborador_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 );
+
+CREATE INDEX ix_colaborador_id_usuario ON colaborador (id_usuario);
