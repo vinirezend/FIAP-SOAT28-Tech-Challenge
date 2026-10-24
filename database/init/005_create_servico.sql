@@ -7,27 +7,3 @@ CREATE TABLE servico (
 
     CONSTRAINT pk_servico PRIMARY KEY (id_servico)
 );
-
-INSERT INTO servico 
-    (nome, descricao, ativo, valor_estipulado)
-VALUES
-    ('Troca de óleo do motor', 'Drenagem do óleo usado e substituição do lubrificante', TRUE, 80.00),
-    ('Troca de filtro de óleo', 'Remoção e instalação do filtro de óleo do motor', TRUE, 35.00),
-    ('Troca de filtro de ar', 'Substituição do elemento filtrante de admissão', TRUE, 25.00),
-    ('Troca de filtro de combustível', 'Substituição do filtro de combustível', TRUE, 50.00),
-    ('Troca de filtro de cabine', 'Substituição do filtro do ar condicionado', TRUE, 35.00),
-    ('Troca de pastilhas de freio', 'Substituição das pastilhas de freio de um eixo', TRUE, 140.00),
-    ('Troca de discos de freio', 'Substituição dos discos de freio de um eixo', TRUE, 180.00),
-    ('Sangria do sistema de freios', 'Remoção de ar do circuito hidráulico de freios', TRUE, 100.00),
-    ('Troca de fluido de freio', 'Substituição do fluido do sistema de freios', TRUE, 120.00),
-    ('Revisão do sistema de arrefecimento', 'Inspeção de mangueiras, reservatório e circulação', TRUE, 150.00),
-    ('Troca de aditivo do radiador', 'Drenagem e reposição do fluido de arrefecimento', TRUE, 100.00),
-    ('Substituição de velas de ignição', 'Remoção e instalação das velas do motor', TRUE, 90.00),
-    ('Troca de correia dentada', 'Substituição da correia de sincronismo do motor', TRUE, 450.00),
-    ('Troca de correia de acessórios', 'Substituição da correia de acionamento de acessórios', TRUE, 120.00),
-    ('Diagnóstico eletrônico', 'Leitura de códigos de falha com scanner automotivo', TRUE, 120.00),
-    ('Alinhamento de direção', 'Ajuste dos ângulos de alinhamento das rodas', TRUE, 100.00),
-    ('Balanceamento de rodas', 'Balanceamento das rodas para reduzir vibrações', TRUE, 30.00),
-    ('Revisão da suspensão', 'Inspeção de amortecedores, buchas, pivôs e terminais', TRUE, 120.00),
-    ('Substituição de bateria', 'Remoção e instalação da bateria automotiva', TRUE, 50.00),
-    ('Revisão preventiva completa', 'Inspeção geral dos principais sistemas do veículo', TRUE, 300.00);

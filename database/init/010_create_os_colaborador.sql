@@ -11,8 +11,3 @@ CREATE TABLE os_colaborador (
 
 CREATE INDEX ix_os_colaborador_id_os ON os (id_os);
 CREATE INDEX ix_os_colaborador_id_colaborador ON colaborador (id_colaborador);
-
-INSERT INTO os_colaborador
-    (id_os, id_colaborador)
-VALUES
-    (1, 2);

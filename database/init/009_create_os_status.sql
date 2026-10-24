@@ -15,8 +15,3 @@ CREATE TABLE os_status (
 CREATE INDEX ix_os_status_id_os ON os (id_os);
 CREATE INDEX ix_os_status_id_status ON status (id_status);
 CREATE INDEX ix_os_status_id_colaborador ON colaborador (id_colaborador);
-
-INSERT INTO os_status
-    (id_os, id_status, id_colaborador)
-VALUES
-    (1, 1, 2)

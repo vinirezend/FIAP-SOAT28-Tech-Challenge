@@ -9,27 +9,3 @@ CREATE TABLE insumo (
 
     CONSTRAINT pk_insumo PRIMARY KEY (id_insumo)
 );
-
-INSERT INTO insumo 
-    (nome, descricao, ativo, quantidade_estoque, quantidade_reservada, valor_unitario)
-VALUES
-    ('Óleo de motor 5W30', 'Óleo lubrificante sintético para motores compatíveis', TRUE, 40, 0, 42.90),
-    ('Óleo de motor 10W40', 'Óleo lubrificante semissintético para motores compatíveis', TRUE, 30, 0, 32.50),
-    ('Filtro de óleo', 'Filtro de óleo para motores automotivos', TRUE, 25, 0, 28.90),
-    ('Filtro de ar', 'Elemento filtrante para admissão de ar do motor', TRUE, 20, 0, 45.00),
-    ('Filtro de combustível', 'Filtro para retenção de impurezas do combustível', TRUE, 15, 0, 38.50),
-    ('Filtro de cabine', 'Filtro de ar condicionado e ventilação interna', TRUE, 18, 0, 35.90),
-    ('Pastilha de freio dianteira', 'Jogo de pastilhas para freio a disco dianteiro', TRUE, 12, 0, 145.00),
-    ('Pastilha de freio traseira', 'Jogo de pastilhas para freio traseiro', TRUE, 10, 0, 125.00),
-    ('Disco de freio', 'Disco de freio para veículos compatíveis', TRUE, 8, 0, 189.90),
-    ('Fluido de freio DOT 4', 'Fluido hidráulico para sistema de freios', TRUE, 20, 0, 29.90),
-    ('Aditivo para radiador', 'Aditivo para sistema de arrefecimento', TRUE, 15, 0, 24.90),
-    ('Água desmineralizada', 'Água desmineralizada para uso automotivo', TRUE, 25, 0, 8.90),
-    ('Vela de ignição', 'Vela de ignição para motores compatíveis', TRUE, 32, 0, 22.50),
-    ('Correia dentada', 'Correia de sincronismo do motor', TRUE, 6, 0, 115.00),
-    ('Correia de acessórios', 'Correia para acionamento de acessórios do motor', TRUE, 10, 0, 65.00),
-    ('Lâmpada automotiva H7', 'Lâmpada para farol de veículos compatíveis', TRUE, 20, 0, 19.90),
-    ('Fusível automotivo', 'Fusível para circuitos elétricos automotivos', TRUE, 100, 0, 2.50),
-    ('Bateria automotiva 60Ah', 'Bateria de partida de 60 amperes-hora', TRUE, 5, 0, 489.90),
-    ('Graxa lubrificante', 'Graxa para lubrificação de componentes mecânicos', TRUE, 10, 0, 32.90),
-    ('Jogo de juntas do motor', 'Conjunto de juntas para motor compatível', TRUE, 4, 0, 220.00);

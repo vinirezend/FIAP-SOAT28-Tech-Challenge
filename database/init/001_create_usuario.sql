@@ -6,12 +6,3 @@ CREATE TABLE IF NOT EXISTS usuario (
 
     CONSTRAINT pk_usuario PRIMARY KEY (id_usuario)
 );
-
-INSERT INTO usuario
-    (login, senha, ativo)
-VALUES
-    ('gerente@oficina.com', 'gerente123!', TRUE),
-    ('recepcao@oficina.com', 'recepcao123!', TRUE),
-    ('oficina@oficina.com', 'oficina123!', TRUE),
-    ('almoxarifado@oficina.com', 'almoxarifado123!', TRUE);
-

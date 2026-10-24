@@ -9,10 +9,3 @@ CREATE TABLE cliente (
     CONSTRAINT pk_cliente PRIMARY KEY (id_cliente),
     CONSTRAINT uq_cliente_numero_documento UNIQUE (numero_documento)
 );
-
-INSERT INTO cliente 
-    (nome, numero_documento, tipo_documento, email, telefone)
-VALUES
-('Lucas Ferreira', '32887790056', 1, 'lucas.ferreira@example.com', '(19) 98888-8888'),
-('Mariana Oliveira', '11319526000155', 2, 'contato@marianaautos.example.com', '(19) 3333-3333'),
-('Rafael Costa', '95475931020', 1, 'rafael.costa@example.com', '(19) 99999-9999');

@@ -13,11 +13,3 @@ CREATE TABLE veiculo (
 );
 
 CREATE INDEX ix_veiculo_id_cliente ON veiculo (id_cliente);
-
-INSERT INTO veiculo 
-    (id_cliente, placa, modelo, marca, ano, id_tipo_veiculo)
-VALUES 
-    (1, 'FFF2026', 'Gol', 'Volkswagen', 2019, 1),
-    (1, 'VVV1V23', 'CG 160 Fan', 'Honda', 2023, 2),
-    (2, 'GGG2026', 'Onix', 'Chevrolet', 2020, 1),
-    (2, 'PPP1P23', 'Accelo 1016', 'Mercedes-Benz', 2022, 3);

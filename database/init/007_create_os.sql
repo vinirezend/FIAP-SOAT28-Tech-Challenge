@@ -10,8 +10,3 @@ CREATE TABLE os (
 );
 
 CREATE INDEX ix_os_id_veiculo ON veiculo (id_veiculo);
-
-INSERT INTO os
-    (id_veiculo)
-VALUES
-    (1)

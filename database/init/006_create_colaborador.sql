@@ -14,11 +14,3 @@ CREATE TABLE colaborador (
 );
 
 CREATE INDEX ix_colaborador_id_usuario ON colaborador (id_usuario);
-
-INSERT INTO colaborador
-    (nome, cpf, email, ativo, id_departamento, id_usuario)
-VALUES
-    ('Gerente 1', '02994706601', 'gerente@oficina.com', true, 1, 1),
-    ('Recepcao 1', '24275977831', 'Recepcao@oficina.com', true, 3, 2),
-    ('Oficina 1', '50118487442', 'Oficina@oficina.com', true, 4, 3),
-    ('Almoxarifado 1', '10367185571', 'Almoxarifado@oficina.com', true, 5, 4)

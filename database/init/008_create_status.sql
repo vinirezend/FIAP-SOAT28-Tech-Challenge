@@ -5,13 +5,3 @@ CREATE TABLE status (
     CONSTRAINT pk_status PRIMARY KEY (id_status),
     CONSTRAINT uq_status_nome UNIQUE (nome)
 );
-
-INSERT INTO status
-    (nome)
-VALUES
-    ('Recebida'),
-    ('Em diagnóstico'),
-    ('Aguardando aprovação'),
-    ('Em execução'),
-    ('Finalizada'),
-    ('Entregue')
