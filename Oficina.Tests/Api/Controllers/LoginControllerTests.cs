@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Oficina.Api.Controllers;
 using Oficina.Application.DTOs;
-using Oficina.Application.Interfaces.Services;
+using Oficina.Application.Interfaces.Resources;
 
 namespace Oficina.Tests.API.Controllers
 {
     public class LoginControllerTests
     {
-        private readonly Mock<ITokenService> _tokenServiceMock;
+        private readonly Mock<ITokenGenerator> _tokenServiceMock;
         private readonly LoginController _controller;
 
         public LoginControllerTests()
         {
-            _tokenServiceMock = new Mock<ITokenService>();
+            _tokenServiceMock = new Mock<ITokenGenerator>();
 
             _controller = new LoginController(
                 _tokenServiceMock.Object);

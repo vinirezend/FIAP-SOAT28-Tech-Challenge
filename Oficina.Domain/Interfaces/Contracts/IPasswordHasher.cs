@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Oficina.Domain.Contracts
+namespace Oficina.Domain.Interfaces.Contracts
 {
     public interface IPasswordHasher
     {

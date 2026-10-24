@@ -2,7 +2,7 @@ namespace Oficina.Domain.Enum
 {
     public enum TipoDocumento
     {
-        CPF,
+        CPF = 1,
         CNPJ
     }
 }

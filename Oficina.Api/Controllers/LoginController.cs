@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Oficina.Application.DTOs;
-using Oficina.Application.Interfaces.Services;
+using Oficina.Application.Interfaces.Resources;
 using Oficina.Domain.Interfaces.Repositorys;
 
 namespace Oficina.Api.Controllers
@@ -9,9 +9,9 @@ namespace Oficina.Api.Controllers
     [ApiController]
     public class LoginController : Controller
     {
-        private ITokenService _tokenService;
+        private ITokenGenerator _tokenService;
 
-        public LoginController(ITokenService tokenService)
+        public LoginController(ITokenGenerator tokenService)
         {
             _tokenService = tokenService;
         }

@@ -4,11 +4,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Oficina.Api.Extensions;
 using Oficina.Application.Implementations.Services;
+using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
-using Oficina.Domain.Configurations;
 using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Infrastructure.Resources;
 using Oficina.Infrastructure.Repositorys;
 using System.Text;
+using Oficina.Infrastructure.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +65,8 @@ builder.Services.AddAuthorization(auth =>
         new AuthorizationPolicyBuilder().AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build());
 });
 
+builder.Services.AddHttpContextAccessor();
+
 // Add services to the container.
 // REPOSITORYS
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
@@ -72,11 +76,14 @@ builder.Services.AddScoped<IInsumoRepository, InsumoRepository>();
 builder.Services.AddScoped<IServicoRepository, ServicoRepository>();
 
 //SERVICES
-builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IVeiculoService, VeiculoService>();
 builder.Services.AddScoped<IInsumoService, InsumoService>();
 builder.Services.AddScoped<IServicoService, ServicoService>();
+
+//RESOURCES
+builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
+builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();

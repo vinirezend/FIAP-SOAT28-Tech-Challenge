@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Oficina.Domain.Configurations;
+using Oficina.Infrastructure.Configurations;
 using Oficina.IntegrationTests.Hooks;
 using Oficina.IntegrationTests.Support;
 using Reqnroll;
