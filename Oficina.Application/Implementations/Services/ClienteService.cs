@@ -10,12 +10,10 @@ namespace Oficina.Application.Implementations.Services
     public class ClienteService : IClienteService
     {
         private readonly IClienteRepository _clienteRepository;
-        private readonly ICurrentUser _currentUser;
 
-        public ClienteService(IClienteRepository clienteRepository, ICurrentUser currentUser)
+        public ClienteService(IClienteRepository clienteRepository)
         {
             _clienteRepository = clienteRepository;
-            _currentUser = currentUser;
         }
         public async Task<ClienteDTO> AdicionarAsync(ClienteDTO cliente)
         {

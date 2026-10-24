@@ -217,4 +217,67 @@ public class TokenGeneratorTests
             jwt.ValidTo <= agora.AddMinutes(_configuration.Minutes)
                 .AddSeconds(5));
     }
+
+
+    [Fact]
+    public async Task ValidarCredenciais_ColaboradorInativo_DeveRetornarNull()
+    {
+        // Arrange
+        var usuario = CriarUsuarioValido();
+        usuario.ColaboradorAtivo = false;
+
+        var credenciais = CriarCredenciais();
+
+        ConfigurarUsuarioEncontrado(usuario, credenciais);
+
+        // Act
+        var resultado = await _tokenGenerator.ValidarCredenciais(
+            credenciais);
+
+        // Assert
+        Assert.Null(resultado);
+    }
+
+
+    [Fact]
+    public async Task ValidarCredenciais_ColaboradorComStatusNulo_DeveRetornarNull()
+    {
+        // Arrange
+        var usuario = CriarUsuarioValido();
+        usuario.ColaboradorAtivo = null;
+
+        var credenciais = CriarCredenciais();
+
+        ConfigurarUsuarioEncontrado(usuario, credenciais);
+
+        // Act
+        var resultado = await _tokenGenerator.ValidarCredenciais(
+            credenciais);
+
+        // Assert
+        Assert.Null(resultado);
+    }
+
+
+    [Fact]
+    public async Task ValidarCredenciais_SemColaboradorVinculado_DeveGerarToken()
+    {
+        // Arrange
+        var usuario = CriarUsuarioValido();
+        usuario.IdColaborador = null;
+        usuario.ColaboradorAtivo = false;
+
+        var credenciais = CriarCredenciais();
+
+        ConfigurarUsuarioEncontrado(usuario, credenciais);
+
+        // Act
+        var resultado = await _tokenGenerator.ValidarCredenciais(
+            credenciais);
+
+        // Assert
+        Assert.NotNull(resultado);
+        Assert.False(string.IsNullOrWhiteSpace(resultado.Token));
+    }
+
 }
