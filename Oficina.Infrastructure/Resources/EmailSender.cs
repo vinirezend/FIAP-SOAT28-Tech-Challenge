@@ -1,55 +1,47 @@
 ﻿
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
-using System.Net;
-using System.Net.Mail;
-using System.Text;
 
 public class EmailSender : IEmailSender
 {
+    private const string host = "smtp-relay.brevo.com";
+    private const int port = 587;
+    private readonly string user = Environment.GetEnvironmentVariable("BREVO_SMTP_USER");
+    private readonly string key = Environment.GetEnvironmentVariable("BREVO_SMTP_KEY");
+
     public async Task Enviar(EmailDTO email)
     {
-        using var smtpClient = new SmtpClient(
-            email.ServidorSMTP,
-            email.PortaServidorSMTP)
-        {
-            EnableSsl = true,
-            DeliveryMethod = SmtpDeliveryMethod.Network,
-            UseDefaultCredentials = false,
-            Credentials = new NetworkCredential(
-                email.Usuario,
-                email.Senha),
-            Timeout = 30000
-        };
-
-        using var message = new MailMessage
-        {
-            From = new MailAddress(
-                email.EnderecoRemetente,
-                email.NomeRemetente,
-                Encoding.UTF8),
-
-            Subject = email.Assunto,
-            SubjectEncoding = Encoding.UTF8,
-            Body = email.Mensagem,
-            BodyEncoding = Encoding.UTF8,
-            IsBodyHtml = true
-        };
-
-        email.EnderecoDestinatario?.ForEach(
-            endereco => message.To.Add(endereco));
-
-        email.EnderecoCopia?.ForEach(
-            endereco => message.CC.Add(endereco));
+        var emailMontado = MontarEmail(email);
 
         try
         {
-            await smtpClient.SendMailAsync(message);
+            using var client = new SmtpClient();
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(user, key);
+            var response = await client.SendAsync(emailMontado);
+            await client.DisconnectAsync(true);
+            Console.WriteLine($"Enviado! Resposta do servidor: {response}");
         }
-        catch (SmtpException ex)
+        catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
-            throw;
+            Console.WriteLine($"Falha no envio: {ex.Message}");
         }
+    }
+
+    private static MimeMessage MontarEmail(EmailDTO email)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("POC Pós", "betojunior1250@gmail.com"));
+        message.To.Add(MailboxAddress.Parse(email.EnderecoDestinatario));
+        message.Subject = email.Assunto;
+        message.Body = new BodyBuilder
+        {
+            HtmlBody = email.CorpoHtml,
+        }.ToMessageBody();
+
+        return message;
     }
 }

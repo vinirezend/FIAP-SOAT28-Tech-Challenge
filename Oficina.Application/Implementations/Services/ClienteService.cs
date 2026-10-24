@@ -46,27 +46,18 @@ namespace Oficina.Application.Implementations.Services
         }
         public async Task<ClienteDTO?> ObterPorIdAsync(int id)
         {
+            var clienteEntity = await _clienteRepository.ObterPorIdAsync(id);
+
             var email = new EmailDTO
             {
-                ServidorSMTP = "smtp.gmail.com",
-                PortaServidorSMTP = 587,
-                Usuario = "",
-                Senha = "",
-                EnderecoRemetente = "",
-                NomeRemetente = "Teste",
                 Assunto = "Primeiro Teste",
-                Mensagem = "Teste qlqr coisa aaaaaaaaaaaaaaa",
-                EnderecoDestinatario = new List<string>
-                {
-                    ""
-                },
-
-                EnderecoCopia = new List<string>()
+                CorpoHtml = "Teste qlqr coisa aaaaaaaaaaaaaaa",
+                //TODO alterar email que deseja testar
+                EnderecoDestinatario = clienteEntity?.Email?.Endereco ?? "",
             };
 
             await _emailSender.Enviar(email);
 
-            var clienteEntity = await _clienteRepository.ObterPorIdAsync(id);
             return clienteEntity is null ? null : TransformaParaDTO(clienteEntity);
         }
         public async Task<ClienteDTO?> ObterPorDocumentoAsync(string documento)
