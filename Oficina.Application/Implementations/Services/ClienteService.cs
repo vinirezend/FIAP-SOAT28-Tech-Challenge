@@ -4,16 +4,21 @@ using Oficina.Application.Interfaces.Services;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Interfaces.Repositorys;
 using Oficina.Domain.ValueObjects;
+using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Entitys;
+using Oficina.Application.Interfaces.Resources;
 
 namespace Oficina.Application.Implementations.Services
 {
     public class ClienteService : IClienteService
     {
         private readonly IClienteRepository _clienteRepository;
+        private readonly IEmailSender _emailSender;
 
-        public ClienteService(IClienteRepository clienteRepository)
+        public ClienteService(IClienteRepository clienteRepository, IEmailSender emailSender)
         {
             _clienteRepository = clienteRepository;
+            _emailSender = emailSender;
         }
         public async Task<ClienteDTO> AdicionarAsync(ClienteDTO cliente)
         {
@@ -42,6 +47,17 @@ namespace Oficina.Application.Implementations.Services
         public async Task<ClienteDTO?> ObterPorIdAsync(int id)
         {
             var clienteEntity = await _clienteRepository.ObterPorIdAsync(id);
+
+            var email = new EmailDTO
+            {
+                Assunto = "Primeiro Teste",
+                CorpoHtml = "Teste qlqr coisa aaaaaaaaaaaaaaa",
+                //TODO alterar email que deseja testar
+                EnderecoDestinatario = clienteEntity?.Email?.Endereco ?? "",
+            };
+
+            await _emailSender.Enviar(email);
+
             return clienteEntity is null ? null : TransformaParaDTO(clienteEntity);
         }
         public async Task<ClienteDTO?> ObterPorDocumentoAsync(string documento)
