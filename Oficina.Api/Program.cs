@@ -85,6 +85,9 @@ builder.Services.AddScoped<IServicoService, ServicoService>();
 builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
+//RESOURCES
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddDatabase(builder.Configuration);
