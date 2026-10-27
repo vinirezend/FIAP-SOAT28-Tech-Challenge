@@ -19,6 +19,11 @@ var tokenConfigurations = new TokenConfiguration();
 new ConfigureFromConfigurationOptions<TokenConfiguration>(builder.Configuration.GetSection("TokenConfigurations")).Configure(tokenConfigurations);
 builder.Services.AddSingleton(tokenConfigurations);
 
+builder.Services.AddOptions<EmailConfiguration>()
+    .BindConfiguration(EmailConfiguration.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -84,6 +89,9 @@ builder.Services.AddScoped<IServicoService, ServicoService>();
 //RESOURCES
 builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
+
+//RESOURCES
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();

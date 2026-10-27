@@ -16,5 +16,9 @@ public class OficinaApiFactory(string connectionString) : WebApplicationFactory<
         // UseSetting (e não ConfigureAppConfiguration) porque o Program.cs lê a
         // connection string antes do builder.Build()
         builder.UseSetting("ConnectionStrings:DefaultConnection", connectionString);
+
+        // Credenciais fictícias para passar na validação do EmailConfiguration (ValidateOnStart)
+        builder.UseSetting("EmailConfigurations:User", "usuario-teste");
+        builder.UseSetting("EmailConfigurations:Key", "chave-teste");
     }
 }
