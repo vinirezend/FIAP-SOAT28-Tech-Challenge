@@ -4,5 +4,6 @@ CREATE TABLE servico (
     descricao         varchar,
     ativo             boolean,
     valor_estipulado  numeric,
+
     CONSTRAINT pk_servico PRIMARY KEY (id_servico)
 );

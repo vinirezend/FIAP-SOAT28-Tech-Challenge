@@ -94,7 +94,7 @@ namespace Oficina.Infrastructure.Repositorys
         }
         public async Task<IReadOnlyList<Insumo>?> PesquisarAsync(string? termo)
         {
-            const string sql = $"SELECT * FROM insumo WHERE nome LIKE @Termo OR descricao LIKE @Termo";
+            const string sql = $"SELECT * FROM insumo WHERE nome ILIKE @Termo OR descricao ILIKE @Termo";
             using (var connection = await _dataSource.OpenConnectionAsync())
             {
                 var rows = await connection.QueryAsync<InsumoRow>(sql, new { Termo = $"%{termo}%" });

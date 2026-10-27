@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Application.DTOs;
 using Oficina.Api.DTO.Veiculo;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Oficina.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class VeiculoController : ControllerBase
     {
