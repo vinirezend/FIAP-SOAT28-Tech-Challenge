@@ -1,5 +1,4 @@
 using Oficina.Application.DTOs;
-using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Interfaces.Repositorys;
@@ -7,16 +6,8 @@ using Oficina.Domain.ValueObjects;
 
 namespace Oficina.Application.Implementations.Services;
 
-public class ClienteService : IClienteService
+public class ClienteService(IClienteRepository clienteRepository) : IClienteService
 {
-    private readonly IClienteRepository _clienteRepository;
-    private readonly IEmailSender _emailSender;
-
-    public ClienteService(IClienteRepository clienteRepository, IEmailSender emailSender)
-    {
-        _clienteRepository = clienteRepository;
-        _emailSender = emailSender;
-    }
     public async Task<ClienteDTO> AdicionarAsync(ClienteDTO cliente)
     {
         var clienteEntity = Cliente.Criar(
@@ -25,12 +16,12 @@ public class ClienteService : IClienteService
             Email.Criar(cliente.Email),
             Telefone.Criar(cliente.Telefone)
         );
-        clienteEntity = await _clienteRepository.AdicionarAsync(clienteEntity);
+        clienteEntity = await clienteRepository.AdicionarAsync(clienteEntity);
         return TransformaParaDTO(clienteEntity);
     }
     public async Task<ClienteDTO?> AtualizarAsync(ClienteDTO cliente)
     {
-        var clienteRecord = await _clienteRepository.ObterPorIdAsync(cliente.IdCliente);
+        var clienteRecord = await clienteRepository.ObterPorIdAsync(cliente.IdCliente);
         if (clienteRecord is null)
             return null;
         clienteRecord.Atualizar(
@@ -38,37 +29,27 @@ public class ClienteService : IClienteService
             Email.Criar(cliente.Email),
             Telefone.Criar(cliente.Telefone)
         );
-        await _clienteRepository.AtualizarAsync(clienteRecord);
+        await clienteRepository.AtualizarAsync(clienteRecord);
         return TransformaParaDTO(clienteRecord);
     }
     public async Task<ClienteDTO?> ObterPorIdAsync(int id)
     {
-        var clienteEntity = await _clienteRepository.ObterPorIdAsync(id);
-
-        var email = new EmailDTO
-        {
-            Assunto = "Primeiro Teste",
-            CorpoHtml = "Teste qlqr coisa aaaaaaaaaaaaaaa",
-            EnderecoDestinatario = clienteEntity?.Email?.Endereco ?? "",
-        };
-
-        await _emailSender.Enviar(email);
-
+        var clienteEntity = await clienteRepository.ObterPorIdAsync(id);
         return clienteEntity is null ? null : TransformaParaDTO(clienteEntity);
     }
     public async Task<ClienteDTO?> ObterPorDocumentoAsync(string documento)
     {
-        var clienteEntity = await _clienteRepository.ObterPorDocumentoAsync(documento);
+        var clienteEntity = await clienteRepository.ObterPorDocumentoAsync(documento);
         return clienteEntity is null ? null : TransformaParaDTO(clienteEntity);
     }
     public async Task<IReadOnlyList<ClienteDTO>> ObterTodosAsync()
     {
-        var clientes = await _clienteRepository.ObterTodosAsync();
+        var clientes = await clienteRepository.ObterTodosAsync();
         return clientes.Select(TransformaParaDTO).ToList();
     }
     public Task RemoverAsync(int id)
     {
-        return _clienteRepository.RemoverAsync(id);
+        return clienteRepository.RemoverAsync(id);
     }
     private static ClienteDTO TransformaParaDTO(Cliente cliente)
     {

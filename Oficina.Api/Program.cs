@@ -19,6 +19,11 @@ var tokenConfigurations = new TokenConfiguration();
 new ConfigureFromConfigurationOptions<TokenConfiguration>(builder.Configuration.GetSection("TokenConfigurations")).Configure(tokenConfigurations);
 builder.Services.AddSingleton(tokenConfigurations);
 
+builder.Services.AddOptions<EmailConfiguration>()
+    .BindConfiguration(EmailConfiguration.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

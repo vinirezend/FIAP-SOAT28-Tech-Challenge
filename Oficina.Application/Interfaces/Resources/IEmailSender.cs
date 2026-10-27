@@ -1,9 +1,8 @@
 ﻿using Oficina.Application.DTOs;
 
-namespace Oficina.Application.Interfaces.Resources
+namespace Oficina.Application.Interfaces.Resources;
+
+public interface IEmailSender
 {
-    public interface IEmailSender
-    {
-        public Task Enviar(EmailDTO email);
-    }
+    public Task EnviarAsync(EmailDTO email, CancellationToken cancellationToken);
 }
