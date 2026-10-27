@@ -5,12 +5,14 @@ using MimeKit;
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
 
+namespace Oficina.Infrastructure.Resources;
+
 public class EmailSender : IEmailSender
 {
     private const string host = "smtp-relay.brevo.com";
     private const int port = 587;
-    private readonly string user = Environment.GetEnvironmentVariable("BREVO_SMTP_USER");
-    private readonly string key = Environment.GetEnvironmentVariable("BREVO_SMTP_KEY");
+    private readonly string user = Environment.GetEnvironmentVariable("BREVO_SMTP_USER") ?? string.Empty;
+    private readonly string key = Environment.GetEnvironmentVariable("BREVO_SMTP_KEY") ?? string.Empty;
 
     public async Task Enviar(EmailDTO email)
     {
