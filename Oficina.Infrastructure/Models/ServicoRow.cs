@@ -5,7 +5,7 @@ namespace Oficina.Infrastructure.Models
         int IdServico,
         string Nome,
         string Descricao,
-        decimal ValorEstipulado,
-        bool Ativo
+        bool Ativo,
+        decimal ValorEstipulado
     );
 }

@@ -4,7 +4,7 @@ namespace Oficina.Infrastructure.Models
         int IdCliente,
         string Nome,
         string NumeroDocumento,
-        string TipoDocumento,
+        int TipoDocumento,
         string Email,
         string Telefone
     );

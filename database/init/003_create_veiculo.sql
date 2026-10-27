@@ -6,6 +6,7 @@ CREATE TABLE veiculo (
     marca            varchar,
     ano              integer,
     id_tipo_veiculo  integer,
+
     CONSTRAINT pk_veiculo PRIMARY KEY (id_veiculo),
     CONSTRAINT uq_veiculo_placa UNIQUE (placa),
     CONSTRAINT fk_veiculo_cliente FOREIGN KEY (id_cliente) REFERENCES cliente (id_cliente)
