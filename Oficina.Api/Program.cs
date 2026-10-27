@@ -24,6 +24,11 @@ builder.Services.AddOptions<EmailConfiguration>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<LinkAssinadoConfiguration>()
+    .BindConfiguration(LinkAssinadoConfiguration.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -85,6 +90,7 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IVeiculoService, VeiculoService>();
 builder.Services.AddScoped<IInsumoService, InsumoService>();
 builder.Services.AddScoped<IServicoService, ServicoService>();
+builder.Services.AddScoped<IEnvioLinkAssinadoService, EnvioLinkAssinadoService>();
 
 //RESOURCES
 builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
@@ -92,6 +98,8 @@ builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 //RESOURCES
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ILinkAssinadoGenerator, LinkAssinadoGenerator>();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();
