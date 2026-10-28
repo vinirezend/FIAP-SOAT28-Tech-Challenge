@@ -84,12 +84,18 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IVeiculoRepository, VeiculoRepository>();
 builder.Services.AddScoped<IInsumoRepository, InsumoRepository>();
 builder.Services.AddScoped<IServicoRepository, ServicoRepository>();
+builder.Services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
+builder.Services.AddScoped<IStatusRepository, StatusRepository>();
+builder.Services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
 
 //SERVICES
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IVeiculoService, VeiculoService>();
 builder.Services.AddScoped<IInsumoService, InsumoService>();
 builder.Services.AddScoped<IServicoService, ServicoService>();
+builder.Services.AddScoped<IColaboradorService, ColaboradorService>();
+builder.Services.AddScoped<IStatusService, StatusService>();
+builder.Services.AddScoped<IOrdemServicoService, OrdemServicoService>();
 builder.Services.AddScoped<IEnvioLinkAssinadoService, EnvioLinkAssinadoService>();
 
 //RESOURCES

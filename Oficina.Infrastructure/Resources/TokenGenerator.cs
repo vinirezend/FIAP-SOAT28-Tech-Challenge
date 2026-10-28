@@ -58,6 +58,8 @@ namespace Oficina.Infrastructure.Resources
 
             if (usuario.IdColaborador.HasValue)
             {
+                claims.Add(new Claim("id_colaborador", usuario.IdColaborador.Value.ToString()));
+
                 if (!string.IsNullOrWhiteSpace(usuario.Cpf))
                 {
                     claims.Add(new Claim("cpf", usuario.Cpf));
