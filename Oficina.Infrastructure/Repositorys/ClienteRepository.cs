@@ -1,3 +1,8 @@
+using Dapper;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
+using Oficina.Application.Exceptions;
+using Oficina.Application.Interfaces.Resources;
 using Npgsql;
 using Oficina.Application.Exceptions;
 using Oficina.Application.Interfaces.Resources;
@@ -135,7 +140,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {
-                throw new InvalidOperationException("Nao foi possivel remover o cliente.");
+                throw new BusinessException("Nao foi possivel remover o cliente.");
             }
         }
     }
