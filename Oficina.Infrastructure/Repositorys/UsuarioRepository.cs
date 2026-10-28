@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
+using Oficina.Application.Interfaces.Resources;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Interfaces.Repositorys;
 using Oficina.Domain.Models;
@@ -8,16 +9,13 @@ namespace Oficina.Infrastructure.Repositorys
 {
     public class UsuarioRepository : BaseRepository, IUsuarioRepository
     {
-        public UsuarioRepository(IConfiguration configuration) : base(configuration) { }
+        public UsuarioRepository(IUnitOfWork unitOfWork) : base(unitOfWork) { }
 
         public async Task<Usuario?> Obter(int idUsuario)
         {
             const string sql = "SELECT * FROM usuario WHERE id_usuario = @idusuario";
 
-            using (var connection = await _dataSource.OpenConnectionAsync())
-            {
-                return await connection.QueryFirstOrDefaultAsync<Usuario>(sql, new { idUsuario });
-            }
+            return await QueryFirstOrDefaultAsync<Usuario>(sql, new { idUsuario });
         }
 
         public async Task<UsuarioAutenticacao?> ObterPorCredenciais(string login, string senha)
@@ -37,10 +35,7 @@ namespace Oficina.Infrastructure.Repositorys
                                         ON colaborador.id_usuario = usuario.id_usuario
                                 WHERE usuario.login = @login AND usuario.senha = @senha;";
 
-            using (var connection = await _dataSource.OpenConnectionAsync())
-            {
-                return await connection.QueryFirstOrDefaultAsync<UsuarioAutenticacao>(sql, new { login, senha });
-            }
+            return await QueryFirstOrDefaultAsync<UsuarioAutenticacao>(sql, new { login, senha });
         }
     }
 }
