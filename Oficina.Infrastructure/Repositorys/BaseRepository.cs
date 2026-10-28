@@ -1,24 +1,74 @@
-﻿using Npgsql;
+﻿using Dapper;
 using Microsoft.Extensions.Configuration;
-using Dapper;
+using Npgsql;
+using Oficina.Application.Interfaces.Resources;
 
 namespace Oficina.Infrastructure.Repositorys
 {
     public class BaseRepository
     {
-        protected readonly NpgsqlDataSource _dataSource;
+        protected readonly IUnitOfWork _unitOfWork;
 
         static BaseRepository()
         {
             DefaultTypeMap.MatchNamesWithUnderscores = true;
         }
 
-        public BaseRepository(IConfiguration configuration)
+        protected BaseRepository(IUnitOfWork unitOfWork)
         {
-            var connectionString =
-                configuration.GetConnectionString("DefaultConnection");
+            _unitOfWork = unitOfWork;
+        }
 
-            _dataSource = NpgsqlDataSource.Create(connectionString);
+        protected async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? parameters = null, CancellationToken cancellationToken = default)
+        {
+            var connection = await _unitOfWork.GetConnectionAsync();
+
+            var command = new CommandDefinition(
+                sql,
+                parameters,
+                transaction: _unitOfWork.Transaction,
+                cancellationToken: cancellationToken);
+
+            return await connection.QueryFirstOrDefaultAsync<T>(command);
+        }
+
+        protected async Task<int> ExecuteAsync(string sql, object? parameters = null, CancellationToken cancellationToken = default)
+        {
+            var connection = await _unitOfWork.GetConnectionAsync();
+
+            var command = new CommandDefinition(
+                sql,
+                parameters,
+                transaction: _unitOfWork.Transaction,
+                cancellationToken: cancellationToken);
+
+            return await connection.ExecuteAsync(command);
+        }
+
+        protected async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? parameters = null, CancellationToken cancellationToken = default)
+        {
+            var connection = await _unitOfWork.GetConnectionAsync();
+
+            var command = new CommandDefinition(
+                sql,
+                parameters,
+                transaction: _unitOfWork.Transaction,
+                cancellationToken: cancellationToken);
+
+            return await connection.QueryAsync<T>(command);
+        }
+
+        protected async Task<T?> ExecuteScalarAsync<T>(string sql, object? parameters = null, CancellationToken cancellationToken = default)
+        {
+            var connection = await _unitOfWork.GetConnectionAsync();
+
+            var command = new CommandDefinition(
+                sql,
+                parameters,
+                transaction: _unitOfWork.Transaction,
+                cancellationToken: cancellationToken);
+
+            return await connection.ExecuteScalarAsync<T>(command);
         }
     }
 }

@@ -11,6 +11,7 @@ using Oficina.Infrastructure.Resources;
 using Oficina.Infrastructure.Repositorys;
 using System.Text;
 using Oficina.Infrastructure.Configurations;
+using Oficina.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,7 @@ builder.Services.AddScoped<IServicoService, ServicoService>();
 //RESOURCES
 builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //RESOURCES
 builder.Services.AddScoped<IEmailSender, EmailSender>();
@@ -102,6 +104,8 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseSwaggerDocumentation();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
