@@ -40,7 +40,7 @@ namespace Oficina.Api.Middlewares
                     {
                         status = context.Response.StatusCode,
                         message = ex.Message
-                    }));
+                    }), context.RequestAborted);
             }
             catch (Exception ex)
             {
@@ -63,7 +63,7 @@ namespace Oficina.Api.Middlewares
                     {
                         status = context.Response.StatusCode,
                         message = "Ocorreu um erro interno no servidor."
-                    }));
+                    }), context.RequestAborted);
             }
         }
     }
