@@ -1,6 +1,7 @@
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using Oficina.Application.Interfaces.Resources;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Enum;
 using Oficina.Domain.Interfaces.Repositorys;
@@ -13,27 +14,28 @@ namespace Oficina.Infrastructure.Repositorys
     {
         private const string Colunas = "id_colaborador, nome, cpf, email, ativo, id_departamento, id_usuario";
 
-        public ColaboradorRepository(IConfiguration configuration) : base(configuration) { }
+        public ColaboradorRepository(IUnitOfWork unitOfWork)
+            : base(unitOfWork)
+        {
+
+        }
 
         public async Task<Colaborador> AdicionarAsync(Colaborador colaborador)
         {
             const string sql = "INSERT INTO colaborador (nome, cpf, email, ativo, id_departamento, id_usuario) VALUES (@Nome, @Cpf, @Email, @Ativo, @IdDepartamento, @IdUsuario) RETURNING id_colaborador";
             try
             {
-                using (var connection = await _dataSource.OpenConnectionAsync())
+                var idColaborador = await ExecuteScalarAsync<int>(sql, new
                 {
-                    var idColaborador = await connection.ExecuteScalarAsync<int>(sql, new
-                    {
-                        colaborador.Nome,
-                        Cpf = colaborador.Cpf.Numero,
-                        Email = colaborador.Email.Endereco,
-                        colaborador.Ativo,
-                        IdDepartamento = (int)colaborador.IdDepartamento,
-                        colaborador.IdUsuario
-                    });
+                    colaborador.Nome,
+                    Cpf = colaborador.Cpf.Numero,
+                    Email = colaborador.Email.Endereco,
+                    colaborador.Ativo,
+                    IdDepartamento = (int)colaborador.IdDepartamento,
+                    colaborador.IdUsuario
+                });
 
-                    return Colaborador.Reconstituir(idColaborador, colaborador.Nome, colaborador.Cpf, colaborador.Email, colaborador.Ativo, colaborador.IdDepartamento, colaborador.IdUsuario);
-                }
+                return Colaborador.Reconstituir(idColaborador, colaborador.Nome, colaborador.Cpf, colaborador.Email, colaborador.Ativo, colaborador.IdDepartamento, colaborador.IdUsuario);
             }
             catch (PostgresException ex) when (ex.SqlState is "23505")
             {
@@ -50,18 +52,15 @@ namespace Oficina.Infrastructure.Repositorys
             const string sql = "UPDATE colaborador SET nome = @Nome, email = @Email, ativo = @Ativo, id_departamento = @IdDepartamento, id_usuario = @IdUsuario WHERE id_colaborador = @IdColaborador";
             try
             {
-                using (var connection = await _dataSource.OpenConnectionAsync())
+                await ExecuteAsync(sql, new
                 {
-                    await connection.ExecuteAsync(sql, new
-                    {
-                        colaborador.IdColaborador,
-                        colaborador.Nome,
-                        Email = colaborador.Email.Endereco,
-                        colaborador.Ativo,
-                        IdDepartamento = (int)colaborador.IdDepartamento,
-                        colaborador.IdUsuario
-                    });
-                }
+                    colaborador.IdColaborador,
+                    colaborador.Nome,
+                    Email = colaborador.Email.Endereco,
+                    colaborador.Ativo,
+                    IdDepartamento = (int)colaborador.IdDepartamento,
+                    colaborador.IdUsuario
+                });
             }
             catch (PostgresException ex) when (ex.SqlState is "23505")
             {
@@ -76,21 +75,19 @@ namespace Oficina.Infrastructure.Repositorys
         public async Task<Colaborador?> ObterPorIdAsync(int idColaborador)
         {
             const string sql = $"SELECT {Colunas} FROM colaborador WHERE id_colaborador = @IdColaborador";
-            using (var connection = await _dataSource.OpenConnectionAsync())
-            {
-                var row = await connection.QueryFirstOrDefaultAsync<ColaboradorRow>(sql, new { IdColaborador = idColaborador });
-                return row is null ? null : Reconstituir(row);
-            }
+
+            var row = await QueryFirstOrDefaultAsync<ColaboradorRow>(sql, new { IdColaborador = idColaborador });
+
+            return row is null ? null : Reconstituir(row);
         }
 
         public async Task<IReadOnlyList<Colaborador>> ObterTodosAsync()
         {
             const string sql = $"SELECT {Colunas} FROM colaborador ORDER BY nome";
-            using (var connection = await _dataSource.OpenConnectionAsync())
-            {
-                var rows = await connection.QueryAsync<ColaboradorRow>(sql);
-                return rows.Select(Reconstituir).ToList();
-            }
+
+            var rows = await QueryAsync<ColaboradorRow>(sql);
+
+            return rows.Select(Reconstituir).ToList();
         }
 
         public async Task RemoverAsync(int idColaborador)
@@ -98,10 +95,7 @@ namespace Oficina.Infrastructure.Repositorys
             const string sql = "DELETE FROM colaborador WHERE id_colaborador = @IdColaborador";
             try
             {
-                using (var connection = await _dataSource.OpenConnectionAsync())
-                {
-                    await connection.ExecuteAsync(sql, new { IdColaborador = idColaborador });
-                }
+                await ExecuteAsync(sql, new { IdColaborador = idColaborador });
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {
