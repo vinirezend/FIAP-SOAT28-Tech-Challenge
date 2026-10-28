@@ -10,12 +10,21 @@ namespace Oficina.Application.Implementations.Services
     public class OrdemServicoService : IOrdemServicoService
     {
         private readonly IOrdemServicoRepository _ordemServicoRepository;
+        private readonly IServicoRepository _servicoRepository;
+        private readonly IInsumoRepository _insumoRepository;
         private readonly ICurrentUser _currentUser;
         private readonly TimeProvider _timeProvider;
 
-        public OrdemServicoService(IOrdemServicoRepository ordemServicoRepository, ICurrentUser currentUser, TimeProvider timeProvider)
+        public OrdemServicoService(
+            IOrdemServicoRepository ordemServicoRepository,
+            IServicoRepository servicoRepository,
+            IInsumoRepository insumoRepository,
+            ICurrentUser currentUser,
+            TimeProvider timeProvider)
         {
             _ordemServicoRepository = ordemServicoRepository;
+            _servicoRepository = servicoRepository;
+            _insumoRepository = insumoRepository;
             _currentUser = currentUser;
             _timeProvider = timeProvider;
         }
@@ -89,6 +98,141 @@ namespace Oficina.Application.Implementations.Services
             await _ordemServicoRepository.RemoverAsync(id);
         }
 
+        public async Task<IReadOnlyList<OrdemServicoServicoDTO>?> ObterServicosAsync(int idOs)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return null;
+
+            var itens = await _ordemServicoRepository.ObterServicosAsync(idOs);
+            return itens.Select(TransformaParaDTO).ToList();
+        }
+
+        public async Task<OrdemServicoServicoDTO?> AdicionarServicoAsync(int idOs, int idServico, int quantidade)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return null;
+
+            ordemServico.ValidarAlteracaoItens();
+
+            var servico = await _servicoRepository.ObterPorIdAsync(idServico);
+            if (servico is null || !servico.Ativo)
+                throw new InvalidOperationException("Serviço não encontrado ou inativo.");
+
+            var item = OrdemServicoServico.Criar(idOs, idServico, quantidade, servico.ValorEstipulado);
+            item = await _ordemServicoRepository.AdicionarServicoAsync(item);
+
+            return TransformaParaDTO(item);
+        }
+
+        public async Task RemoverServicoAsync(int idOs, int idOsServico)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return;
+
+            ordemServico.ValidarAlteracaoItens();
+
+            var itens = await _ordemServicoRepository.ObterServicosAsync(idOs);
+            var item = itens.FirstOrDefault(i => i.IdOsServico == idOsServico);
+            if (item is null) return;
+
+            await _ordemServicoRepository.RemoverServicoAsync(item);
+        }
+
+        public async Task<OrdemServicoServicoDTO?> AlterarQuantidadeServicoAsync(int idOs, int idOsServico, int quantidade)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return null;
+
+            ordemServico.ValidarAlteracaoItens();
+
+            var itens = await _ordemServicoRepository.ObterServicosAsync(idOs);
+            var item = itens.FirstOrDefault(i => i.IdOsServico == idOsServico);
+            if (item is null) return null;
+
+            var servico = await _servicoRepository.ObterPorIdAsync(item.IdServico);
+            if (servico is null || !servico.Ativo)
+                throw new InvalidOperationException("Serviço não encontrado ou inativo.");
+
+            item.AtualizarQuantidade(quantidade);
+            item.AtualizarValorCobrado(servico.ValorEstipulado);
+
+            await _ordemServicoRepository.AtualizarQuantidadeServicoAsync(item);
+
+            return TransformaParaDTO(item);
+        }
+
+        public async Task<IReadOnlyList<OrdemServicoInsumoDTO>?> ObterInsumosAsync(int idOs)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return null;
+
+            var itens = await _ordemServicoRepository.ObterInsumosAsync(idOs);
+            return itens.Select(TransformaParaDTO).ToList();
+        }
+
+        public async Task<OrdemServicoInsumoDTO?> AdicionarInsumoAsync(int idOs, int idInsumo, int quantidade)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return null;
+
+            ordemServico.ValidarAlteracaoItens();
+
+            var insumo = await _insumoRepository.ObterPorIdAsync(idInsumo);
+            if (insumo is null || !insumo.Ativo)
+                throw new InvalidOperationException("Insumo não encontrado ou inativo.");
+
+            if (insumo.QuantidadeEstoque - insumo.QuantidadeReservada < quantidade)
+                throw new InvalidOperationException("Estoque insuficiente para o insumo.");
+
+            var item = OrdemServicoInsumo.Criar(idOs, idInsumo, quantidade, insumo.ValorUnitario);
+            item = await _ordemServicoRepository.AdicionarInsumoAsync(item);
+
+            return TransformaParaDTO(item);
+        }
+
+        public async Task RemoverInsumoAsync(int idOs, int idOsInsumo)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return;
+
+            ordemServico.ValidarAlteracaoItens();
+
+            var itens = await _ordemServicoRepository.ObterInsumosAsync(idOs);
+            var item = itens.FirstOrDefault(i => i.IdOsInsumo == idOsInsumo);
+            if (item is null) return;
+
+            await _ordemServicoRepository.RemoverInsumoAsync(item);
+        }
+
+        public async Task<OrdemServicoInsumoDTO?> AlterarQuantidadeInsumoAsync(int idOs, int idOsInsumo, int quantidade)
+        {
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            if (ordemServico is null) return null;
+
+            ordemServico.ValidarAlteracaoItens();
+
+            var itens = await _ordemServicoRepository.ObterInsumosAsync(idOs);
+            var item = itens.FirstOrDefault(i => i.IdOsInsumo == idOsInsumo);
+            if (item is null) return null;
+
+            var quantidadeAnterior = item.Quantidade;
+
+            var insumo = await _insumoRepository.ObterPorIdAsync(item.IdInsumo);
+            if (insumo is null || !insumo.Ativo)
+                throw new InvalidOperationException("Insumo não encontrado ou inativo.");
+
+            var delta = quantidade - quantidadeAnterior;
+            if (delta > 0 && insumo.QuantidadeEstoque - insumo.QuantidadeReservada < delta)
+                throw new InvalidOperationException("Estoque insuficiente para o insumo.");
+
+            item.AtualizarQuantidade(quantidade);
+            item.AtualizarValorCobrado(insumo.ValorUnitario);
+
+            await _ordemServicoRepository.AtualizarQuantidadeInsumoAsync(item, quantidadeAnterior);
+
+            return TransformaParaDTO(item);
+        }
+
         private int ObterIdColaboradorLogado()
         {
             return _currentUser.IdColaborador
@@ -122,6 +266,32 @@ namespace Oficina.Application.Implementations.Services
                 Status = ordemServicoStatus.Status.ToString(),
                 IdColaborador = ordemServicoStatus.IdColaborador,
                 DataInclusao = ordemServicoStatus.DataInclusao
+            };
+        }
+
+        private static OrdemServicoServicoDTO TransformaParaDTO(OrdemServicoServico item)
+        {
+            return new OrdemServicoServicoDTO
+            {
+                IdOsServico = item.IdOsServico,
+                IdOs = item.IdOs,
+                IdServico = item.IdServico,
+                Quantidade = item.Quantidade,
+                ValorCobrado = item.ValorCobrado,
+                ValorTotal = item.ValorTotal
+            };
+        }
+
+        private static OrdemServicoInsumoDTO TransformaParaDTO(OrdemServicoInsumo item)
+        {
+            return new OrdemServicoInsumoDTO
+            {
+                IdOsInsumo = item.IdOsInsumo,
+                IdOs = item.IdOs,
+                IdInsumo = item.IdInsumo,
+                Quantidade = item.Quantidade,
+                ValorCobrado = item.ValorCobrado,
+                ValorTotal = item.ValorTotal
             };
         }
     }

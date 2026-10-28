@@ -14,6 +14,8 @@ public class OrdemServicoServiceTests
     private static readonly DateTimeOffset Agora = new(2026, 10, 27, 15, 30, 0, TimeSpan.Zero);
 
     private readonly Mock<IOrdemServicoRepository> _repositoryMock = new();
+    private readonly Mock<IServicoRepository> _servicoRepositoryMock = new();
+    private readonly Mock<IInsumoRepository> _insumoRepositoryMock = new();
     private readonly Mock<ICurrentUser> _currentUserMock = new();
     private readonly Mock<TimeProvider> _timeProviderMock = new();
     private readonly OrdemServicoService _service;
@@ -23,7 +25,12 @@ public class OrdemServicoServiceTests
         _currentUserMock.Setup(u => u.IdColaborador).Returns(IdColaborador);
         _timeProviderMock.Setup(t => t.GetUtcNow()).Returns(Agora);
 
-        _service = new OrdemServicoService(_repositoryMock.Object, _currentUserMock.Object, _timeProviderMock.Object);
+        _service = new OrdemServicoService(
+            _repositoryMock.Object,
+            _servicoRepositoryMock.Object,
+            _insumoRepositoryMock.Object,
+            _currentUserMock.Object,
+            _timeProviderMock.Object);
     }
 
     private void ConfigurarOs(StatusOs? status) =>
