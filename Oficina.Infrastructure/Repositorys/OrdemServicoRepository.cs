@@ -1,5 +1,3 @@
-using Dapper;
-using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Domain.Entitys;
@@ -56,6 +54,7 @@ namespace Oficina.Infrastructure.Repositorys
 
                     return true;
                 }, default);
+
                 return OrdemServico.Reconstituir(idOs, ordemServico.IdVeiculo, ordemServico.DataInicio, ordemServico.DataFim, ordemServico.Valor, ordemServico.Status);
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
@@ -67,6 +66,7 @@ namespace Oficina.Infrastructure.Repositorys
         public async Task AtualizarAsync(OrdemServico ordemServico)
         {
             const string sql = "UPDATE os SET id_veiculo = @IdVeiculo WHERE id_os = @IdOs";
+
             try
             {
                 await ExecuteAsync(sql, new
