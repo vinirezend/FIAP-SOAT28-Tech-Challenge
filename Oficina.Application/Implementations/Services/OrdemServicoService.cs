@@ -55,6 +55,12 @@ namespace Oficina.Application.Implementations.Services
             var ordemServicoEntity = await _ordemServicoRepository.ObterPorIdAsync(id);
             if (ordemServicoEntity is null) return null;
 
+            if ((StatusOs)idStatus == StatusOs.AguardandoAprovacao)
+            {
+                var valorCongelado = await DefinirValorFinalAsync(id);
+                ordemServicoEntity.AtualizarValor(valorCongelado);
+            }
+
             var dataAlteracao = Agora();
             ordemServicoEntity.AlterarStatus((StatusOs)idStatus, dataAlteracao);
 
@@ -231,6 +237,36 @@ namespace Oficina.Application.Implementations.Services
             await _ordemServicoRepository.AtualizarQuantidadeInsumoAsync(item, quantidadeAnterior);
 
             return TransformaParaDTO(item);
+        }
+
+        //VALIDAR SE PRECISA SER OTIMIZADO NO MVP
+        // Atualiza item por item (uma transação cada) por simplicidade; se o número de itens por OS crescer,
+        // dá pra otimizar fazendo todos os updates numa única transação e recalculando os.valor só uma vez no final.
+        private async Task<decimal> DefinirValorFinalAsync(int idOs)
+        {
+            var servicos = await _ordemServicoRepository.ObterServicosAsync(idOs);
+            foreach (var item in servicos)
+            {
+                var servico = await _servicoRepository.ObterPorIdAsync(item.IdServico);
+                if (servico is null || !servico.Ativo)
+                    throw new InvalidOperationException("Serviço não encontrado ou inativo.");
+
+                item.AtualizarValorCobrado(servico.ValorEstipulado);
+                await _ordemServicoRepository.AtualizarQuantidadeServicoAsync(item);
+            }
+
+            var insumos = await _ordemServicoRepository.ObterInsumosAsync(idOs);
+            foreach (var item in insumos)
+            {
+                var insumo = await _insumoRepository.ObterPorIdAsync(item.IdInsumo);
+                if (insumo is null || !insumo.Ativo)
+                    throw new InvalidOperationException("Insumo não encontrado ou inativo.");
+
+                item.AtualizarValorCobrado(insumo.ValorUnitario);
+                await _ordemServicoRepository.AtualizarQuantidadeInsumoAsync(item, item.Quantidade);
+            }
+
+            return servicos.Sum(s => s.ValorTotal) + insumos.Sum(i => i.ValorTotal);
         }
 
         private int ObterIdColaboradorLogado()
