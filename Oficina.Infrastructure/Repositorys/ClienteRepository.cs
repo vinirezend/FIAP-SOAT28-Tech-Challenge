@@ -1,8 +1,3 @@
-using Dapper;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
-using Oficina.Application.Exceptions;
-using Oficina.Application.Interfaces.Resources;
 using Npgsql;
 using Oficina.Application.Exceptions;
 using Oficina.Application.Interfaces.Resources;
