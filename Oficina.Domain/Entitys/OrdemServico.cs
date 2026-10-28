@@ -31,6 +31,12 @@ namespace Oficina.Domain.Entitys
             IdVeiculo = ValidarVeiculo(idVeiculo);
         }
 
+        public void AtualizarValor(decimal valor)
+        {
+            ValidarAlteracaoItens();
+            Valor = valor;
+        }
+
         /// <summary>
         /// Avança a OS para o próximo status do fluxo. Registra o início da execução e a finalização.
         /// </summary>
@@ -67,6 +73,12 @@ namespace Oficina.Domain.Entitys
                 throw new ArgumentException("Veículo da OS é obrigatório.");
 
             return idVeiculo;
+        }
+
+        public void ValidarAlteracaoItens()
+        {
+            if (Status is not (StatusOs.Recebida or StatusOs.EmDiagnostico))
+                throw new InvalidOperationException("Itens só podem ser incluídos, removidos ou alterados enquanto a OS está em Recebida ou Em Diagnóstico.");
         }
 
         public static OrdemServico Reconstituir(int idOs, int idVeiculo, DateTime? dataInicio, DateTime? dataFim, decimal valor, StatusOs? status) =>
