@@ -20,7 +20,9 @@ namespace Oficina.Infrastructure.Resources
 
         public int? IdUsuario => ObterInteiro(ClaimTypes.NameIdentifier);
 
-        public int? IdDepartamento => ObterInteiro("id_departamento");
+        public int? IdColaborador => ObterInteiro("id_colaborador");
+
+        public int? IdDepartamento =>ObterInteiro("id_departamento");
 
         public string? Cpf => Usuario?.FindFirst("cpf")?.Value;
 
