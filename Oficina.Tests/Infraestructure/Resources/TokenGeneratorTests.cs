@@ -163,6 +163,11 @@ public class TokenGeneratorTests
 
         Assert.Contains(
             jwt.Claims,
+            claim => claim.Type == "id_colaborador"
+                && claim.Value == usuario.IdColaborador.ToString());
+
+        Assert.Contains(
+            jwt.Claims,
             claim => claim.Type == "id_departamento"
                 && claim.Value == usuario.IdDepartamento.ToString());
     }

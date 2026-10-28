@@ -75,6 +75,24 @@ namespace Oficina.Tests.Infraestructure.Resources
         }
 
         [Fact]
+        public void IdColaborador_ClaimValida_DeveRetornarId()
+        {
+            ConfigurarUsuarioAutenticado(
+                new Claim("id_colaborador", "7"));
+
+            Assert.Equal(7, _service.IdColaborador);
+        }
+
+        [Fact]
+        public void IdColaborador_ClaimAusente_DeveRetornarNull()
+        {
+            ConfigurarUsuarioAutenticado(
+                new Claim(ClaimTypes.NameIdentifier, "1"));
+
+            Assert.Null(_service.IdColaborador);
+        }
+
+        [Fact]
         public void IdDepartamento_ClaimValida_DeveRetornarId()
         {
             ConfigurarUsuarioAutenticado(
