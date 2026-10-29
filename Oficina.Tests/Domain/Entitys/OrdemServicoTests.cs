@@ -135,5 +135,50 @@ namespace Oficina.Tests.Domain.Entitys
 
             Assert.Throws<InvalidOperationException>(ordemServico.ValidarRemocao);
         }
+
+        [Theory]
+        [InlineData(StatusOs.Recebida)]
+        [InlineData(StatusOs.EmDiagnostico)]
+        public void ValidarAlteracaoItens_RecebidaOuEmDiagnostico_NaoDeveLancarExcecao(StatusOs status)
+        {
+            var ordemServico = CriarComStatus(status);
+
+            var excecao = Record.Exception(ordemServico.ValidarAlteracaoItens);
+
+            Assert.Null(excecao);
+        }
+
+        [Theory]
+        [InlineData(StatusOs.AguardandoAprovacao)]
+        [InlineData(StatusOs.EmExecucao)]
+        [InlineData(StatusOs.Finalizada)]
+        [InlineData(StatusOs.Entregue)]
+        public void ValidarAlteracaoItens_APartirDeAguardandoAprovacao_DeveLancarExcecao(StatusOs status)
+        {
+            var ordemServico = CriarComStatus(status);
+
+            Assert.Throws<InvalidOperationException>(ordemServico.ValidarAlteracaoItens);
+        }
+
+        [Theory]
+        [InlineData(StatusOs.Recebida)]
+        [InlineData(StatusOs.EmDiagnostico)]
+        public void AtualizarValor_RecebidaOuEmDiagnostico_DeveAlterar(StatusOs status)
+        {
+            var ordemServico = CriarComStatus(status);
+
+            ordemServico.AtualizarValor(150m);
+
+            Assert.Equal(150m, ordemServico.Valor);
+        }
+
+        [Fact]
+        public void AtualizarValor_AposAguardandoAprovacao_DeveLancarExcecao()
+        {
+            var ordemServico = CriarComStatus(StatusOs.AguardandoAprovacao);
+
+            Assert.Throws<InvalidOperationException>(() => ordemServico.AtualizarValor(150m));
+            Assert.Equal(0, ordemServico.Valor);
+        }
     }
 }

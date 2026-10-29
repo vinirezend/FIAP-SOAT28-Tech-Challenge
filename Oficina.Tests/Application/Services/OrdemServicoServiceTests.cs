@@ -1,5 +1,6 @@
 using Moq;
 using Oficina.Application.DTOs;
+using Oficina.Application.Exceptions;
 using Oficina.Application.Implementations.Services;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Domain.Entitys;
@@ -37,6 +38,12 @@ public class OrdemServicoServiceTests
         _repositoryMock
             .Setup(r => r.ObterPorIdAsync(1))
             .ReturnsAsync(OrdemServico.Reconstituir(1, 1, null, null, 0, status));
+
+    private static Servico CriarServico(int idServico, decimal valorEstipulado, bool ativo = true) =>
+        Servico.Reconstituir(idServico, "Troca de óleo", "Descrição", valorEstipulado, ativo);
+
+    private static Insumo CriarInsumo(int idInsumo, decimal valorUnitario, bool ativo = true, int quantidadeEstoque = 100, int quantidadeReservada = 0) =>
+        Insumo.Reconstituir(idInsumo, "Óleo", "Descrição", valorUnitario, ativo, quantidadeEstoque, quantidadeReservada);
 
     [Fact]
     public async Task AdicionarAsync_DeveCriarOsRecebidaEmNomeDoColaboradorLogado()
@@ -177,6 +184,7 @@ public class OrdemServicoServiceTests
     public async Task RemoverAsync_OsRecebida_DeveRemover()
     {
         ConfigurarOs(StatusOs.Recebida);
+        _repositoryMock.Setup(r => r.ObterInsumosAsync(1)).ReturnsAsync([]);
 
         await _service.RemoverAsync(1);
 
@@ -190,5 +198,249 @@ public class OrdemServicoServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.RemoverAsync(1));
         _repositoryMock.Verify(r => r.RemoverAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoverAsync_ComInsumosVinculados_DeveLiberarReservaAntesDeRemover()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        var insumoItem = OrdemServicoInsumo.Reconstituir(11, 1, 7, 3, 50m);
+        _repositoryMock.Setup(r => r.ObterInsumosAsync(1)).ReturnsAsync([insumoItem]);
+
+        await _service.RemoverAsync(1);
+
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(7, 3), Times.Once);
+        _repositoryMock.Verify(r => r.RemoverAsync(1), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterServicosAsync_OsInexistente_DeveRetornarNull()
+    {
+        var resultado = await _service.ObterServicosAsync(99);
+
+        Assert.Null(resultado);
+    }
+
+    [Fact]
+    public async Task ObterServicosAsync_DeveListarItensComValorTotal()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        _repositoryMock.Setup(r => r.ObterServicosAsync(1)).ReturnsAsync([OrdemServicoServico.Reconstituir(10, 1, 5, 2, 100m)]);
+
+        var resultado = await _service.ObterServicosAsync(1);
+
+        Assert.Equal(200m, Assert.Single(resultado!).ValorTotal);
+    }
+
+    [Fact]
+    public async Task AdicionarServicoAsync_DeveIncluirItemComPrecoAtualDoCatalogo()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        _servicoRepositoryMock.Setup(r => r.ObterPorIdAsync(5)).ReturnsAsync(CriarServico(5, 100m));
+        _repositoryMock
+            .Setup(r => r.AdicionarServicoAsync(It.IsAny<OrdemServicoServico>()))
+            .ReturnsAsync((OrdemServicoServico item) => OrdemServicoServico.Reconstituir(10, item.IdOs, item.IdServico, item.Quantidade, item.ValorCobrado));
+
+        var resultado = await _service.AdicionarServicoAsync(1, 5, 2);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(100m, resultado.ValorCobrado);
+        Assert.Equal(200m, resultado.ValorTotal);
+    }
+
+    [Fact]
+    public async Task AdicionarServicoAsync_OsInexistente_DeveRetornarNull()
+    {
+        var resultado = await _service.AdicionarServicoAsync(99, 5, 2);
+
+        Assert.Null(resultado);
+    }
+
+    [Fact]
+    public async Task AdicionarServicoAsync_ForaDeRecebidaOuDiagnostico_DeveLancarExcecao()
+    {
+        ConfigurarOs(StatusOs.AguardandoAprovacao);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AdicionarServicoAsync(1, 5, 2));
+        _repositoryMock.Verify(r => r.AdicionarServicoAsync(It.IsAny<OrdemServicoServico>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AdicionarServicoAsync_ServicoInativo_DeveLancarExcecao()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        _servicoRepositoryMock.Setup(r => r.ObterPorIdAsync(5)).ReturnsAsync(CriarServico(5, 100m, ativo: false));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AdicionarServicoAsync(1, 5, 2));
+        _repositoryMock.Verify(r => r.AdicionarServicoAsync(It.IsAny<OrdemServicoServico>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AdicionarServicoAsync_ServicoInexistente_DeveLancarExcecao()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        _servicoRepositoryMock.Setup(r => r.ObterPorIdAsync(5)).ReturnsAsync((Servico?)null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AdicionarServicoAsync(1, 5, 2));
+    }
+
+    [Fact]
+    public async Task RemoverServicoAsync_DeveRemoverItemEncontrado()
+    {
+        ConfigurarOs(StatusOs.EmDiagnostico);
+        var item = OrdemServicoServico.Reconstituir(10, 1, 5, 2, 100m);
+        _repositoryMock.Setup(r => r.ObterServicosAsync(1)).ReturnsAsync([item]);
+
+        await _service.RemoverServicoAsync(1, 10);
+
+        _repositoryMock.Verify(r => r.RemoverServicoAsync(item), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoverServicoAsync_ItemInexistente_NaoDeveChamarRepositorio()
+    {
+        ConfigurarOs(StatusOs.EmDiagnostico);
+        _repositoryMock.Setup(r => r.ObterServicosAsync(1)).ReturnsAsync([]);
+
+        await _service.RemoverServicoAsync(1, 999);
+
+        _repositoryMock.Verify(r => r.RemoverServicoAsync(It.IsAny<OrdemServicoServico>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoverServicoAsync_ForaDeRecebidaOuDiagnostico_DeveLancarExcecao()
+    {
+        ConfigurarOs(StatusOs.Finalizada);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.RemoverServicoAsync(1, 10));
+    }
+
+    [Fact]
+    public async Task AlterarQuantidadeServicoAsync_DeveAtualizarQuantidadeEPreco()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        var item = OrdemServicoServico.Reconstituir(10, 1, 5, 2, 100m);
+        _repositoryMock.Setup(r => r.ObterServicosAsync(1)).ReturnsAsync([item]);
+        _servicoRepositoryMock.Setup(r => r.ObterPorIdAsync(5)).ReturnsAsync(CriarServico(5, 120m));
+
+        var resultado = await _service.AlterarQuantidadeServicoAsync(1, 10, 4);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(4, resultado.Quantidade);
+        Assert.Equal(120m, resultado.ValorCobrado);
+        Assert.Equal(480m, resultado.ValorTotal);
+        _repositoryMock.Verify(r => r.AtualizarQuantidadeServicoAsync(item), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterInsumosAsync_OsInexistente_DeveRetornarNull()
+    {
+        var resultado = await _service.ObterInsumosAsync(99);
+
+        Assert.Null(resultado);
+    }
+
+    [Fact]
+    public async Task AdicionarInsumoAsync_DeveReservarEstoqueEIncluirItem()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        _insumoRepositoryMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(CriarInsumo(7, 50m));
+        _repositoryMock
+            .Setup(r => r.AdicionarInsumoAsync(It.IsAny<OrdemServicoInsumo>()))
+            .ReturnsAsync((OrdemServicoInsumo item) => OrdemServicoInsumo.Reconstituir(11, item.IdOs, item.IdInsumo, item.Quantidade, item.ValorCobrado));
+
+        var resultado = await _service.AdicionarInsumoAsync(1, 7, 3);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(150m, resultado.ValorTotal);
+        _insumoRepositoryMock.Verify(r => r.AdicionarReservaAsync(7, 3), Times.Once);
+    }
+
+    [Fact]
+    public async Task AdicionarInsumoAsync_InsumoInativo_DeveLancarExcecaoSemReservar()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        _insumoRepositoryMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(CriarInsumo(7, 50m, ativo: false));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AdicionarInsumoAsync(1, 7, 3));
+        _insumoRepositoryMock.Verify(r => r.AdicionarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AdicionarInsumoAsync_EstoqueInsuficiente_DevePropagarExcecaoSemIncluirItem()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        _insumoRepositoryMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(CriarInsumo(7, 50m, quantidadeEstoque: 2));
+        _insumoRepositoryMock
+            .Setup(r => r.AdicionarReservaAsync(7, 3))
+            .ThrowsAsync(new BusinessException("Insumo não localizado ou quantidade disponível insuficiente para reserva."));
+
+        await Assert.ThrowsAsync<BusinessException>(() => _service.AdicionarInsumoAsync(1, 7, 3));
+        _repositoryMock.Verify(r => r.AdicionarInsumoAsync(It.IsAny<OrdemServicoInsumo>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoverInsumoAsync_DeveLiberarReservaERemoverItem()
+    {
+        ConfigurarOs(StatusOs.EmDiagnostico);
+        var item = OrdemServicoInsumo.Reconstituir(11, 1, 7, 3, 50m);
+        _repositoryMock.Setup(r => r.ObterInsumosAsync(1)).ReturnsAsync([item]);
+
+        await _service.RemoverInsumoAsync(1, 11);
+
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(7, 3), Times.Once);
+        _repositoryMock.Verify(r => r.RemoverInsumoAsync(item), Times.Once);
+    }
+
+    [Fact]
+    public async Task AlterarQuantidadeInsumoAsync_AumentoDeQuantidade_DeveReservarDiferenca()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        var item = OrdemServicoInsumo.Reconstituir(11, 1, 7, 2, 50m);
+        _repositoryMock.Setup(r => r.ObterInsumosAsync(1)).ReturnsAsync([item]);
+        _insumoRepositoryMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(CriarInsumo(7, 60m));
+
+        var resultado = await _service.AlterarQuantidadeInsumoAsync(1, 11, 5);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(5, resultado.Quantidade);
+        Assert.Equal(60m, resultado.ValorCobrado);
+        _insumoRepositoryMock.Verify(r => r.AdicionarReservaAsync(7, 3), Times.Once);
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarQuantidadeInsumoAsync_ReducaoDeQuantidade_DeveLiberarDiferenca()
+    {
+        ConfigurarOs(StatusOs.Recebida);
+        var item = OrdemServicoInsumo.Reconstituir(11, 1, 7, 5, 50m);
+        _repositoryMock.Setup(r => r.ObterInsumosAsync(1)).ReturnsAsync([item]);
+        _insumoRepositoryMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(CriarInsumo(7, 60m));
+
+        await _service.AlterarQuantidadeInsumoAsync(1, 11, 2);
+
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(7, 3), Times.Once);
+        _insumoRepositoryMock.Verify(r => r.AdicionarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarStatusAsync_ParaAguardandoAprovacao_DeveCongelarValorComPrecoAtualDoCatalogo()
+    {
+        ConfigurarOs(StatusOs.EmDiagnostico);
+        var servicoItem = OrdemServicoServico.Reconstituir(10, 1, 5, 2, 90m);
+        var insumoItem = OrdemServicoInsumo.Reconstituir(11, 1, 7, 3, 40m);
+        _repositoryMock.Setup(r => r.ObterServicosAsync(1)).ReturnsAsync([servicoItem]);
+        _repositoryMock.Setup(r => r.ObterInsumosAsync(1)).ReturnsAsync([insumoItem]);
+        _servicoRepositoryMock.Setup(r => r.ObterPorIdAsync(5)).ReturnsAsync(CriarServico(5, 100m));
+        _insumoRepositoryMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(CriarInsumo(7, 50m));
+
+        var resultado = await _service.AlterarStatusAsync(1, (int)StatusOs.AguardandoAprovacao);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(350m, resultado.Valor);
+        _repositoryMock.Verify(r => r.AtualizarQuantidadeServicoAsync(It.Is<OrdemServicoServico>(i => i.ValorCobrado == 100m)), Times.Once);
+        _repositoryMock.Verify(r => r.AtualizarQuantidadeInsumoAsync(It.Is<OrdemServicoInsumo>(i => i.ValorCobrado == 50m)), Times.Once);
+        _insumoRepositoryMock.Verify(r => r.AdicionarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 }
