@@ -57,8 +57,8 @@ namespace Oficina.Application.Implementations.Services
 
             if ((StatusOs)idStatus == StatusOs.AguardandoAprovacao)
             {
-                var valorCongelado = await DefinirValorFinalAsync(id);
-                ordemServicoEntity.AtualizarValor(valorCongelado);
+                var valorFinal = await DefinirValorFinalAsync(id);
+                ordemServicoEntity.AtualizarValor(valorFinal);
             }
 
             var dataAlteracao = Agora();
@@ -101,6 +101,11 @@ namespace Oficina.Application.Implementations.Services
             if (ordemServico is null) return;
 
             ordemServico.ValidarRemocao();
+
+            var insumos = await _ordemServicoRepository.ObterInsumosAsync(id);
+            foreach (var item in insumos)
+                await _insumoRepository.RetirarReservaAsync(item.IdInsumo, item.Quantidade);
+
             await _ordemServicoRepository.RemoverAsync(id);
         }
 

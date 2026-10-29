@@ -164,6 +164,8 @@ namespace Oficina.Infrastructure.Repositorys
         {
             string[] comandos =
             [
+                "DELETE FROM os_servico WHERE id_os = @IdOs",
+                "DELETE FROM os_insumo WHERE id_os = @IdOs",
                 "DELETE FROM os_status WHERE id_os = @IdOs",
                 "DELETE FROM os_colaborador WHERE id_os = @IdOs",
                 "DELETE FROM os WHERE id_os = @IdOs"
