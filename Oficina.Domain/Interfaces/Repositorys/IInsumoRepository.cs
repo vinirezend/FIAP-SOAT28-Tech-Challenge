@@ -9,6 +9,13 @@ namespace Oficina.Domain.Interfaces.Repositorys
         Task<IReadOnlyList<Insumo>?> PesquisarAsync(string? termo);
         Task <Insumo>AdicionarAsync(Insumo insumo);
         Task AtualizarAsync(Insumo insumo);
-        Task RemoverAsync(int idInsumo); 
+        Task RemoverAsync(int idInsumo);
+        Task AdicionarEstoqueAsync(int idInsumo, int quantidade);
+        Task RetirarEstoqueAsync(int idInsumo, int quantidade);
+        Task AdicionarReservaAsync(int idInsumo, int quantidade);
+        Task RetirarReservaAsync(int idInsumo, int quantidade);
+        Task<int> ObterQuantidadeEstoqueAsync(int idInsumo);
+        Task<int> ObterQuantidadeDisponivelAsync(int idInsumo);
+        Task<int> ObterQuantidadeReservadaAsync(int idInsumo);
     }
 }

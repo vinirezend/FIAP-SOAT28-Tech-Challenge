@@ -38,7 +38,7 @@ namespace Oficina.Domain.Interfaces.Repositorys
         /// <summary>Remove o insumo da OS, libera a quantidade reservada no estoque e recalcula o valor total, tudo na mesma transação.</summary>
         Task RemoverInsumoAsync(OrdemServicoInsumo insumo);
 
-        /// <summary>Atualiza quantidade/valor cobrado do insumo, ajusta a reserva de estoque pela diferença e recalcula o valor total, tudo na mesma transação.</summary>
-        Task AtualizarQuantidadeInsumoAsync(OrdemServicoInsumo insumo, int quantidadeAnterior);
+        /// <summary>Atualiza quantidade/valor cobrado do insumo e recalcula o valor total, na mesma transação. O ajuste de reserva de estoque é responsabilidade do Service, via IInsumoRepository.</summary>
+        Task AtualizarQuantidadeInsumoAsync(OrdemServicoInsumo insumo);
     }
 }

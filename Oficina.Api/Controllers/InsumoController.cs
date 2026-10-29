@@ -3,6 +3,7 @@ using Oficina.Application.Interfaces.Services;
 using Oficina.Application.DTOs;
 using Oficina.Api.DTO.Insumo;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Oficina.Api.Controllers
 {
@@ -68,6 +69,38 @@ namespace Oficina.Api.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{idInsumo:int}/AdicionarEstoque/{quantidade:int}")]
+        public async Task<IActionResult> AdicionarEstoque(int idInsumo, int quantidade)
+        {
+            var retorno = await _insumoService.AdicionarEstoqueAsync(idInsumo, quantidade);
+
+            return Ok(TransformaParaResponse(retorno));
+        }
+
+        [HttpPatch("{idInsumo:int}/RetirarEstoque/{quantidade:int}")]
+        public async Task<IActionResult> RetirarEstoque(int idInsumo, int quantidade)
+        {
+            var retorno = await _insumoService.RetirarEstoqueAsync(idInsumo, quantidade);
+
+            return Ok(TransformaParaResponse(retorno));
+        }
+
+        [HttpPatch("{idInsumo:int}/AdicionarReserva/{quantidade:int}")]
+        public async Task<IActionResult> AdicionarReserva(int idInsumo, int quantidade)
+        {
+            var retorno = await _insumoService.AdicionarReservaAsync(idInsumo, quantidade);
+
+            return Ok(TransformaParaResponse(retorno));
+        }
+
+        [HttpPatch("{idInsumo:int}/RetirarReserva/{quantidade:int}")]
+        public async Task<IActionResult> RetirarReserva(int idInsumo, int quantidade)
+        {
+            var retorno = await _insumoService.RetirarReservaAsync(idInsumo, quantidade);
+
+            return Ok(TransformaParaResponse(retorno));
+        }
+
         private static InsumoDTO TransformaParaDTO(InsumoCreateRequest request)
         {
             return new InsumoDTO
@@ -100,6 +133,16 @@ namespace Oficina.Api.Controllers
                 Descricao = dto.Descricao,
                 ValorUnitario = dto.ValorUnitario,
                 Ativo = dto.Ativo,
+                QuantidadeEstoque = dto.QuantidadeEstoque,
+                QuantidadeReservada = dto.QuantidadeReservada
+            };
+        }
+
+        private static InsumoQuantidadeResponse TransformaParaResponse(InsumoQuantidadeDTO dto)
+        {
+            return new InsumoQuantidadeResponse()
+            {
+                Nome = dto.Nome,
                 QuantidadeEstoque = dto.QuantidadeEstoque,
                 QuantidadeReservada = dto.QuantidadeReservada
             };

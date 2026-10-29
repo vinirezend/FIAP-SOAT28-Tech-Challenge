@@ -187,8 +187,7 @@ namespace Oficina.Application.Implementations.Services
             if (insumo is null || !insumo.Ativo)
                 throw new InvalidOperationException("Insumo não encontrado ou inativo.");
 
-            if (insumo.QuantidadeEstoque - insumo.QuantidadeReservada < quantidade)
-                throw new InvalidOperationException("Estoque insuficiente para o insumo.");
+            await _insumoRepository.AdicionarReservaAsync(idInsumo, quantidade);
 
             var item = OrdemServicoInsumo.Criar(idOs, idInsumo, quantidade, insumo.ValorUnitario);
             item = await _ordemServicoRepository.AdicionarInsumoAsync(item);
@@ -207,6 +206,7 @@ namespace Oficina.Application.Implementations.Services
             var item = itens.FirstOrDefault(i => i.IdOsInsumo == idOsInsumo);
             if (item is null) return;
 
+            await _insumoRepository.RetirarReservaAsync(item.IdInsumo, item.Quantidade);
             await _ordemServicoRepository.RemoverInsumoAsync(item);
         }
 
@@ -228,13 +228,15 @@ namespace Oficina.Application.Implementations.Services
                 throw new InvalidOperationException("Insumo não encontrado ou inativo.");
 
             var delta = quantidade - quantidadeAnterior;
-            if (delta > 0 && insumo.QuantidadeEstoque - insumo.QuantidadeReservada < delta)
-                throw new InvalidOperationException("Estoque insuficiente para o insumo.");
+            if (delta > 0)
+                await _insumoRepository.AdicionarReservaAsync(item.IdInsumo, delta);
+            else if (delta < 0)
+                await _insumoRepository.RetirarReservaAsync(item.IdInsumo, -delta);
 
             item.AtualizarQuantidade(quantidade);
             item.AtualizarValorCobrado(insumo.ValorUnitario);
 
-            await _ordemServicoRepository.AtualizarQuantidadeInsumoAsync(item, quantidadeAnterior);
+            await _ordemServicoRepository.AtualizarQuantidadeInsumoAsync(item);
 
             return TransformaParaDTO(item);
         }
@@ -263,7 +265,7 @@ namespace Oficina.Application.Implementations.Services
                     throw new InvalidOperationException("Insumo não encontrado ou inativo.");
 
                 item.AtualizarValorCobrado(insumo.ValorUnitario);
-                await _ordemServicoRepository.AtualizarQuantidadeInsumoAsync(item, item.Quantidade);
+                await _ordemServicoRepository.AtualizarQuantidadeInsumoAsync(item);
             }
 
             return servicos.Sum(s => s.ValorTotal) + insumos.Sum(i => i.ValorTotal);
