@@ -1,0 +1,76 @@
+version: 2
+
+updates:
+  # Pacotes NuGet de todos os projetos da solução (Oficina.slnx)
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - nuget
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      # Pacotes Microsoft/.NET costumam ser lançados juntos; atualizar em um único PR
+      microsoft:
+        patterns:
+          - "Microsoft.*"
+          - "System.*"
+      testes:
+        patterns:
+          - "xunit*"
+          - "Moq*"
+          - "coverlet*"
+          - "FluentAssertions*"
+          - "Testcontainers*"
+
+  # Imagens base do Dockerfile da API
+  - package-ecosystem: docker
+    directory: /Oficina.Api
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Imagens do docker-compose (ex.: postgres)
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Actions usadas nos workflows (.github/workflows)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      actions:
+        patterns:
+          - "*"
