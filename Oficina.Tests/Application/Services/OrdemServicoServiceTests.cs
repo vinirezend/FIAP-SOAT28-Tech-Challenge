@@ -1,8 +1,10 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using Oficina.Application.DTOs;
 using Oficina.Application.Exceptions;
 using Oficina.Application.Implementations.Services;
 using Oficina.Application.Interfaces.Resources;
+using Oficina.Application.Interfaces.Services;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Enum;
 using Oficina.Domain.Interfaces.Repositorys;
@@ -19,6 +21,8 @@ public class OrdemServicoServiceTests
     private readonly Mock<IInsumoRepository> _insumoRepositoryMock = new();
     private readonly Mock<ICurrentUser> _currentUserMock = new();
     private readonly Mock<TimeProvider> _timeProviderMock = new();
+    private readonly Mock<IOrcamentoService> _orcamentoServiceMock = new();
+    private readonly Mock<ILogger<OrdemServicoService>> _loggerMock = new();
     private readonly OrdemServicoService _service;
 
     public OrdemServicoServiceTests()
@@ -31,7 +35,9 @@ public class OrdemServicoServiceTests
             _servicoRepositoryMock.Object,
             _insumoRepositoryMock.Object,
             _currentUserMock.Object,
-            _timeProviderMock.Object);
+            _timeProviderMock.Object,
+            _orcamentoServiceMock.Object,
+            _loggerMock.Object);
     }
 
     private void ConfigurarOs(StatusOs? status) =>
@@ -472,5 +478,38 @@ public class OrdemServicoServiceTests
         _repositoryMock.Verify(r => r.AtualizarQuantidadeInsumoAsync(It.Is<OrdemServicoInsumo>(i => i.ValorCobrado == 50m)), Times.Once);
         _insumoRepositoryMock.Verify(r => r.AdicionarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        _orcamentoServiceMock.Verify(o => o.EnviarAsync(1, null, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AlterarStatusAsync_ParaAguardandoAprovacao_FalhaNoEnvioDoOrcamento_NaoDeveDesfazerTransicao()
+    {
+        ConfigurarOs(StatusOs.EmDiagnostico);
+        _repositoryMock.Setup(r => r.ObterServicosAsync(1)).ReturnsAsync([]);
+        _repositoryMock.Setup(r => r.ObterInsumosAsync(1)).ReturnsAsync([]);
+        _orcamentoServiceMock
+            .Setup(o => o.EnviarAsync(1, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Cliente do veículo não encontrado."));
+
+        var resultado = await _service.AlterarStatusAsync(1, (int)StatusOs.AguardandoAprovacao);
+
+        Assert.Equal((int)StatusOs.AguardandoAprovacao, resultado!.IdStatus);
+        _repositoryMock.Verify(r => r.AlterarStatusAsync(It.IsAny<OrdemServico>(), IdColaborador, Agora.DateTime), Times.Once);
+        _loggerMock.Verify(l => l.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((estado, _) => estado.ToString()!.Contains("OS 1")),
+            It.IsAny<InvalidOperationException>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AlterarStatusAsync_ParaOutroStatus_NaoDeveEnviarOrcamento()
+    {
+        ConfigurarOs(StatusOs.AguardandoAprovacao);
+
+        await _service.AlterarStatusAsync(1, (int)StatusOs.EmExecucao);
+
+        _orcamentoServiceMock.Verify(o => o.EnviarAsync(It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }
