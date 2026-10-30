@@ -31,6 +31,12 @@ namespace Oficina.Domain.Entitys
             IdVeiculo = ValidarVeiculo(idVeiculo);
         }
 
+        public void AtualizarValor(decimal valor)
+        {
+            ValidarAlteracaoItens();
+            Valor = valor;
+        }
+
         /// <summary>
         /// Avança a OS para o próximo status do fluxo. Registra o início da execução e a finalização.
         /// </summary>
@@ -55,6 +61,31 @@ namespace Oficina.Domain.Entitys
             Status = novoStatus;
         }
 
+        /// <summary>
+        /// Cliente aprovou o orçamento: a OS segue para execução.
+        /// </summary>
+        public void AprovarOrcamento(DateTime dataAprovacao)
+        {
+            ValidarAguardandoAprovacao();
+            AlterarStatus(StatusOs.EmExecucao, dataAprovacao);
+        }
+
+        /// <summary>
+        /// Cliente recusou o orçamento: a OS é finalizada sem passar pela execução.
+        /// </summary>
+        public void RecusarOrcamento(DateTime dataRecusa)
+        {
+            ValidarAguardandoAprovacao();
+            DataFim = dataRecusa;
+            Status = StatusOs.Finalizada;
+        }
+
+        private void ValidarAguardandoAprovacao()
+        {
+            if (Status != StatusOs.AguardandoAprovacao)
+                throw new InvalidOperationException("O orçamento desta OS não está aguardando aprovação.");
+        }
+
         public void ValidarRemocao()
         {
             if (Status is not (null or StatusOs.Recebida))
@@ -67,6 +98,12 @@ namespace Oficina.Domain.Entitys
                 throw new ArgumentException("Veículo da OS é obrigatório.");
 
             return idVeiculo;
+        }
+
+        public void ValidarAlteracaoItens()
+        {
+            if (Status is not (StatusOs.Recebida or StatusOs.EmDiagnostico))
+                throw new InvalidOperationException("Itens só podem ser incluídos, removidos ou alterados enquanto a OS está em Recebida ou Em Diagnóstico.");
         }
 
         public static OrdemServico Reconstituir(int idOs, int idVeiculo, DateTime? dataInicio, DateTime? dataFim, decimal valor, StatusOs? status) =>

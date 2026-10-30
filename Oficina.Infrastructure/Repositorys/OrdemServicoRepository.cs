@@ -22,6 +22,12 @@ namespace Oficina.Infrastructure.Repositorys
 
         private const string InsertOsStatus = "INSERT INTO os_status (id_os, id_status, id_colaborador, data_inclusao) VALUES (@IdOs, @IdStatus, @IdColaborador, @DataInclusao)";
 
+        // Soma os itens de os_servico e os_insumo direto no banco, dentro da mesma transação da alteração do item.
+        private const string RecalcularValorOs = @"UPDATE os
+                                                    SET valor = COALESCE((SELECT SUM(quantidade * valor_cobrado) FROM os_servico WHERE id_os = @IdOs), 0)
+                                                              + COALESCE((SELECT SUM(quantidade * valor_cobrado) FROM os_insumo WHERE id_os = @IdOs), 0)
+                                                    WHERE id_os = @IdOs";
+
         public OrdemServicoRepository(IUnitOfWork unitOfWork)
             : base(unitOfWork)
         {
@@ -158,6 +164,8 @@ namespace Oficina.Infrastructure.Repositorys
         {
             string[] comandos =
             [
+                "DELETE FROM os_servico WHERE id_os = @IdOs",
+                "DELETE FROM os_insumo WHERE id_os = @IdOs",
                 "DELETE FROM os_status WHERE id_os = @IdOs",
                 "DELETE FROM os_colaborador WHERE id_os = @IdOs",
                 "DELETE FROM os WHERE id_os = @IdOs"
@@ -178,11 +186,141 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
+        public async Task<IReadOnlyList<OrdemServicoServico>> ObterServicosAsync(int idOs)
+        {
+            const string sql = "SELECT id_os_servico, id_os, id_servico, quantidade, valor_cobrado FROM os_servico WHERE id_os = @IdOs";
+
+            var rows = await QueryAsync<OsServicoRow>(sql, new { IdOs = idOs });
+
+            return rows.Select(Reconstituir).ToList();
+        }
+
+        public async Task<OrdemServicoServico> AdicionarServicoAsync(OrdemServicoServico servico)
+        {
+            const string sql = "INSERT INTO os_servico (id_os, id_servico, quantidade, valor_cobrado) VALUES (@IdOs, @IdServico, @Quantidade, @ValorCobrado) RETURNING id_os_servico";
+            try
+            {
+                int idOsServico = default;
+                await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+                {
+                    idOsServico = await ExecuteScalarAsync<int>(sql, new
+                    {
+                        servico.IdOs,
+                        servico.IdServico,
+                        servico.Quantidade,
+                        servico.ValorCobrado
+                    }, ct);
+
+                    await ExecuteAsync(RecalcularValorOs, new { servico.IdOs }, ct);
+
+                    return true;
+                }, default);
+
+                return OrdemServicoServico.Reconstituir(idOsServico, servico.IdOs, servico.IdServico, servico.Quantidade, servico.ValorCobrado);
+            }
+            catch (PostgresException ex) when (ex.SqlState is "23503")
+            {
+                throw new InvalidOperationException(MensagemReferenciaInvalida(ex));
+            }
+        }
+
+        public async Task RemoverServicoAsync(OrdemServicoServico servico)
+        {
+            const string sql = "DELETE FROM os_servico WHERE id_os_servico = @IdOsServico";
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                await ExecuteAsync(sql, new { servico.IdOsServico }, ct);
+                await ExecuteAsync(RecalcularValorOs, new { servico.IdOs }, ct);
+
+                return true;
+            }, default);
+        }
+
+        public async Task AtualizarQuantidadeServicoAsync(OrdemServicoServico servico)
+        {
+            const string sql = "UPDATE os_servico SET quantidade = @Quantidade, valor_cobrado = @ValorCobrado WHERE id_os_servico = @IdOsServico";
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                await ExecuteAsync(sql, new { servico.IdOsServico, servico.Quantidade, servico.ValorCobrado }, ct);
+                await ExecuteAsync(RecalcularValorOs, new { servico.IdOs }, ct);
+
+                return true;
+            }, default);
+        }
+
+        public async Task<IReadOnlyList<OrdemServicoInsumo>> ObterInsumosAsync(int idOs)
+        {
+            const string sql = "SELECT id_os_insumo, id_os, id_insumo, quantidade, valor_cobrado FROM os_insumo WHERE id_os = @IdOs";
+
+            var rows = await QueryAsync<OsInsumoRow>(sql, new { IdOs = idOs });
+
+            return rows.Select(Reconstituir).ToList();
+        }
+
+        public async Task<OrdemServicoInsumo> AdicionarInsumoAsync(OrdemServicoInsumo insumo)
+        {
+            const string sql = "INSERT INTO os_insumo (id_os, id_insumo, quantidade, valor_cobrado) VALUES (@IdOs, @IdInsumo, @Quantidade, @ValorCobrado) RETURNING id_os_insumo";
+            try
+            {
+                int idOsInsumo = default;
+                await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+                {
+                    idOsInsumo = await ExecuteScalarAsync<int>(sql, new
+                    {
+                        insumo.IdOs,
+                        insumo.IdInsumo,
+                        insumo.Quantidade,
+                        insumo.ValorCobrado
+                    }, ct);
+
+                    await ExecuteAsync(RecalcularValorOs, new { insumo.IdOs }, ct);
+
+                    return true;
+                }, default);
+
+                return OrdemServicoInsumo.Reconstituir(idOsInsumo, insumo.IdOs, insumo.IdInsumo, insumo.Quantidade, insumo.ValorCobrado);
+            }
+            catch (PostgresException ex) when (ex.SqlState is "23503")
+            {
+                throw new InvalidOperationException(MensagemReferenciaInvalida(ex));
+            }
+        }
+
+        public async Task RemoverInsumoAsync(OrdemServicoInsumo insumo)
+        {
+            const string sql = "DELETE FROM os_insumo WHERE id_os_insumo = @IdOsInsumo";
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                await ExecuteAsync(sql, new { insumo.IdOsInsumo }, ct);
+                await ExecuteAsync(RecalcularValorOs, new { insumo.IdOs }, ct);
+
+                return true;
+            }, default);
+        }
+
+        public async Task AtualizarQuantidadeInsumoAsync(OrdemServicoInsumo insumo)
+        {
+            const string sql = "UPDATE os_insumo SET quantidade = @Quantidade, valor_cobrado = @ValorCobrado WHERE id_os_insumo = @IdOsInsumo";
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                await ExecuteAsync(sql, new { insumo.IdOsInsumo, insumo.Quantidade, insumo.ValorCobrado }, ct);
+                await ExecuteAsync(RecalcularValorOs, new { insumo.IdOs }, ct);
+
+                return true;
+            }, default);
+        }
+
         private static string MensagemReferenciaInvalida(PostgresException ex) => ex.ConstraintName switch
         {
             "fk_os_veiculo" => "Veículo não encontrado.",
             "fk_os_status_colaborador" => "Colaborador não encontrado.",
             "fk_os_status_status" => "Status não encontrado.",
+            "fk_os_servico_servico" => "Serviço não encontrado.",
+            "fk_os_insumo_insumo" => "Insumo não encontrado.",
             _ => "Registro relacionado não encontrado."
         };
 
@@ -193,6 +331,22 @@ namespace Oficina.Infrastructure.Repositorys
             row.DataFim,
             row.Valor,
             (StatusOs?)row.IdStatus
+        );
+
+        private static OrdemServicoServico Reconstituir(OsServicoRow row) => OrdemServicoServico.Reconstituir(
+            row.IdOsServico,
+            row.IdOs,
+            row.IdServico,
+            row.Quantidade,
+            row.ValorCobrado
+        );
+
+        private static OrdemServicoInsumo Reconstituir(OsInsumoRow row) => OrdemServicoInsumo.Reconstituir(
+            row.IdOsInsumo,
+            row.IdOs,
+            row.IdInsumo,
+            row.Quantidade,
+            row.ValorCobrado
         );
     }
 }
