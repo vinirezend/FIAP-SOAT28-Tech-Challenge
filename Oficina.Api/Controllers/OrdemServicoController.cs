@@ -95,6 +95,116 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    [HttpGet("{id:int}/servicos")]
+    public async Task<IActionResult> ObterServicosAsync(int id)
+    {
+        var servicos = await ordemServicoService.ObterServicosAsync(id);
+        if (servicos is null)
+            return NotFound();
+        return Ok(servicos.Select(TransformaParaResponse));
+    }
+
+    [HttpPost("{id:int}/servicos")]
+    public async Task<IActionResult> AdicionarServicoAsync(int id, [FromBody] AdicionarServicoRequest request)
+    {
+        try
+        {
+            var servico = await ordemServicoService.AdicionarServicoAsync(id, request.IdServico, request.Quantidade);
+            if (servico is null)
+                return NotFound();
+            return Created($"/api/ordemservico/{id}/servicos/{servico.IdOsServico}", TransformaParaResponse(servico));
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{id:int}/servicos/{idOsServico:int}")]
+    public async Task<IActionResult> AlterarQuantidadeServicoAsync(int id, int idOsServico, [FromBody] AlterarQuantidadeServicoRequest request)
+    {
+        try
+        {
+            var servico = await ordemServicoService.AlterarQuantidadeServicoAsync(id, idOsServico, request.Quantidade);
+            if (servico is null)
+                return NotFound();
+            return Ok(TransformaParaResponse(servico));
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id:int}/servicos/{idOsServico:int}")]
+    public async Task<IActionResult> RemoverServicoAsync(int id, int idOsServico)
+    {
+        try
+        {
+            await ordemServicoService.RemoverServicoAsync(id, idOsServico);
+            return NoContent();
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("{id:int}/insumos")]
+    public async Task<IActionResult> ObterInsumosAsync(int id)
+    {
+        var insumos = await ordemServicoService.ObterInsumosAsync(id);
+        if (insumos is null)
+            return NotFound();
+        return Ok(insumos.Select(TransformaParaResponse));
+    }
+
+    [HttpPost("{id:int}/insumos")]
+    public async Task<IActionResult> AdicionarInsumoAsync(int id, [FromBody] AdicionarInsumoRequest request)
+    {
+        try
+        {
+            var insumo = await ordemServicoService.AdicionarInsumoAsync(id, request.IdInsumo, request.Quantidade);
+            if (insumo is null)
+                return NotFound();
+            return Created($"/api/ordemservico/{id}/insumos/{insumo.IdOsInsumo}", TransformaParaResponse(insumo));
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{id:int}/insumos/{idOsInsumo:int}")]
+    public async Task<IActionResult> AlterarQuantidadeInsumoAsync(int id, int idOsInsumo, [FromBody] AlterarQuantidadeInsumoRequest request)
+    {
+        try
+        {
+            var insumo = await ordemServicoService.AlterarQuantidadeInsumoAsync(id, idOsInsumo, request.Quantidade);
+            if (insumo is null)
+                return NotFound();
+            return Ok(TransformaParaResponse(insumo));
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id:int}/insumos/{idOsInsumo:int}")]
+    public async Task<IActionResult> RemoverInsumoAsync(int id, int idOsInsumo)
+    {
+        try
+        {
+            await ordemServicoService.RemoverInsumoAsync(id, idOsInsumo);
+            return NoContent();
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeletarAsync(int id)
     {
@@ -136,6 +246,32 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
             Status = dto.Status,
             IdColaborador = dto.IdColaborador,
             DataInclusao = dto.DataInclusao
+        };
+    }
+
+    private static OrdemServicoServicoResponse TransformaParaResponse(OrdemServicoServicoDTO dto)
+    {
+        return new OrdemServicoServicoResponse
+        {
+            IdOsServico = dto.IdOsServico,
+            IdOs = dto.IdOs,
+            IdServico = dto.IdServico,
+            Quantidade = dto.Quantidade,
+            ValorCobrado = dto.ValorCobrado,
+            ValorTotal = dto.ValorTotal
+        };
+    }
+
+    private static OrdemServicoInsumoResponse TransformaParaResponse(OrdemServicoInsumoDTO dto)
+    {
+        return new OrdemServicoInsumoResponse
+        {
+            IdOsInsumo = dto.IdOsInsumo,
+            IdOs = dto.IdOs,
+            IdInsumo = dto.IdInsumo,
+            Quantidade = dto.Quantidade,
+            ValorCobrado = dto.ValorCobrado,
+            ValorTotal = dto.ValorTotal
         };
     }
 }

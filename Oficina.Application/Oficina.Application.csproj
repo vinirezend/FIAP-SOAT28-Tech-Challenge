@@ -1,4 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.13" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Oficina.Domain\Oficina.Domain.csproj" />
