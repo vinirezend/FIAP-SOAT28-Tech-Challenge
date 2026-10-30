@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
@@ -14,19 +15,25 @@ namespace Oficina.Application.Implementations.Services
         private readonly IInsumoRepository _insumoRepository;
         private readonly ICurrentUser _currentUser;
         private readonly TimeProvider _timeProvider;
+        private readonly IOrcamentoService _orcamentoService;
+        private readonly ILogger<OrdemServicoService> _logger;
 
         public OrdemServicoService(
             IOrdemServicoRepository ordemServicoRepository,
             IServicoRepository servicoRepository,
             IInsumoRepository insumoRepository,
             ICurrentUser currentUser,
-            TimeProvider timeProvider)
+            TimeProvider timeProvider,
+            IOrcamentoService orcamentoService,
+            ILogger<OrdemServicoService> logger)
         {
             _ordemServicoRepository = ordemServicoRepository;
             _servicoRepository = servicoRepository;
             _insumoRepository = insumoRepository;
             _currentUser = currentUser;
             _timeProvider = timeProvider;
+            _orcamentoService = orcamentoService;
+            _logger = logger;
         }
 
         public async Task<OrdemServicoDTO> AdicionarAsync(OrdemServicoDTO ordemServico)
@@ -65,7 +72,28 @@ namespace Oficina.Application.Implementations.Services
             ordemServicoEntity.AlterarStatus((StatusOs)idStatus, dataAlteracao);
 
             await _ordemServicoRepository.AlterarStatusAsync(ordemServicoEntity, idColaborador, dataAlteracao);
+
+            if (ordemServicoEntity.Status == StatusOs.AguardandoAprovacao)
+                await EnviarOrcamentoAsync(id);
+
             return TransformaParaDTO(ordemServicoEntity);
+        }
+
+        /// <summary>
+        /// O status já foi gravado: uma falha ao montar o orçamento não desfaz a transição.
+        /// O envio pode ser refeito pelo endpoint de reenvio do orçamento.
+        /// </summary>
+        private async Task EnviarOrcamentoAsync(int id)
+        {
+            try
+            {
+                await _orcamentoService.EnviarAsync(id, null, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                // Ex.: veículo/cliente não encontrado. Mantém a OS em Aguardando aprovação.
+                _logger.LogError(ex, "Falha ao enviar o orçamento da OS {IdOs}. Use o reenvio do orçamento.", id);
+            }
         }
 
         public async Task<IReadOnlyList<OrdemServicoStatusDTO>?> ObterHistoricoStatusAsync(int id)

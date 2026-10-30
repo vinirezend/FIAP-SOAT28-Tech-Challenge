@@ -61,6 +61,31 @@ namespace Oficina.Domain.Entitys
             Status = novoStatus;
         }
 
+        /// <summary>
+        /// Cliente aprovou o orçamento: a OS segue para execução.
+        /// </summary>
+        public void AprovarOrcamento(DateTime dataAprovacao)
+        {
+            ValidarAguardandoAprovacao();
+            AlterarStatus(StatusOs.EmExecucao, dataAprovacao);
+        }
+
+        /// <summary>
+        /// Cliente recusou o orçamento: a OS é finalizada sem passar pela execução.
+        /// </summary>
+        public void RecusarOrcamento(DateTime dataRecusa)
+        {
+            ValidarAguardandoAprovacao();
+            DataFim = dataRecusa;
+            Status = StatusOs.Finalizada;
+        }
+
+        private void ValidarAguardandoAprovacao()
+        {
+            if (Status != StatusOs.AguardandoAprovacao)
+                throw new InvalidOperationException("O orçamento desta OS não está aguardando aprovação.");
+        }
+
         public void ValidarRemocao()
         {
             if (Status is not (null or StatusOs.Recebida))
