@@ -17,36 +17,65 @@ public partial class EnvioLinkAssinadoService(ILinkAssinadoGenerator linkAssinad
 
     public async Task<LinkAssinadoDTO> EnviarAsync(EnvioLinkAssinadoDTO envio, CancellationToken cancellationToken)
     {
-        var link = linkAssinadoGenerator.Gerar(envio.Caminho, envio.MinutosValidade);
+        var resultado = GerarLinks(envio);
 
         var parametros = new Dictionary<string, string>(envio.Parametros, StringComparer.OrdinalIgnoreCase)
         {
-            [PlaceholderLink] = link.Url,
-            [PlaceholderExpiraEm] = ConverterParaHorarioDeBrasilia(link.ExpiraEm).ToString("dd/MM/yyyy 'às' HH:mm")
+            [PlaceholderExpiraEm] = ConverterParaHorarioDeBrasilia(resultado.ExpiraEm).ToString("dd/MM/yyyy 'às' HH:mm")
         };
+        if (!string.IsNullOrEmpty(resultado.Url))
+            parametros[PlaceholderLink] = resultado.Url;
+        foreach (var (placeholder, url) in resultado.Links)
+            parametros[placeholder] = url;
 
         var email = new EmailDTO
         {
             Assunto = envio.Assunto,
             EnderecoDestinatario = envio.EmailDestinatario,
-            CorpoHtml = PreencherTemplate(envio.TemplateHtml, parametros)
+            CorpoHtml = PreencherTemplate(envio.TemplateHtml, parametros, envio.ParametrosHtml)
         };
 
         await emailSender.EnviarAsync(email, cancellationToken);
 
-        return link;
+        return resultado;
     }
 
-    private static string PreencherTemplate(string template, Dictionary<string, string> parametros)
+    private LinkAssinadoDTO GerarLinks(EnvioLinkAssinadoDTO envio)
     {
+        var principal = string.IsNullOrWhiteSpace(envio.Caminho)
+            ? null
+            : linkAssinadoGenerator.Gerar(envio.Caminho, envio.MinutosValidade);
+
+        var links = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var expiraEm = principal?.ExpiraEm;
+        foreach (var (placeholder, caminho) in envio.LinksAssinados)
+        {
+            var link = linkAssinadoGenerator.Gerar(caminho, envio.MinutosValidade);
+            links[placeholder] = link.Url;
+            expiraEm ??= link.ExpiraEm;
+        }
+
+        if (expiraEm is null)
+            throw new InvalidOperationException("Informe o caminho de ao menos um link assinado.");
+
+        return new LinkAssinadoDTO { Url = principal?.Url ?? string.Empty, ExpiraEm = expiraEm.Value, Links = links };
+    }
+
+    private static string PreencherTemplate(string template, Dictionary<string, string> parametros, IReadOnlyDictionary<string, string> parametrosHtml)
+    {
+        var html = new Dictionary<string, string>(parametrosHtml, StringComparer.OrdinalIgnoreCase);
+
         return Placeholder().Replace(template, match =>
         {
             var nome = match.Groups[1].Value;
 
-            if (!parametros.TryGetValue(nome, out var valor))
-                throw new InvalidOperationException($"O template de e-mail usa o placeholder {{{{{nome}}}}}, mas nenhum valor foi informado.");
+            if (parametros.TryGetValue(nome, out var valor))
+                return Encoder.Encode(valor);
 
-            return Encoder.Encode(valor);
+            if (html.TryGetValue(nome, out var trechoHtml))
+                return trechoHtml;
+
+            throw new InvalidOperationException($"O template de e-mail usa o placeholder {{{{{nome}}}}}, mas nenhum valor foi informado.");
         });
     }
 

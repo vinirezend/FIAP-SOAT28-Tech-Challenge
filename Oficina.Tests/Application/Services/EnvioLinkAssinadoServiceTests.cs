@@ -55,7 +55,8 @@ public class EnvioLinkAssinadoServiceTests
         var resultado = await _service.EnviarAsync(envio, CancellationToken.None);
 
         // Assert
-        Assert.Same(_link, resultado);
+        Assert.Equal(_link.Url, resultado.Url);
+        Assert.Equal(_link.ExpiraEm, resultado.ExpiraEm);
         _linkAssinadoGeneratorMock.Verify(g => g.Gerar(Caminho, 30), Times.Once);
         Assert.NotNull(_emailEnviado);
         Assert.Equal("cliente@teste.com", _emailEnviado!.EnderecoDestinatario);
@@ -95,6 +96,51 @@ public class EnvioLinkAssinadoServiceTests
 
         // Assert
         Assert.Contains("{{nome}}", excecao.Message);
+        _emailSenderMock.Verify(s => s.EnviarAsync(It.IsAny<EmailDTO>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EnviarAsync_LinksAssinadosEParametrosHtml_DeveGerarCadaLinkEInserirHtmlSemCodificar()
+    {
+        // Arrange
+        _linkAssinadoGeneratorMock
+            .Setup(g => g.Gerar("/api/os/1/aprovar", 30))
+            .Returns(new LinkAssinadoDTO { Url = "https://api.test/aprovar?a=1&b=2", ExpiraEm = _link.ExpiraEm });
+        _linkAssinadoGeneratorMock
+            .Setup(g => g.Gerar("/api/os/1/recusar", 30))
+            .Returns(new LinkAssinadoDTO { Url = "https://api.test/recusar", ExpiraEm = _link.ExpiraEm });
+
+        var envio = new EnvioLinkAssinadoDTO
+        {
+            EmailDestinatario = "cliente@teste.com",
+            Assunto = "Orçamento",
+            TemplateHtml = "<table>{{itens}}</table><a href=\"{{aprovar}}\">A</a><a href=\"{{recusar}}\">R</a> {{expiraEm}}",
+            ParametrosHtml = new Dictionary<string, string> { ["itens"] = "<tr><td>Óleo</td></tr>" },
+            LinksAssinados = new Dictionary<string, string> { ["aprovar"] = "/api/os/1/aprovar", ["recusar"] = "/api/os/1/recusar" },
+            MinutosValidade = 30
+        };
+
+        // Act
+        var resultado = await _service.EnviarAsync(envio, CancellationToken.None);
+
+        // Assert
+        Assert.Empty(resultado.Url);
+        Assert.Equal("https://api.test/aprovar?a=1&b=2", resultado.Links["aprovar"]);
+        Assert.Equal("https://api.test/recusar", resultado.Links["recusar"]);
+        Assert.Equal(
+            "<table><tr><td>Óleo</td></tr></table><a href=\"https://api.test/aprovar?a=1&amp;b=2\">A</a><a href=\"https://api.test/recusar\">R</a> 01/01/2026 às 12:00",
+            _emailEnviado!.CorpoHtml);
+    }
+
+    [Fact]
+    public async Task EnviarAsync_SemNenhumCaminho_DeveLancarExcecaoSemEnviarEmail()
+    {
+        // Arrange
+        var envio = CriarEnvio("Assunto", "<p>Olá</p>");
+        envio.Caminho = null;
+
+        // Act / Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.EnviarAsync(envio, CancellationToken.None));
         _emailSenderMock.Verify(s => s.EnviarAsync(It.IsAny<EmailDTO>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }
