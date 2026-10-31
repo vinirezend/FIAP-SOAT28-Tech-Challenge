@@ -1,6 +1,6 @@
 @Oficina.Api_HostAddress = http://localhost:5078
 
-GET {{Oficina.Api_HostAddress}}/weatherforecast/
+GET {{Oficina.Api_HostAddress}}/swagger/
 Accept: application/json
 
 ###
