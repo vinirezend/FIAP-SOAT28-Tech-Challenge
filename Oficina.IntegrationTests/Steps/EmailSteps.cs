@@ -37,7 +37,7 @@ public partial class EmailSteps(ApiContext api, OficinaContext oficina)
     }
 
     [Then(@"nenhum e-mail deve ser enviado")]
-    public void EntaoNenhumEmailDeveSerEnviado() => Assert.Empty(Enviados);
+    public static void EntaoNenhumEmailDeveSerEnviado() => Assert.Empty(Enviados);
 
     [Then(@"o e-mail deve conter ""(.*)""")]
     public void EntaoOEmailDeveConter(string texto) =>
