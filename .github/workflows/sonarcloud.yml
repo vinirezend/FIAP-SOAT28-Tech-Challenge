@@ -16,7 +16,7 @@ jobs:
       SONAR_ORGANIZATION: vinirezend
       SONAR_PROJECT_KEY: vinirezend_FIAP-SOAT28-Tech-Challenge
       SONAR_COVERAGE_EXCLUSIONS: >-
-        **/Oficina.Tests/**,**/Oficina.IntegrationTests/**,**/Program.cs,**/Migrations/**,**/Extensions/**,**/WeatherForecast*.cs,**/DTO/**,**/DTOs/**,**/Interfaces/**,**/Enum/**,**/Models/**,**/Configurations/**,**/Repositorys/**
+        **/Oficina.Tests/**,**/Oficina.IntegrationTests/**,**/Program.cs,**/Migrations/**,**/Extensions/**,**/WeatherForecast*.cs,**/DTO/**,**/DTOs/**,**/Interfaces/**,**/Enum/**,**/Models/**,**/Configurations/**,**/Repositorys/**,**/Oficina.Domain/Entitys/**,**/UnitOfWork.cs,**/*ExceptionMiddleware*.cs
 
     steps:
       - name: Checkout
