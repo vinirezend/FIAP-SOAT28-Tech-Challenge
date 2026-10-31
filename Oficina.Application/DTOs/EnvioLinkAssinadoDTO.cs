@@ -6,7 +6,7 @@ namespace Oficina.Application.DTOs;
 public class EnvioLinkAssinadoDTO
 {
     /// <summary>
-    /// Caminho do endpoint liberado pelo link (ex.: /api/cliente/1/compartilhado), usado no placeholder {{link}}.
+    /// Caminho do endpoint liberado pelo link (ex.: /api/acompanhamentoordemservico/1/cliente), usado no placeholder {{link}}.
     /// Opcional quando LinksAssinados é informado.
     /// </summary>
     public string? Caminho { get; set; }
@@ -16,10 +16,10 @@ public class EnvioLinkAssinadoDTO
     public string Assunto { get; set; }
 
     /// <summary>
-    /// HTML do e-mail com placeholders no formato {{chave}}.
+    /// Nome do template em Templates/Html (ex.: NomesTemplate.Orcamento.Email), com placeholders no formato {{chave}}.
     /// {{link}} e {{expiraEm}} são preenchidos automaticamente.
     /// </summary>
-    public string TemplateHtml { get; set; }
+    public string Template { get; set; }
 
     /// <summary>
     /// Valores que substituem os placeholders do template (chave sem as chaves duplas, ex.: "nome").

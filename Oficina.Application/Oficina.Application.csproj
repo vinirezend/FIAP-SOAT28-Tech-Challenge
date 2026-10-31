@@ -5,6 +5,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Lidos por TemplateHtml como "Templates/{pasta}/{arquivo}" -->
+    <EmbeddedResource Include="Templates\Html\**\*.html" LogicalName="Templates/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Oficina.Domain\Oficina.Domain.csproj" />
   </ItemGroup>
 
