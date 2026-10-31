@@ -5,6 +5,9 @@ using Oficina.Domain.Interfaces.Repositorys;
 
 namespace Oficina.Api.Controllers
 {
+    /// <summary>
+    /// Autenticação de usuários da oficina.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class LoginController : Controller
@@ -16,6 +19,9 @@ namespace Oficina.Api.Controllers
             _tokenService = tokenService;
         }
 
+        /// <summary>
+        /// Valida login e senha e retorna o token JWT para usar no header Authorization (Bearer).
+        /// </summary>
         [HttpPost]
         [Route("signin")]
         public async Task<IActionResult> SignIn([FromBody] UsuarioCredenciaisDTO usuarioCredenciais)

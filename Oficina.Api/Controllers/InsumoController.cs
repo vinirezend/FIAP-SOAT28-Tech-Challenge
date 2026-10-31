@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace Oficina.Api.Controllers
 {
 
+    /// <summary>
+    /// Cadastro de insumos (peças e materiais) e controle de estoque e reserva.
+    /// </summary>
     [ApiController]
     [Authorize]
     [Route("api/[controller]")]
@@ -20,7 +23,10 @@ namespace Oficina.Api.Controllers
             _insumoService = insumoService;
         }
 
-       [HttpGet("{id:int}")]
+        /// <summary>
+        /// Obtém um insumo pelo id.
+        /// </summary>
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> ObterPorIdAsync(int id)
         {
             var insumo = await _insumoService.ObterPorIdAsync(id);
@@ -29,18 +35,27 @@ namespace Oficina.Api.Controllers
 
             return Ok(TransformaParaResponse(insumo));
         }
+        /// <summary>
+        /// Lista todos os insumos.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ObterTodosAsync()
         {
             var insumos = await _insumoService.ObterTodosAsync();
             return Ok(insumos.Select(TransformaParaResponse));
         }
+        /// <summary>
+        /// Pesquisa insumos pelo termo informado.
+        /// </summary>
         [HttpGet("pesquisar/{termo}")]
         public async Task<IActionResult> PesquisarAsync(string termo)
         {
             var insumos = await _insumoService.PesquisarAsync(termo);
             return Ok(insumos.Select(TransformaParaResponse));
         }
+        /// <summary>
+        /// Cadastra um novo insumo com a quantidade inicial em estoque.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> AdicionarAsync([FromBody] InsumoCreateRequest request)
         {
@@ -48,6 +63,9 @@ namespace Oficina.Api.Controllers
             var insumoCriado = await _insumoService.AdicionarAsync(insumo);
             return Created($"/api/insumo/{insumoCriado.IdInsumo}", TransformaParaResponse(insumoCriado));
         }
+        /// <summary>
+        /// Atualiza os dados de um insumo, incluindo quantidades em estoque e reservada.
+        /// </summary>
         [HttpPut("{id:int}")]
         public async Task<IActionResult> AtualizarAsync(int id, [FromBody] InsumoUpdateRequest request)
         {
@@ -58,6 +76,9 @@ namespace Oficina.Api.Controllers
             return Ok(TransformaParaResponse(insumoAtualizado));
         }
 
+        /// <summary>
+        /// Remove um insumo.
+        /// </summary>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeletarAsync(int id)
         {
@@ -69,6 +90,9 @@ namespace Oficina.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Dá entrada da quantidade informada no estoque do insumo.
+        /// </summary>
         [HttpPatch("{idInsumo:int}/AdicionarEstoque/{quantidade:int}")]
         public async Task<IActionResult> AdicionarEstoque(int idInsumo, int quantidade)
         {
@@ -77,6 +101,9 @@ namespace Oficina.Api.Controllers
             return Ok(TransformaParaResponse(retorno));
         }
 
+        /// <summary>
+        /// Dá baixa da quantidade informada no estoque do insumo.
+        /// </summary>
         [HttpPatch("{idInsumo:int}/RetirarEstoque/{quantidade:int}")]
         public async Task<IActionResult> RetirarEstoque(int idInsumo, int quantidade)
         {
@@ -85,6 +112,9 @@ namespace Oficina.Api.Controllers
             return Ok(TransformaParaResponse(retorno));
         }
 
+        /// <summary>
+        /// Reserva a quantidade informada do insumo.
+        /// </summary>
         [HttpPatch("{idInsumo:int}/AdicionarReserva/{quantidade:int}")]
         public async Task<IActionResult> AdicionarReserva(int idInsumo, int quantidade)
         {
@@ -93,6 +123,9 @@ namespace Oficina.Api.Controllers
             return Ok(TransformaParaResponse(retorno));
         }
 
+        /// <summary>
+        /// Libera a quantidade informada da reserva do insumo.
+        /// </summary>
         [HttpPatch("{idInsumo:int}/RetirarReserva/{quantidade:int}")]
         public async Task<IActionResult> RetirarReserva(int idInsumo, int quantidade)
         {

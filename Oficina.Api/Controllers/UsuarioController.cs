@@ -4,6 +4,9 @@ using Oficina.Domain.Interfaces.Repositorys;
 
 namespace Oficina.Api.Controllers
 {
+    /// <summary>
+    /// Consulta de usuários de acesso ao sistema.
+    /// </summary>
     [Route("api/[controller]")]
     [Authorize]
     [ApiController]
@@ -16,6 +19,9 @@ namespace Oficina.Api.Controllers
             _usuarioRepository = usuarioRepository;
         }
 
+        /// <summary>
+        /// Obtém um usuário pelo id.
+        /// </summary>
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Obter(int id)

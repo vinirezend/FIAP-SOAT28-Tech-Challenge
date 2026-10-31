@@ -72,6 +72,9 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
     [HttpGet("{idOs:int}/recusar")]
     public Task<IActionResult> ConfirmarRecusaAsync(int idOs) => PaginaConfirmacaoAsync(idOs, aprovar: false);
 
+    /// <summary>
+    /// Confirma a aprovação do orçamento pelo cliente (via link assinado) e libera a execução da OS.
+    /// </summary>
     [AllowAnonymous]
     [LinkAssinado]
     [HttpPost("{idOs:int}/aprovar")]
@@ -90,6 +93,9 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
         }
     }
 
+    /// <summary>
+    /// Confirma a recusa do orçamento pelo cliente (via link assinado) e finaliza a OS sem execução.
+    /// </summary>
     [AllowAnonymous]
     [LinkAssinado]
     [HttpPost("{idOs:int}/recusar")]

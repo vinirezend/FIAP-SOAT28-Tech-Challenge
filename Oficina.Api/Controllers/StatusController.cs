@@ -14,6 +14,9 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class StatusController(IStatusService statusService) : ControllerBase
 {
+    /// <summary>
+    /// Lista todos os status de OS.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> ObterTodosAsync()
     {
@@ -21,6 +24,9 @@ public class StatusController(IStatusService statusService) : ControllerBase
         return Ok(status.Select(TransformaParaResponse));
     }
 
+    /// <summary>
+    /// Obtém um status pelo id.
+    /// </summary>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObterPorIdAsync(int id)
     {

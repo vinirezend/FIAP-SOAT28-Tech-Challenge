@@ -6,11 +6,17 @@ using Oficina.Application.Interfaces.Services;
 
 namespace Oficina.Api.Controllers;
 
+/// <summary>
+/// Ordens de serviço: abertura, fluxo de status e itens (serviços e insumos) da OS.
+/// </summary>
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
 public class OrdemServicoController(IOrdemServicoService ordemServicoService) : ControllerBase
 {
+    /// <summary>
+    /// Lista todas as ordens de serviço.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> ObterTodosAsync()
     {
@@ -18,6 +24,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         return Ok(ordensServico.Select(TransformaParaResponse));
     }
 
+    /// <summary>
+    /// Obtém uma ordem de serviço pelo id.
+    /// </summary>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObterPorIdAsync(int id)
     {
@@ -27,6 +36,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         return Ok(TransformaParaResponse(ordemServico));
     }
 
+    /// <summary>
+    /// Lista as ordens de serviço de um veículo.
+    /// </summary>
     [HttpGet("veiculo/{idVeiculo:int}")]
     public async Task<IActionResult> ObterPorVeiculoAsync(int idVeiculo)
     {
@@ -51,6 +63,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Altera o veículo vinculado à OS.
+    /// </summary>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> AtualizarAsync(int id, [FromBody] OrdemServicoRequest request)
     {
@@ -67,6 +82,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Histórico de status da OS, com data e colaborador de cada mudança.
+    /// </summary>
     [HttpGet("{id:int}/status")]
     public async Task<IActionResult> ObterHistoricoStatusAsync(int id)
     {
@@ -95,6 +113,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Lista os serviços incluídos na OS.
+    /// </summary>
     [HttpGet("{id:int}/servicos")]
     public async Task<IActionResult> ObterServicosAsync(int id)
     {
@@ -104,6 +125,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         return Ok(servicos.Select(TransformaParaResponse));
     }
 
+    /// <summary>
+    /// Inclui um serviço na OS com a quantidade informada.
+    /// </summary>
     [HttpPost("{id:int}/servicos")]
     public async Task<IActionResult> AdicionarServicoAsync(int id, [FromBody] AdicionarServicoRequest request)
     {
@@ -120,6 +144,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Altera a quantidade de um serviço da OS.
+    /// </summary>
     [HttpPut("{id:int}/servicos/{idOsServico:int}")]
     public async Task<IActionResult> AlterarQuantidadeServicoAsync(int id, int idOsServico, [FromBody] AlterarQuantidadeServicoRequest request)
     {
@@ -136,6 +163,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Remove um serviço da OS.
+    /// </summary>
     [HttpDelete("{id:int}/servicos/{idOsServico:int}")]
     public async Task<IActionResult> RemoverServicoAsync(int id, int idOsServico)
     {
@@ -150,6 +180,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Lista os insumos incluídos na OS.
+    /// </summary>
     [HttpGet("{id:int}/insumos")]
     public async Task<IActionResult> ObterInsumosAsync(int id)
     {
@@ -159,6 +192,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         return Ok(insumos.Select(TransformaParaResponse));
     }
 
+    /// <summary>
+    /// Inclui um insumo na OS com a quantidade informada.
+    /// </summary>
     [HttpPost("{id:int}/insumos")]
     public async Task<IActionResult> AdicionarInsumoAsync(int id, [FromBody] AdicionarInsumoRequest request)
     {
@@ -175,6 +211,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Altera a quantidade de um insumo da OS.
+    /// </summary>
     [HttpPut("{id:int}/insumos/{idOsInsumo:int}")]
     public async Task<IActionResult> AlterarQuantidadeInsumoAsync(int id, int idOsInsumo, [FromBody] AlterarQuantidadeInsumoRequest request)
     {
@@ -191,6 +230,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Remove um insumo da OS.
+    /// </summary>
     [HttpDelete("{id:int}/insumos/{idOsInsumo:int}")]
     public async Task<IActionResult> RemoverInsumoAsync(int id, int idOsInsumo)
     {
@@ -205,6 +247,9 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         }
     }
 
+    /// <summary>
+    /// Remove uma ordem de serviço.
+    /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeletarAsync(int id)
     {

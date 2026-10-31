@@ -6,11 +6,17 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Oficina.Api.Controllers;
 
+/// <summary>
+/// Cadastro de clientes da oficina (pessoa física ou jurídica).
+/// </summary>
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
 public class ClienteController(IClienteService clienteService) : ControllerBase
 {
+    /// <summary>
+    /// Obtém um cliente pelo id.
+    /// </summary>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObterPorIdAsync(int id)
     {
@@ -20,6 +26,9 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
         return Ok(TransformaParaResponse(cliente));
     }
 
+    /// <summary>
+    /// Obtém um cliente pelo documento (CPF ou CNPJ).
+    /// </summary>
     [HttpGet("documento/{documento}")]
     public async Task<IActionResult> ObterPorDocumentoAsync(string documento)
     {
@@ -29,6 +38,9 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
         return Ok(TransformaParaResponse(cliente));
     }
     
+    /// <summary>
+    /// Lista todos os clientes.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> ObterTodosAsync()
     {
@@ -36,6 +48,9 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
         return Ok(clientes.Select(c => TransformaParaResponse(c)));
     }
     
+    /// <summary>
+    /// Cadastra um novo cliente; o tipo de documento é identificado a partir do CPF/CNPJ informado.
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> AdicionarAsync([FromBody] ClienteCreateRequest request)
     {
@@ -44,6 +59,9 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
         return Created($"/api/cliente/{clienteAdicionado.IdCliente}", TransformaParaResponse(clienteAdicionado));
     }       
 
+    /// <summary>
+    /// Atualiza nome, e-mail e telefone de um cliente. O documento não pode ser alterado.
+    /// </summary>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> AtualizarAsync(int id, [FromBody] ClienteUpdateRequest request)
     {
@@ -54,6 +72,9 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
         return Ok(TransformaParaResponse(clienteAtualizado));
     }
 
+    /// <summary>
+    /// Remove um cliente.
+    /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeletarAsync(int id)
     {

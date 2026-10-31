@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Oficina.Api.Controllers
 {
+    /// <summary>
+    /// Cadastro de veículos dos clientes.
+    /// </summary>
     [ApiController]
     [Authorize]
     [Route("api/[controller]")]
@@ -18,6 +21,9 @@ namespace Oficina.Api.Controllers
             _veiculoService = veiculoService;
         }
 
+        /// <summary>
+        /// Lista todos os veículos.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ObterTodosAsync()
         {
@@ -25,6 +31,9 @@ namespace Oficina.Api.Controllers
             return Ok(veiculos.Select(TransformaParaResponse));
         }
 
+        /// <summary>
+        /// Obtém um veículo pelo id.
+        /// </summary>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> ObterPorIdAsync(int id)
         {
@@ -33,6 +42,9 @@ namespace Oficina.Api.Controllers
             return Ok(TransformaParaResponse(veiculo));
         }
 
+        /// <summary>
+        /// Obtém um veículo pela placa.
+        /// </summary>
         [HttpGet("placa/{placa}")]
         public async Task<IActionResult> ObterPorPlacaAsync(string placa)
         {
@@ -41,6 +53,9 @@ namespace Oficina.Api.Controllers
             return Ok(TransformaParaResponse(veiculo));
         }
 
+        /// <summary>
+        /// Cadastra um novo veículo vinculado a um cliente.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> AdicionarAsync([FromBody] VeiculoRequest veiculoRequest)
         {
@@ -49,6 +64,9 @@ namespace Oficina.Api.Controllers
             return Created($"/api/veiculo/{veiculoAdicionado.IdVeiculo}", TransformaParaResponse(veiculoAdicionado));
         }
 
+        /// <summary>
+        /// Atualiza os dados de um veículo.
+        /// </summary>
         [HttpPut("{id:int}")]
         public async Task<IActionResult> AtualizarAsync(int id, [FromBody] VeiculoRequest veiculoRequest)
         {
@@ -59,6 +77,9 @@ namespace Oficina.Api.Controllers
             return Ok(TransformaParaResponse(veiculoAtualizado));
         }
 
+        /// <summary>
+        /// Remove um veículo.
+        /// </summary>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> RemoverAsync(int id)
         {
