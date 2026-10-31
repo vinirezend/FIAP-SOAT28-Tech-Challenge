@@ -12,7 +12,10 @@ namespace Oficina.Application.Interfaces.Services
         Task<OrdemServicoDTO?> AtualizarAsync(OrdemServicoDTO ordemServico, CancellationToken cancellationToken = default);
         Task<OrdemServicoDTO?> AlterarStatusAsync(int id, int idStatus, CancellationToken cancellationToken = default);
         Task RemoverAsync(int id, CancellationToken cancellationToken = default);
-        
+
+        /// <summary>Tempo médio de execução das OS finalizadas no período (datas inclusivas). Retorna nulo quando o serviço informado não existe.</summary>
+        Task<TempoMedioExecucaoDTO?> ObterTempoMedioExecucaoAsync(DateOnly? dataInicio, DateOnly? dataFim, int? idServico, CancellationToken cancellationToken = default);
+
         //Serviços - Operações com serviços da OS
         Task<IReadOnlyList<OrdemServicoServicoDTO>?> ObterServicosAsync(int idOs, CancellationToken cancellationToken = default);
         Task<OrdemServicoServicoDTO?> AdicionarServicoAsync(int idOs, int idServico, int quantidade, CancellationToken cancellationToken = default);

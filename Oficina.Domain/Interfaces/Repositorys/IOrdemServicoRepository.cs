@@ -1,4 +1,5 @@
 using Oficina.Domain.Entitys;
+using Oficina.Domain.Models;
 
 namespace Oficina.Domain.Interfaces.Repositorys
 {
@@ -8,6 +9,9 @@ namespace Oficina.Domain.Interfaces.Repositorys
         Task<IReadOnlyList<OrdemServico>> ObterTodosAsync(CancellationToken cancellationToken = default);
         Task<IReadOnlyList<OrdemServico>> ObterPorVeiculoAsync(int idVeiculo, CancellationToken cancellationToken = default);
         Task<IReadOnlyList<OrdemServicoStatus>> ObterHistoricoStatusAsync(int idOs, CancellationToken cancellationToken = default);
+
+        /// <summary>Calcula no banco a média de data_fim - data_inicio das OS executadas e finalizadas, filtrando pela data de finalização [finalizadaAPartirDe, finalizadaAntesDe) e pelo serviço incluído na OS.</summary>
+        Task<TempoMedioExecucao> ObterTempoMedioExecucaoAsync(DateTime? finalizadaAPartirDe, DateTime? finalizadaAntesDe, int? idServico, CancellationToken cancellationToken = default);
 
         /// <summary>Insere a OS e o seu primeiro status na mesma transação.</summary>
         Task<OrdemServico> AdicionarAsync(OrdemServico ordemServico, int idColaborador, DateTime dataInclusao, CancellationToken cancellationToken = default);

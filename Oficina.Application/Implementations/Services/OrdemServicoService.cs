@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Oficina.Application.Common;
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
@@ -135,6 +136,27 @@ namespace Oficina.Application.Implementations.Services
                 await _insumoRepository.RetirarReservaAsync(item.IdInsumo, item.Quantidade, cancellationToken);
 
             await _ordemServicoRepository.RemoverAsync(id, cancellationToken);
+        }
+
+        public async Task<TempoMedioExecucaoDTO?> ObterTempoMedioExecucaoAsync(DateOnly? dataInicio, DateOnly? dataFim, int? idServico, CancellationToken cancellationToken = default)
+        {
+            if (dataInicio > dataFim)
+                throw new ArgumentException("A data inicial do período não pode ser maior que a data final.");
+
+            if (idServico is not null && await _servicoRepository.ObterPorIdAsync(idServico.Value, cancellationToken) is null)
+                return null;
+
+            // Os dias do período são no horário de Brasília; a data final é inclusiva (até o fim desse dia).
+            DateTime? finalizadaAPartirDe = dataInicio is { } inicio ? HorarioBrasilia.InicioDoDiaEmUtc(inicio) : null;
+            DateTime? finalizadaAntesDe = dataFim is { } fim ? HorarioBrasilia.InicioDoDiaEmUtc(fim.AddDays(1)) : null;
+
+            var tempoMedio = await _ordemServicoRepository.ObterTempoMedioExecucaoAsync(finalizadaAPartirDe, finalizadaAntesDe, idServico, cancellationToken);
+
+            return new TempoMedioExecucaoDTO
+            {
+                QuantidadeOrdens = tempoMedio.QuantidadeOrdens,
+                TempoMedio = tempoMedio.TempoMedio
+            };
         }
 
         public async Task<IReadOnlyList<OrdemServicoServicoDTO>?> ObterServicosAsync(int idOs, CancellationToken cancellationToken = default)

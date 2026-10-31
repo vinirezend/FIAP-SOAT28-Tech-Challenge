@@ -1,3 +1,4 @@
+using Oficina.Application.Common;
 using Oficina.Application.DTOs;
 using Oficina.Domain.Enum;
 
