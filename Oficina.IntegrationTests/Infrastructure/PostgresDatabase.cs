@@ -34,7 +34,9 @@ public sealed class PostgresDatabase : IAsyncDisposable
         _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
         {
             DbAdapter = DbAdapter.Postgres,
-            SchemasToInclude = ["public"]
+            SchemasToInclude = ["public"],
+            // Tabela de domínio (espelha o enum StatusOs): os históricos de status dependem dela
+            TablesToIgnore = ["status"]
         });
     }
 
