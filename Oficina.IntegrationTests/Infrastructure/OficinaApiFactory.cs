@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Oficina.Application.Interfaces.Resources;
 
 namespace Oficina.IntegrationTests.Infrastructure;
 
@@ -8,6 +12,8 @@ namespace Oficina.IntegrationTests.Infrastructure;
 /// </summary>
 public class OficinaApiFactory(string connectionString) : WebApplicationFactory<Program>
 {
+    public EmailSenderFake EmailSender { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // "Testing" evita carregar o appsettings.Development.json (que aponta para localhost:5432)
@@ -27,5 +33,8 @@ public class OficinaApiFactory(string connectionString) : WebApplicationFactory<
 
         // Os cenários fazem vários logins seguidos do mesmo "IP"; o limite de produção (5/min) quebraria os testes
         builder.UseSetting("RateLimiting:Login:PermitLimit", "1000");
+
+        // Nenhum e-mail sai do teste: os envios ficam disponíveis em EmailSender
+        builder.ConfigureTestServices(services => services.Replace(ServiceDescriptor.Singleton<IEmailSender>(EmailSender)));
     }
 }

@@ -21,6 +21,9 @@ public static class TestRunHooks
     [BeforeScenario]
     public static Task LimparBancoAsync() => Database.ResetAsync();
 
+    [BeforeScenario]
+    public static void LimparEmails() => Factory.EmailSender.Limpar();
+
     [AfterTestRun]
     public static async Task FinalizarAmbienteAsync()
     {

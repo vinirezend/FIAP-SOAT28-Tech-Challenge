@@ -32,14 +32,10 @@ public class LoginSteps(ApiContext api)
         return api.PostAsync(SignInUrl, conteudoVazio);
     }
 
-    [Then(@"devo receber o status (\d+)")]
-    public void EntaoDevoReceberOStatus(int status) =>
-        Assert.Equal(status, (int)api.Response.StatusCode);
-
     [Then(@"a resposta deve conter um token JWT válido para o usuário ""(.*)""")]
     public async Task EntaoARespostaDeveConterUmTokenValido(string login)
     {
-        var token = (await api.Response.Content.ReadAsStringAsync()).Trim('"');
+        var token = api.Corpo.Trim('"');
         var configuracao = TestRunHooks.Factory.Services.GetRequiredService<TokenConfiguration>();
 
         // MapInboundClaims = false mantém os nomes originais das claims (ex.: "unique_name")
