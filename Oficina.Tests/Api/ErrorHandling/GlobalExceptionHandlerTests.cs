@@ -29,17 +29,14 @@ public class GlobalExceptionHandlerTests
         return (await JsonDocument.ParseAsync(context.Response.Body)).RootElement;
     }
 
-    public static TheoryData<Exception> ExcecoesDeNegocio =>
-    [
-        new BusinessException("Regra de negócio violada."),
-        new ArgumentException("CPF/CNPJ inválido."),
-        new InvalidOperationException("Status não permite a operação.")
-    ];
-
+    // Type e string são serializáveis, então o Test Explorer lista cada caso separadamente
     [Theory]
-    [MemberData(nameof(ExcecoesDeNegocio))]
-    public async Task TryHandleAsync_ExcecaoDeNegocio_DeveRetornar400ComAMensagem(Exception excecao)
+    [InlineData(typeof(BusinessException), "Regra de negócio violada.")]
+    [InlineData(typeof(ArgumentException), "CPF/CNPJ inválido.")]
+    [InlineData(typeof(InvalidOperationException), "Status não permite a operação.")]
+    public async Task TryHandleAsync_ExcecaoDeNegocio_DeveRetornar400ComAMensagem(Type tipoExcecao, string mensagem)
     {
+        var excecao = (Exception)Activator.CreateInstance(tipoExcecao, mensagem)!;
         var context = CriarContexto();
 
         var tratado = await CriarHandler().TryHandleAsync(context, excecao, CancellationToken.None);

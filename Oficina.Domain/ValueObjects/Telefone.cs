@@ -2,9 +2,10 @@ using System.Text.RegularExpressions;
 
 namespace Oficina.Domain.ValueObjects;
 
-public sealed record Telefone
+public sealed partial record Telefone
 {
-    private static readonly Regex CaracteresPermitidos = new(@"^[\d\s\(\)\-]+$", RegexOptions.Compiled);
+    [GeneratedRegex(@"^[\d\s\(\)\-]+$", RegexOptions.None, matchTimeoutMilliseconds: 100)]
+    private static partial Regex CaracteresPermitidos();
 
     public string Numero { get; }
     
@@ -14,7 +15,7 @@ public sealed record Telefone
     {
         var bruto = (valor ?? "").Trim();
 
-        if (string.IsNullOrWhiteSpace(bruto) || !CaracteresPermitidos.IsMatch(bruto))
+        if (string.IsNullOrWhiteSpace(bruto) || !CaracteresPermitidos().IsMatch(bruto))
             throw new ArgumentException("Telefone inválido.");
 
         var digitos = new string(bruto.Where(char.IsDigit).ToArray());

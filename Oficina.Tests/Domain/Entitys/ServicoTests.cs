@@ -21,9 +21,9 @@ namespace Oficina.Tests.Domain.Entitys
        [Theory]
        [InlineData("", "Descricao 1", 100.0)]
        [InlineData(null, "Descricao 2", 200.0)]
-       public void CriarServico_ComNomeInvalido_DeveLancarExcecao(string nome, string descricao, decimal valor)
+       public void CriarServico_ComNomeInvalido_DeveLancarExcecao(string? nome, string descricao, decimal valor)
        {
-           Assert.Throws<ArgumentException>(() => Servico.Criar(nome, descricao, valor));
+           Assert.Throws<ArgumentException>(() => Servico.Criar(nome!, descricao, valor));
        }
        
        [Theory]

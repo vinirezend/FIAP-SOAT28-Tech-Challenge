@@ -44,4 +44,4 @@ app.UseRateLimiter();
 app.MapControllers();
 app.MapHealthCheck();
 
-app.Run();
+await app.RunAsync();

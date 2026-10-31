@@ -498,7 +498,7 @@ public class OrdemServicoServiceTests
         _loggerMock.Verify(l => l.Log(
             LogLevel.Error,
             It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((estado, _) => estado.ToString()!.Contains("OS 1")),
+            It.Is<It.IsAnyType>((estado, _) => $"{estado}".Contains("OS 1")),
             It.IsAny<InvalidOperationException>(),
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
     }
