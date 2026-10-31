@@ -1,9 +1,9 @@
 using Oficina.Application.Implementations.Services;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Interfaces.Repositories;
 using Oficina.Infrastructure.Configurations;
-using Oficina.Infrastructure.Repositorys;
+using Oficina.Infrastructure.Repositories;
 using Oficina.Infrastructure.Resources;
 
 namespace Oficina.Api.Extensions;

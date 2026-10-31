@@ -1,8 +1,8 @@
 using Oficina.Application.DTOs;
 using Oficina.Application.Exceptions;
 using Oficina.Application.Interfaces.Services;
-using Oficina.Domain.Entitys;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Entities;
+using Oficina.Domain.Interfaces.Repositories;
 
 namespace Oficina.Application.Implementations.Services
 {

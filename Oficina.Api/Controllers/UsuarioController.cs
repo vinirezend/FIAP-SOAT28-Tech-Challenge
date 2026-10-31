@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Oficina.Api.DTO.Usuario;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Interfaces.Repositories;
 
 namespace Oficina.Api.Controllers;
 

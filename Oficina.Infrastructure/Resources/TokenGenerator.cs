@@ -2,7 +2,7 @@
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Infrastructure.Configurations;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Interfaces.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

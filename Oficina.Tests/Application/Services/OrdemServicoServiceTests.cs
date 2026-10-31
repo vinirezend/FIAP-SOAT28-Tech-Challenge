@@ -5,9 +5,9 @@ using Oficina.Application.Exceptions;
 using Oficina.Application.Implementations.Services;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
-using Oficina.Domain.Entitys;
+using Oficina.Domain.Entities;
 using Oficina.Domain.Enum;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Interfaces.Repositories;
 using Oficina.Domain.Models;
 
 namespace Oficina.Tests.Application.Services;

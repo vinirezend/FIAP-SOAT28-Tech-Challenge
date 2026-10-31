@@ -1,6 +1,6 @@
 ﻿using Npgsql;
 using Oficina.Application.Interfaces.Resources;
-using Oficina.Infrastructure.Repositorys;
+using Oficina.Infrastructure.Repositories;
 using System.Data;
 using System.Data.Common;
 

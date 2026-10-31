@@ -2,7 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Oficina.Application.DTOs;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Interfaces.Repositories;
 using Oficina.Domain.Models;
 using Oficina.Infrastructure.Configurations;
 using Oficina.Infrastructure.Resources;
