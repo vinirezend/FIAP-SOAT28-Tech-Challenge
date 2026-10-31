@@ -15,6 +15,7 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class OrdemServicoController(IOrdemServicoService ordemServicoService) : ControllerBase
 {
+    private const string osNaoEncontrada = "Ordem de serviço não encontrada.";
     /// <summary>
     /// Lista todas as ordens de serviço.
     /// </summary>
@@ -26,10 +27,10 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
     /// Obtém uma ordem de serviço pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<OrdemServicoResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<OrdemServicoResponse>, NotFound<string>>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
         await ordemServicoService.ObterPorIdAsync(id, cancellationToken) is { } ordemServico
             ? TypedResults.Ok(TransformaParaResponse(ordemServico))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Lista as ordens de serviço de um veículo.
@@ -45,14 +46,14 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
     /// </summary>
     [HttpGet("tempo-medio-execucao")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public async Task<Results<Ok<TempoMedioExecucaoResponse>, NotFound>> ObterTempoMedioExecucaoAsync(
+    public async Task<Results<Ok<TempoMedioExecucaoResponse>, NotFound<string>>> ObterTempoMedioExecucaoAsync(
         [FromQuery] DateOnly? dataInicio,
         [FromQuery] DateOnly? dataFim,
         [FromQuery] int? idServico,
         CancellationToken cancellationToken) =>
         await ordemServicoService.ObterTempoMedioExecucaoAsync(dataInicio, dataFim, idServico, cancellationToken) is { } tempoMedio
             ? TypedResults.Ok(TransformaParaResponse(tempoMedio))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound("Não encontrado");
 
     /// <summary>
     /// Abre uma OS com status Recebida, registrada em nome do colaborador autenticado.
@@ -68,55 +69,55 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
     /// Altera o veículo vinculado à OS.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<OrdemServicoResponse>, NotFound>> AtualizarAsync(int id, OrdemServicoRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<OrdemServicoResponse>, NotFound<string>>> AtualizarAsync(int id, OrdemServicoRequest request, CancellationToken cancellationToken) =>
         await ordemServicoService.AtualizarAsync(new OrdemServicoDTO { IdOs = id, IdVeiculo = request.IdVeiculo }, cancellationToken) is { } ordemServico
             ? TypedResults.Ok(TransformaParaResponse(ordemServico))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Histórico de status da OS, com data e colaborador de cada mudança.
     /// </summary>
     [HttpGet("{id:int}/status")]
-    public async Task<Results<Ok<IEnumerable<OrdemServicoStatusResponse>>, NotFound>> ObterHistoricoStatusAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<IEnumerable<OrdemServicoStatusResponse>>, NotFound<string>>> ObterHistoricoStatusAsync(int id, CancellationToken cancellationToken) =>
         await ordemServicoService.ObterHistoricoStatusAsync(id, cancellationToken) is { } historico
             ? TypedResults.Ok(historico.Select(TransformaParaResponse))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Avança a OS para o próximo status do fluxo, registrado em nome do colaborador autenticado.
     /// </summary>
     [HttpPost("{id:int}/status")]
-    public async Task<Results<Ok<OrdemServicoResponse>, NotFound>> AlterarStatusAsync(int id, AlterarStatusRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<OrdemServicoResponse>, NotFound<string>>> AlterarStatusAsync(int id, AlterarStatusRequest request, CancellationToken cancellationToken) =>
         await ordemServicoService.AlterarStatusAsync(id, request.IdStatus, cancellationToken) is { } ordemServico
             ? TypedResults.Ok(TransformaParaResponse(ordemServico))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Lista os serviços incluídos na OS.
     /// </summary>
     [HttpGet("{id:int}/servicos")]
-    public async Task<Results<Ok<IEnumerable<OrdemServicoServicoResponse>>, NotFound>> ObterServicosAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<IEnumerable<OrdemServicoServicoResponse>>, NotFound<string>>> ObterServicosAsync(int id, CancellationToken cancellationToken) =>
         await ordemServicoService.ObterServicosAsync(id, cancellationToken) is { } servicos
             ? TypedResults.Ok(servicos.Select(TransformaParaResponse))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Inclui um serviço na OS com a quantidade informada.
     /// </summary>
     [HttpPost("{id:int}/servicos")]
-    public async Task<Results<Created<OrdemServicoServicoResponse>, NotFound>> AdicionarServicoAsync(int id, AdicionarServicoRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Created<OrdemServicoServicoResponse>, NotFound<string>>> AdicionarServicoAsync(int id, AdicionarServicoRequest request, CancellationToken cancellationToken) =>
         await ordemServicoService.AdicionarServicoAsync(id, request.IdServico, request.Quantidade, cancellationToken) is { } servico
             ? TypedResults.Created(Url.Action(nameof(ObterServicosAsync), new { id }), TransformaParaResponse(servico))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Altera a quantidade de um serviço da OS.
     /// </summary>
     [HttpPut("{id:int}/servicos/{idOsServico:int}")]
-    public async Task<Results<Ok<OrdemServicoServicoResponse>, NotFound>> AlterarQuantidadeServicoAsync(int id, int idOsServico, AlterarQuantidadeServicoRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<OrdemServicoServicoResponse>, NotFound<string>>> AlterarQuantidadeServicoAsync(int id, int idOsServico, AlterarQuantidadeServicoRequest request, CancellationToken cancellationToken) =>
         await ordemServicoService.AlterarQuantidadeServicoAsync(id, idOsServico, request.Quantidade, cancellationToken) is { } servico
             ? TypedResults.Ok(TransformaParaResponse(servico))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Remove um serviço da OS.
@@ -132,28 +133,28 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
     /// Lista os insumos incluídos na OS.
     /// </summary>
     [HttpGet("{id:int}/insumos")]
-    public async Task<Results<Ok<IEnumerable<OrdemServicoInsumoResponse>>, NotFound>> ObterInsumosAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<IEnumerable<OrdemServicoInsumoResponse>>, NotFound<string>>> ObterInsumosAsync(int id, CancellationToken cancellationToken) =>
         await ordemServicoService.ObterInsumosAsync(id, cancellationToken) is { } insumos
             ? TypedResults.Ok(insumos.Select(TransformaParaResponse))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Inclui um insumo na OS com a quantidade informada.
     /// </summary>
     [HttpPost("{id:int}/insumos")]
-    public async Task<Results<Created<OrdemServicoInsumoResponse>, NotFound>> AdicionarInsumoAsync(int id, AdicionarInsumoRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Created<OrdemServicoInsumoResponse>, NotFound<string>>> AdicionarInsumoAsync(int id, AdicionarInsumoRequest request, CancellationToken cancellationToken) =>
         await ordemServicoService.AdicionarInsumoAsync(id, request.IdInsumo, request.Quantidade, cancellationToken) is { } insumo
             ? TypedResults.Created(Url.Action(nameof(ObterInsumosAsync), new { id }), TransformaParaResponse(insumo))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Altera a quantidade de um insumo da OS.
     /// </summary>
     [HttpPut("{id:int}/insumos/{idOsInsumo:int}")]
-    public async Task<Results<Ok<OrdemServicoInsumoResponse>, NotFound>> AlterarQuantidadeInsumoAsync(int id, int idOsInsumo, AlterarQuantidadeInsumoRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<OrdemServicoInsumoResponse>, NotFound<string>>> AlterarQuantidadeInsumoAsync(int id, int idOsInsumo, AlterarQuantidadeInsumoRequest request, CancellationToken cancellationToken) =>
         await ordemServicoService.AlterarQuantidadeInsumoAsync(id, idOsInsumo, request.Quantidade, cancellationToken) is { } insumo
             ? TypedResults.Ok(TransformaParaResponse(insumo))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Remove um insumo da OS.
@@ -170,10 +171,10 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
     /// </summary>
     [HttpDelete("{id:int}")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict, "application/problem+json")]
-    public async Task<Results<NoContent, NotFound, ProblemHttpResult>> DeletarAsync(int id, CancellationToken cancellationToken)
+    public async Task<Results<NoContent, NotFound<string>, ProblemHttpResult>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
         if (await ordemServicoService.ObterPorIdAsync(id, cancellationToken) is null)
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(osNaoEncontrada);
 
         try
         {

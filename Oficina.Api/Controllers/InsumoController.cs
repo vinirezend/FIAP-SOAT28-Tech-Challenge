@@ -15,14 +15,16 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class InsumoController(IInsumoService insumoService) : ControllerBase
 {
+    private const string insumoNaoEncontrado = "Insumo não encontrado.";
+
     /// <summary>
     /// Obtém um insumo pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<InsumoResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<InsumoResponse>, NotFound<string>>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
         await insumoService.ObterPorIdAsync(id, cancellationToken) is { } insumo
             ? TypedResults.Ok(TransformaParaResponse(insumo))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(insumoNaoEncontrado);
 
     /// <summary>
     /// Lista todos os insumos.
@@ -52,19 +54,19 @@ public class InsumoController(IInsumoService insumoService) : ControllerBase
     /// Atualiza os dados de um insumo, incluindo quantidades em estoque e reservada.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<InsumoResponse>, NotFound>> AtualizarAsync(int id, InsumoUpdateRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<InsumoResponse>, NotFound<string>>> AtualizarAsync(int id, InsumoUpdateRequest request, CancellationToken cancellationToken) =>
         await insumoService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } insumo
             ? TypedResults.Ok(TransformaParaResponse(insumo))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(insumoNaoEncontrado);
 
     /// <summary>
     /// Remove um insumo.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id, CancellationToken cancellationToken)
+    public async Task<Results<NoContent, NotFound<string>>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
         if (await insumoService.ObterPorIdAsync(id, cancellationToken) is null)
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(insumoNaoEncontrado);
 
         await insumoService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();
