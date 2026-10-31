@@ -1,9 +1,8 @@
-﻿namespace Oficina.Api.DTO.Insumo
+﻿namespace Oficina.Api.DTO.Insumo;
+
+public sealed record InsumoQuantidadeResponse
 {
-    public class InsumoQuantidadeResponse
-    {
-        public string Nome { get; set; }
-        public int QuantidadeEstoque { get; set; }
-        public int QuantidadeReservada { get; set; }
-    }
+    public required string Nome { get; init; }
+    public int QuantidadeEstoque { get; init; }
+    public int QuantidadeReservada { get; init; }
 }

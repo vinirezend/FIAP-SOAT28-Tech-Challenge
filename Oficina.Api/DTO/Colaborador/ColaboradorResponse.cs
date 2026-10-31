@@ -1,13 +1,12 @@
-namespace Oficina.Api.DTO.Colaborador
+namespace Oficina.Api.DTO.Colaborador;
+
+public sealed record ColaboradorResponse
 {
-    public class ColaboradorResponse
-    {
-        public int IdColaborador { get; set; }
-        public required string Nome { get; set; }
-        public required string Cpf { get; set; }
-        public required string Email { get; set; }
-        public bool Ativo { get; set; }
-        public int IdDepartamento { get; set; }
-        public int? IdUsuario { get; set; }
-    }
+    public int IdColaborador { get; init; }
+    public required string Nome { get; init; }
+    public required string Cpf { get; init; }
+    public required string Email { get; init; }
+    public bool Ativo { get; init; }
+    public int IdDepartamento { get; init; }
+    public int? IdUsuario { get; init; }
 }

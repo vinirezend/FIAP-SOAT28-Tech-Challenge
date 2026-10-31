@@ -1,17 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
-namespace Oficina.Api.DTO.Veiculo
+namespace Oficina.Api.DTO.Veiculo;
+
+public sealed record VeiculoRequest
 {
-    public class VeiculoRequest
-    {
-        public string Placa { get; set; }
-        public string Modelo { get; set; }
-        public string Marca { get; set; }
-        public int Ano { get; set; }
-        public int IdCliente { get; set; }
-        public int IdTipoVeiculo { get; set; }
-    }
+    [Required] public string Placa { get; init; } = string.Empty;
+    [Required] public string Modelo { get; init; } = string.Empty;
+    [Required] public string Marca { get; init; } = string.Empty;
+
+    [Range(1, int.MaxValue)]
+    public int Ano { get; init; }
+
+    [Range(1, int.MaxValue)]
+    public int IdCliente { get; init; }
+
+    [Range(1, int.MaxValue)]
+    public int IdTipoVeiculo { get; init; }
 }

@@ -16,7 +16,7 @@ namespace Oficina.Application.Implementations.Services
             _colaboradorRepository = colaboradorRepository;
         }
 
-        public async Task<ColaboradorDTO> AdicionarAsync(ColaboradorDTO colaborador)
+        public async Task<ColaboradorDTO> AdicionarAsync(ColaboradorDTO colaborador, CancellationToken cancellationToken = default)
         {
             var colaboradorEntity = Colaborador.Criar(
                 colaborador.Nome,
@@ -25,13 +25,13 @@ namespace Oficina.Application.Implementations.Services
                 (Departamento)colaborador.IdDepartamento,
                 colaborador.IdUsuario
             );
-            colaboradorEntity = await _colaboradorRepository.AdicionarAsync(colaboradorEntity);
+            colaboradorEntity = await _colaboradorRepository.AdicionarAsync(colaboradorEntity, cancellationToken);
             return TransformaParaDTO(colaboradorEntity);
         }
 
-        public async Task<ColaboradorDTO?> AtualizarAsync(ColaboradorDTO colaborador)
+        public async Task<ColaboradorDTO?> AtualizarAsync(ColaboradorDTO colaborador, CancellationToken cancellationToken = default)
         {
-            var colaboradorEntity = await _colaboradorRepository.ObterPorIdAsync(colaborador.IdColaborador);
+            var colaboradorEntity = await _colaboradorRepository.ObterPorIdAsync(colaborador.IdColaborador, cancellationToken);
             if (colaboradorEntity is null) return null;
 
             colaboradorEntity.Atualizar(
@@ -42,25 +42,25 @@ namespace Oficina.Application.Implementations.Services
                 colaborador.Ativo
             );
 
-            await _colaboradorRepository.AtualizarAsync(colaboradorEntity);
+            await _colaboradorRepository.AtualizarAsync(colaboradorEntity, cancellationToken);
             return TransformaParaDTO(colaboradorEntity);
         }
 
-        public async Task<ColaboradorDTO?> ObterPorIdAsync(int id)
+        public async Task<ColaboradorDTO?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var colaborador = await _colaboradorRepository.ObterPorIdAsync(id);
+            var colaborador = await _colaboradorRepository.ObterPorIdAsync(id, cancellationToken);
             return colaborador is null ? null : TransformaParaDTO(colaborador);
         }
 
-        public async Task<IReadOnlyList<ColaboradorDTO>> ObterTodosAsync()
+        public async Task<IReadOnlyList<ColaboradorDTO>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
-            var colaboradores = await _colaboradorRepository.ObterTodosAsync();
+            var colaboradores = await _colaboradorRepository.ObterTodosAsync(cancellationToken);
             return colaboradores.Select(TransformaParaDTO).ToList();
         }
 
-        public Task RemoverAsync(int id)
+        public Task RemoverAsync(int id, CancellationToken cancellationToken = default)
         {
-            return _colaboradorRepository.RemoverAsync(id);
+            return _colaboradorRepository.RemoverAsync(id, cancellationToken);
         }
 
         private static ColaboradorDTO TransformaParaDTO(Colaborador colaborador)

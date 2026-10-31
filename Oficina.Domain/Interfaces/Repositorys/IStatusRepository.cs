@@ -4,7 +4,7 @@ namespace Oficina.Domain.Interfaces.Repositorys
 {
     public interface IStatusRepository
     {
-        Task<Status?> ObterPorIdAsync(int idStatus);
-        Task<IReadOnlyList<Status>> ObterTodosAsync();
+        Task<Status?> ObterPorIdAsync(int idStatus, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Status>> ObterTodosAsync(CancellationToken cancellationToken = default);
     }
 }

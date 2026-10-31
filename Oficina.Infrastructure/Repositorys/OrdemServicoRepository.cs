@@ -34,7 +34,7 @@ namespace Oficina.Infrastructure.Repositorys
 
         }
 
-        public async Task<OrdemServico> AdicionarAsync(OrdemServico ordemServico, int idColaborador, DateTime dataInclusao)
+        public async Task<OrdemServico> AdicionarAsync(OrdemServico ordemServico, int idColaborador, DateTime dataInclusao, CancellationToken cancellationToken = default)
         {
             const string sql = "INSERT INTO os (id_veiculo, data_inicio, data_fim, valor) VALUES (@IdVeiculo, @DataInicio, @DataFim, @Valor) RETURNING id_os";
             try
@@ -59,7 +59,7 @@ namespace Oficina.Infrastructure.Repositorys
                     }, ct);
 
                     return true;
-                }, default);
+                }, cancellationToken);
 
                 return OrdemServico.Reconstituir(idOs, ordemServico.IdVeiculo, ordemServico.DataInicio, ordemServico.DataFim, ordemServico.Valor, ordemServico.Status);
             }
@@ -69,7 +69,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task AtualizarAsync(OrdemServico ordemServico)
+        public async Task AtualizarAsync(OrdemServico ordemServico, CancellationToken cancellationToken = default)
         {
             const string sql = "UPDATE os SET id_veiculo = @IdVeiculo WHERE id_os = @IdOs";
 
@@ -79,7 +79,7 @@ namespace Oficina.Infrastructure.Repositorys
                 {
                     ordemServico.IdOs,
                     ordemServico.IdVeiculo
-                });
+                }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {
@@ -87,7 +87,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task AlterarStatusAsync(OrdemServico ordemServico, int idColaborador, DateTime dataInclusao)
+        public async Task AlterarStatusAsync(OrdemServico ordemServico, int idColaborador, DateTime dataInclusao, CancellationToken cancellationToken = default)
         {
             const string sql = "UPDATE os SET data_inicio = @DataInicio, data_fim = @DataFim WHERE id_os = @IdOs";
             try
@@ -110,7 +110,7 @@ namespace Oficina.Infrastructure.Repositorys
                     }, ct);
 
                     return true;
-                }, default);
+                }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {
@@ -118,38 +118,38 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task<OrdemServico?> ObterPorIdAsync(int idOs)
+        public async Task<OrdemServico?> ObterPorIdAsync(int idOs, CancellationToken cancellationToken = default)
         {
             const string sql = $"{SelectOrdemServico} WHERE os.id_os = @IdOs";
 
-            var row = await QueryFirstOrDefaultAsync<OrdemServicoRow>(sql, new { IdOs = idOs });
+            var row = await QueryFirstOrDefaultAsync<OrdemServicoRow>(sql, new { IdOs = idOs }, cancellationToken);
 
             return row is null ? null : Reconstituir(row);
         }
 
-        public async Task<IReadOnlyList<OrdemServico>> ObterTodosAsync()
+        public async Task<IReadOnlyList<OrdemServico>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
             const string sql = $"{SelectOrdemServico} ORDER BY os.id_os DESC";
 
-            var rows = await QueryAsync<OrdemServicoRow>(sql);
+            var rows = await QueryAsync<OrdemServicoRow>(sql, cancellationToken: cancellationToken);
 
             return rows.Select(Reconstituir).ToList();
         }
 
-        public async Task<IReadOnlyList<OrdemServico>> ObterPorVeiculoAsync(int idVeiculo)
+        public async Task<IReadOnlyList<OrdemServico>> ObterPorVeiculoAsync(int idVeiculo, CancellationToken cancellationToken = default)
         {
             const string sql = $"{SelectOrdemServico} WHERE os.id_veiculo = @IdVeiculo ORDER BY os.id_os DESC";
 
-            var rows = await QueryAsync<OrdemServicoRow>(sql, new { IdVeiculo = idVeiculo });
+            var rows = await QueryAsync<OrdemServicoRow>(sql, new { IdVeiculo = idVeiculo }, cancellationToken);
 
             return rows.Select(Reconstituir).ToList();
         }
 
-        public async Task<IReadOnlyList<OrdemServicoStatus>> ObterHistoricoStatusAsync(int idOs)
+        public async Task<IReadOnlyList<OrdemServicoStatus>> ObterHistoricoStatusAsync(int idOs, CancellationToken cancellationToken = default)
         {
             const string sql = "SELECT id_os_status, id_os, id_status, id_colaborador, data_inclusao FROM os_status WHERE id_os = @IdOs ORDER BY id_os_status";
 
-            var rows = await QueryAsync<OrdemServicoStatusRow>(sql, new { IdOs = idOs });
+            var rows = await QueryAsync<OrdemServicoStatusRow>(sql, new { IdOs = idOs }, cancellationToken);
 
             return rows.Select(row => OrdemServicoStatus.Reconstituir(
                 row.IdOsStatus,
@@ -160,7 +160,7 @@ namespace Oficina.Infrastructure.Repositorys
             )).ToList();
         }
 
-        public async Task RemoverAsync(int idOs)
+        public async Task RemoverAsync(int idOs, CancellationToken cancellationToken = default)
         {
             string[] comandos =
             [
@@ -178,7 +178,7 @@ namespace Oficina.Infrastructure.Repositorys
                         await ExecuteAsync(sql, new { IdOs = idOs }, ct);
 
                     return true;
-                }, default);
+                }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {
@@ -186,16 +186,16 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task<IReadOnlyList<OrdemServicoServico>> ObterServicosAsync(int idOs)
+        public async Task<IReadOnlyList<OrdemServicoServico>> ObterServicosAsync(int idOs, CancellationToken cancellationToken = default)
         {
             const string sql = "SELECT id_os_servico, id_os, id_servico, quantidade, valor_cobrado FROM os_servico WHERE id_os = @IdOs";
 
-            var rows = await QueryAsync<OsServicoRow>(sql, new { IdOs = idOs });
+            var rows = await QueryAsync<OsServicoRow>(sql, new { IdOs = idOs }, cancellationToken);
 
             return rows.Select(Reconstituir).ToList();
         }
 
-        public async Task<OrdemServicoServico> AdicionarServicoAsync(OrdemServicoServico servico)
+        public async Task<OrdemServicoServico> AdicionarServicoAsync(OrdemServicoServico servico, CancellationToken cancellationToken = default)
         {
             const string sql = "INSERT INTO os_servico (id_os, id_servico, quantidade, valor_cobrado) VALUES (@IdOs, @IdServico, @Quantidade, @ValorCobrado) RETURNING id_os_servico";
             try
@@ -214,7 +214,7 @@ namespace Oficina.Infrastructure.Repositorys
                     await ExecuteAsync(RecalcularValorOs, new { servico.IdOs }, ct);
 
                     return true;
-                }, default);
+                }, cancellationToken);
 
                 return OrdemServicoServico.Reconstituir(idOsServico, servico.IdOs, servico.IdServico, servico.Quantidade, servico.ValorCobrado);
             }
@@ -224,7 +224,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task RemoverServicoAsync(OrdemServicoServico servico)
+        public async Task RemoverServicoAsync(OrdemServicoServico servico, CancellationToken cancellationToken = default)
         {
             const string sql = "DELETE FROM os_servico WHERE id_os_servico = @IdOsServico";
 
@@ -234,10 +234,10 @@ namespace Oficina.Infrastructure.Repositorys
                 await ExecuteAsync(RecalcularValorOs, new { servico.IdOs }, ct);
 
                 return true;
-            }, default);
+            }, cancellationToken);
         }
 
-        public async Task AtualizarQuantidadeServicoAsync(OrdemServicoServico servico)
+        public async Task AtualizarQuantidadeServicoAsync(OrdemServicoServico servico, CancellationToken cancellationToken = default)
         {
             const string sql = "UPDATE os_servico SET quantidade = @Quantidade, valor_cobrado = @ValorCobrado WHERE id_os_servico = @IdOsServico";
 
@@ -247,19 +247,19 @@ namespace Oficina.Infrastructure.Repositorys
                 await ExecuteAsync(RecalcularValorOs, new { servico.IdOs }, ct);
 
                 return true;
-            }, default);
+            }, cancellationToken);
         }
 
-        public async Task<IReadOnlyList<OrdemServicoInsumo>> ObterInsumosAsync(int idOs)
+        public async Task<IReadOnlyList<OrdemServicoInsumo>> ObterInsumosAsync(int idOs, CancellationToken cancellationToken = default)
         {
             const string sql = "SELECT id_os_insumo, id_os, id_insumo, quantidade, valor_cobrado FROM os_insumo WHERE id_os = @IdOs";
 
-            var rows = await QueryAsync<OsInsumoRow>(sql, new { IdOs = idOs });
+            var rows = await QueryAsync<OsInsumoRow>(sql, new { IdOs = idOs }, cancellationToken);
 
             return rows.Select(Reconstituir).ToList();
         }
 
-        public async Task<OrdemServicoInsumo> AdicionarInsumoAsync(OrdemServicoInsumo insumo)
+        public async Task<OrdemServicoInsumo> AdicionarInsumoAsync(OrdemServicoInsumo insumo, CancellationToken cancellationToken = default)
         {
             const string sql = "INSERT INTO os_insumo (id_os, id_insumo, quantidade, valor_cobrado) VALUES (@IdOs, @IdInsumo, @Quantidade, @ValorCobrado) RETURNING id_os_insumo";
             try
@@ -278,7 +278,7 @@ namespace Oficina.Infrastructure.Repositorys
                     await ExecuteAsync(RecalcularValorOs, new { insumo.IdOs }, ct);
 
                     return true;
-                }, default);
+                }, cancellationToken);
 
                 return OrdemServicoInsumo.Reconstituir(idOsInsumo, insumo.IdOs, insumo.IdInsumo, insumo.Quantidade, insumo.ValorCobrado);
             }
@@ -288,7 +288,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task RemoverInsumoAsync(OrdemServicoInsumo insumo)
+        public async Task RemoverInsumoAsync(OrdemServicoInsumo insumo, CancellationToken cancellationToken = default)
         {
             const string sql = "DELETE FROM os_insumo WHERE id_os_insumo = @IdOsInsumo";
 
@@ -298,10 +298,10 @@ namespace Oficina.Infrastructure.Repositorys
                 await ExecuteAsync(RecalcularValorOs, new { insumo.IdOs }, ct);
 
                 return true;
-            }, default);
+            }, cancellationToken);
         }
 
-        public async Task AtualizarQuantidadeInsumoAsync(OrdemServicoInsumo insumo)
+        public async Task AtualizarQuantidadeInsumoAsync(OrdemServicoInsumo insumo, CancellationToken cancellationToken = default)
         {
             const string sql = "UPDATE os_insumo SET quantidade = @Quantidade, valor_cobrado = @ValorCobrado WHERE id_os_insumo = @IdOsInsumo";
 
@@ -311,7 +311,7 @@ namespace Oficina.Infrastructure.Repositorys
                 await ExecuteAsync(RecalcularValorOs, new { insumo.IdOs }, ct);
 
                 return true;
-            }, default);
+            }, cancellationToken);
         }
 
         private static string MensagemReferenciaInvalida(PostgresException ex) => ex.ConstraintName switch

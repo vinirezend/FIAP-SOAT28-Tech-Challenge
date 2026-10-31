@@ -1,4 +1,5 @@
 using Npgsql;
+using Oficina.Infrastructure.Resources;
 using Oficina.IntegrationTests.Hooks;
 
 namespace Oficina.IntegrationTests.Support;
@@ -17,7 +18,7 @@ public static class UsuarioSeeder
 
         await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.AddWithValue("login", login);
-        command.Parameters.AddWithValue("senha", senha);
+        command.Parameters.AddWithValue("senha", new PasswordHasher().Gerar(senha));
         command.Parameters.AddWithValue("ativo", ativo);
 
         await command.ExecuteNonQueryAsync();

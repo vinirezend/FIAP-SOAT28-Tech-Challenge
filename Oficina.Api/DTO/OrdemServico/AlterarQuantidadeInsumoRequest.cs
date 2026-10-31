@@ -1,10 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Oficina.Api.DTO.OrdemServico
+namespace Oficina.Api.DTO.OrdemServico;
+
+public sealed record AlterarQuantidadeInsumoRequest
 {
-    public class AlterarQuantidadeInsumoRequest
-    {
-        [JsonRequired]
-        public int Quantidade { get; set; }
-    }
+    [JsonRequired, Range(1, int.MaxValue)]
+    public int Quantidade { get; init; }
 }

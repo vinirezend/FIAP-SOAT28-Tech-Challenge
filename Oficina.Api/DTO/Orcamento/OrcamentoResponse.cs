@@ -1,26 +1,25 @@
-namespace Oficina.Api.DTO.Orcamento
-{
-    public class OrcamentoResponse
-    {
-        public int IdOs { get; set; }
-        public int? IdStatus { get; set; }
-        public string? Status { get; set; }
-        public string ClienteNome { get; set; }
-        public string ClienteEmail { get; set; }
-        public string Placa { get; set; }
-        public string Marca { get; set; }
-        public string Modelo { get; set; }
-        public int Ano { get; set; }
-        public IEnumerable<OrcamentoItemResponse> Servicos { get; set; } = [];
-        public IEnumerable<OrcamentoItemResponse> Insumos { get; set; } = [];
-        public decimal ValorTotal { get; set; }
-    }
+namespace Oficina.Api.DTO.Orcamento;
 
-    public class OrcamentoItemResponse
-    {
-        public string Nome { get; set; }
-        public int Quantidade { get; set; }
-        public decimal ValorUnitario { get; set; }
-        public decimal ValorTotal { get; set; }
-    }
+public sealed record OrcamentoResponse
+{
+    public int IdOs { get; init; }
+    public int? IdStatus { get; init; }
+    public string? Status { get; init; }
+    public required string ClienteNome { get; init; }
+    public required string ClienteEmail { get; init; }
+    public required string Placa { get; init; }
+    public required string Marca { get; init; }
+    public required string Modelo { get; init; }
+    public int Ano { get; init; }
+    public IEnumerable<OrcamentoItemResponse> Servicos { get; init; } = [];
+    public IEnumerable<OrcamentoItemResponse> Insumos { get; init; } = [];
+    public decimal ValorTotal { get; init; }
+}
+
+public sealed record OrcamentoItemResponse
+{
+    public required string Nome { get; init; }
+    public int Quantidade { get; init; }
+    public decimal ValorUnitario { get; init; }
+    public decimal ValorTotal { get; init; }
 }

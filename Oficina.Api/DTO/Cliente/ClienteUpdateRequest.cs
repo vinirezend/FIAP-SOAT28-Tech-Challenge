@@ -1,10 +1,10 @@
-namespace Oficina.Api.DTO.Cliente
+using System.ComponentModel.DataAnnotations;
+
+namespace Oficina.Api.DTO.Cliente;
+
+public sealed record ClienteUpdateRequest
 {
-    public class ClienteUpdateRequest
-    {
-        public string Nome { get; set; }
-        public string Email { get; set; }
-        public string Telefone { get; set; }
-        
-    }
+    [Required] public string Nome { get; init; } = string.Empty;
+    [Required] public string Email { get; init; } = string.Empty;
+    [Required] public string Telefone { get; init; } = string.Empty;
 }

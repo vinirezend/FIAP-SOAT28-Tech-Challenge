@@ -1,16 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace Oficina.Api.DTO.Servico;
 
-namespace Oficina.Api.DTO.Servico
+public sealed record ServicoResponse
 {
-    public class ServicoResponse
-    {
-        public int IdServico { get; set; }
-        public string Nome { get; set; }
-        public string Descricao { get; set; }
-        public decimal ValorEstipulado { get; set; }
-        public bool Ativo { get; set; }
-    }
+    public int IdServico { get; init; }
+    public required string Nome { get; init; }
+    public string? Descricao { get; init; }
+    public decimal ValorEstipulado { get; init; }
+    public bool Ativo { get; init; }
 }

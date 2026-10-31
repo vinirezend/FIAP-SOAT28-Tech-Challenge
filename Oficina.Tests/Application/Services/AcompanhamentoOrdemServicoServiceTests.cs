@@ -27,16 +27,16 @@ public class AcompanhamentoOrdemServicoServiceTests
     public AcompanhamentoOrdemServicoServiceTests()
     {
         _veiculoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(3))
+            .Setup(r => r.ObterPorIdAsync(3, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Veiculo.Reconstituir(3, 9, Placa.Criar("FFF2026"), "Gol", "Volkswagen", 2019, TipoVeiculo.Carro));
         _clienteRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(9))
+            .Setup(r => r.ObterPorIdAsync(9, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Cliente.Reconstituir(9, "Lucas Ferreira", Documento.Criar("32887790056"), Email.Criar("lucas@example.com"), Telefone.Criar("(19) 98888-8888")));
 
         _envioLinkAssinadoServiceMock
             .Setup(s => s.EnviarAsync(It.IsAny<EnvioLinkAssinadoDTO>(), It.IsAny<CancellationToken>()))
             .Callback<EnvioLinkAssinadoDTO, CancellationToken>((envio, _) => _envio = envio)
-            .ReturnsAsync(new LinkAssinadoDTO { Url = "https://api.oficina.test/api/acompanhamentoordemservico/1/cliente?expira=1&assinatura=abc" });
+            .ReturnsAsync(new LinkAssinadoDTO { Url = "https://api.oficina.test/api/acompanhamento-ordem-servico/1/cliente?expira=1&assinatura=abc" });
 
         _service = new AcompanhamentoOrdemServicoService(
             _ordemServicoRepositoryMock.Object,
@@ -48,10 +48,10 @@ public class AcompanhamentoOrdemServicoServiceTests
     private void ConfigurarOs(StatusOs? status, params OrdemServicoStatus[] historico)
     {
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(1))
+            .Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(OrdemServico.Reconstituir(1, 3, null, null, 331.6m, status));
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterHistoricoStatusAsync(1))
+            .Setup(r => r.ObterHistoricoStatusAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(historico);
     }
 
@@ -134,7 +134,7 @@ public class AcompanhamentoOrdemServicoServiceTests
     public async Task ObterAsync_VeiculoNaoEncontrado_DeveLancarInvalidOperationException()
     {
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(1))
+            .Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(OrdemServico.Reconstituir(1, 77, null, null, 0m, StatusOs.Recebida));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ObterAsync(1));
@@ -151,7 +151,7 @@ public class AcompanhamentoOrdemServicoServiceTests
 
         Assert.NotNull(resultado);
         Assert.NotNull(_envio);
-        Assert.Equal("/api/acompanhamentoordemservico/1/cliente", _envio.Caminho);
+        Assert.Equal("/api/acompanhamento-ordem-servico/1/cliente", _envio.Caminho);
         Assert.Equal("lucas@example.com", _envio.EmailDestinatario);
         Assert.Equal(TemplatesEmail.AcompanhamentoOrdemServicoAssunto, _envio.Assunto);
         Assert.Equal(NomesTemplate.AcompanhamentoOrdemServico.Email, _envio.Template);

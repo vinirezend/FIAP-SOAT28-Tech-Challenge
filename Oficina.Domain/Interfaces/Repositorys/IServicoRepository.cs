@@ -4,11 +4,11 @@ namespace Oficina.Domain.Interfaces.Repositorys
 {
     public interface IServicoRepository
     {
-        Task<Servico?> ObterPorIdAsync(int idServico);
-        Task<IReadOnlyList<Servico>> ObterTodosAsync();        
-        Task<IReadOnlyList<Servico>?> PesquisarAsync(string? termo);
-        Task<Servico> AdicionarAsync(Servico servico);
-        Task AtualizarAsync(Servico servico);
-        Task RemoverAsync(int idServico);
+        Task<Servico?> ObterPorIdAsync(int idServico, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Servico>> ObterTodosAsync(CancellationToken cancellationToken = default);        
+        Task<IReadOnlyList<Servico>?> PesquisarAsync(string? termo, CancellationToken cancellationToken = default);
+        Task<Servico> AdicionarAsync(Servico servico, CancellationToken cancellationToken = default);
+        Task AtualizarAsync(Servico servico, CancellationToken cancellationToken = default);
+        Task RemoverAsync(int idServico, CancellationToken cancellationToken = default);
     }
 }

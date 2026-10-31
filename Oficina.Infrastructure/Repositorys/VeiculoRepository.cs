@@ -17,7 +17,7 @@ namespace Oficina.Infrastructure.Repositorys
     {
         public VeiculoRepository(IUnitOfWork unitOfWork) : base(unitOfWork) { }
 
-        public async Task<Veiculo> AdicionarAsync(Veiculo veiculo)
+        public async Task<Veiculo> AdicionarAsync(Veiculo veiculo, CancellationToken cancellationToken = default)
         {
             const string sql = $"INSERT INTO veiculo (placa, marca, modelo, ano, id_tipo_veiculo, id_cliente) VALUES (@Placa, @Marca, @Modelo, @Ano, @IdTipoVeiculo, @IdCliente) RETURNING id_veiculo";
             try
@@ -31,7 +31,7 @@ namespace Oficina.Infrastructure.Repositorys
                     veiculo.Ano,
                     veiculo.IdTipoVeiculo
 
-                });
+                }, cancellationToken);
 
                 return Veiculo.Reconstituir(idVeiculo, veiculo.IdCliente, veiculo.Placa, veiculo.Modelo, veiculo.Marca, veiculo.Ano, veiculo.IdTipoVeiculo);
             }
@@ -44,7 +44,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task AtualizarAsync(Veiculo veiculo)
+        public async Task AtualizarAsync(Veiculo veiculo, CancellationToken cancellationToken = default)
         {
             const string sql = $"UPDATE veiculo SET id_cliente = @IdCliente, placa = @Placa, marca = @Marca, modelo = @Modelo, ano = @Ano, id_tipo_veiculo = @IdTipoVeiculo WHERE id_veiculo = @IdVeiculo";
             try
@@ -58,7 +58,7 @@ namespace Oficina.Infrastructure.Repositorys
                     veiculo.Ano,
                     veiculo.IdTipoVeiculo,
                     veiculo.IdCliente
-                });
+                }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23505")
             {
@@ -69,29 +69,29 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task<Veiculo?> ObterPorIdAsync(int idVeiculo)
+        public async Task<Veiculo?> ObterPorIdAsync(int idVeiculo, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM veiculo WHERE id_veiculo = @IdVeiculo";
 
-            var veiculo = await QueryFirstOrDefaultAsync<VeiculoRow>(sql, new { IdVeiculo = idVeiculo });
+            var veiculo = await QueryFirstOrDefaultAsync<VeiculoRow>(sql, new { IdVeiculo = idVeiculo }, cancellationToken);
 
             return veiculo is null ? null : Veiculo.Reconstituir(veiculo.IdVeiculo, veiculo.IdCliente, Placa.Criar(veiculo.Placa), veiculo.Modelo, veiculo.Marca, veiculo.Ano, (TipoVeiculo)veiculo.IdTipoVeiculo);
         }
 
-        public async Task<Veiculo?> ObterPorPlacaAsync(string placa)
+        public async Task<Veiculo?> ObterPorPlacaAsync(string placa, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM veiculo WHERE placa = @Placa";
 
-            var veiculo = await QueryFirstOrDefaultAsync<VeiculoRow>(sql, new { Placa = placa });
+            var veiculo = await QueryFirstOrDefaultAsync<VeiculoRow>(sql, new { Placa = placa }, cancellationToken);
 
             return veiculo is null ? null : Veiculo.Reconstituir(veiculo.IdVeiculo, veiculo.IdCliente, Placa.Criar(veiculo.Placa), veiculo.Modelo, veiculo.Marca, veiculo.Ano, (TipoVeiculo)veiculo.IdTipoVeiculo);
         }
 
-        public async Task<IReadOnlyList<Veiculo>> ObterTodosAsync()
+        public async Task<IReadOnlyList<Veiculo>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM veiculo";
 
-            var rows = await QueryAsync<VeiculoRow>(sql);
+            var rows = await QueryAsync<VeiculoRow>(sql, cancellationToken: cancellationToken);
 
             return rows.Select(row => Veiculo.Reconstituir(
                 row.IdVeiculo,
@@ -104,13 +104,13 @@ namespace Oficina.Infrastructure.Repositorys
             )).ToList();
         }
 
-        public async Task RemoverAsync(int idVeiculo)
+        public async Task RemoverAsync(int idVeiculo, CancellationToken cancellationToken = default)
         {
             const string sql = $"DELETE FROM veiculo WHERE id_veiculo = @IdVeiculo";
 
             try
             {
-                await ExecuteAsync(sql, new { IdVeiculo = idVeiculo });
+                await ExecuteAsync(sql, new { IdVeiculo = idVeiculo }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {

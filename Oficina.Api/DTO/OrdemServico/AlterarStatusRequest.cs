@@ -1,10 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Oficina.Api.DTO.OrdemServico
+namespace Oficina.Api.DTO.OrdemServico;
+
+public sealed record AlterarStatusRequest
 {
-    public class AlterarStatusRequest
-    {
-        [JsonRequired]
-        public int IdStatus { get; set; }
-    }
+    [JsonRequired, Range(1, int.MaxValue)]
+    public int IdStatus { get; init; }
 }

@@ -1,13 +1,13 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Oficina.Api.DTO.OrdemServico
-{
-    public class AdicionarServicoRequest
-    {
-        [JsonRequired]
-        public int IdServico { get; set; }
+namespace Oficina.Api.DTO.OrdemServico;
 
-        [JsonRequired]
-        public int Quantidade { get; set; }
-    }
+public sealed record AdicionarServicoRequest
+{
+    [JsonRequired, Range(1, int.MaxValue)]
+    public int IdServico { get; init; }
+
+    [JsonRequired, Range(1, int.MaxValue)]
+    public int Quantidade { get; init; }
 }

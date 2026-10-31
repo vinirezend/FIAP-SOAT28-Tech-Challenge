@@ -11,7 +11,7 @@ namespace Oficina.Infrastructure.Repositorys
     {
         public ServicoRepository(IUnitOfWork unitOfWork) : base(unitOfWork) { }
 
-        public async Task<Servico> AdicionarAsync(Servico servico)
+        public async Task<Servico> AdicionarAsync(Servico servico, CancellationToken cancellationToken = default)
         {
             const string sql = $"INSERT INTO servico (nome, descricao, ativo, valor_estipulado) VALUES (@Nome, @Descricao, @Ativo, @ValorEstipulado) RETURNING id_servico";
 
@@ -21,11 +21,11 @@ namespace Oficina.Infrastructure.Repositorys
                 servico.Descricao,
                 servico.Ativo,
                 servico.ValorEstipulado
-            });
+            }, cancellationToken);
             return Servico.Reconstituir(idServico, servico.Nome, servico.Descricao, servico.ValorEstipulado, servico.Ativo);
         }
 
-        public async Task AtualizarAsync(Servico servico)
+        public async Task AtualizarAsync(Servico servico, CancellationToken cancellationToken = default)
         {
             const string sql = $"UPDATE servico SET nome = @Nome, descricao = @Descricao, ativo = @Ativo, valor_estipulado = @ValorEstipulado WHERE id_servico = @IdServico";
 
@@ -36,14 +36,14 @@ namespace Oficina.Infrastructure.Repositorys
                 servico.Descricao,
                 servico.Ativo,
                 servico.ValorEstipulado
-            });
+            }, cancellationToken);
         }
 
-        public async Task<Servico?> ObterPorIdAsync(int idServico)
+        public async Task<Servico?> ObterPorIdAsync(int idServico, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM servico WHERE id_servico = @IdServico";
 
-            var row = await QueryFirstOrDefaultAsync<ServicoRow>(sql, new { IdServico = idServico });
+            var row = await QueryFirstOrDefaultAsync<ServicoRow>(sql, new { IdServico = idServico }, cancellationToken);
 
             if(row == null)
                 return null;
@@ -57,11 +57,11 @@ namespace Oficina.Infrastructure.Repositorys
             );
         }
 
-        public async Task<IReadOnlyList<Servico>> ObterTodosAsync()
+        public async Task<IReadOnlyList<Servico>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM servico";
 
-            var rows = await QueryAsync<ServicoRow>(sql);
+            var rows = await QueryAsync<ServicoRow>(sql, cancellationToken: cancellationToken);
 
             return rows.Select(row => Servico.Reconstituir(
                 row.IdServico,
@@ -72,11 +72,11 @@ namespace Oficina.Infrastructure.Repositorys
             )).ToList();
         }
 
-        public async Task<IReadOnlyList<Servico>?> PesquisarAsync(string? termo)
+        public async Task<IReadOnlyList<Servico>?> PesquisarAsync(string? termo, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM servico WHERE nome ILIKE @Termo OR descricao ILIKE @Termo";
 
-            var rows = await QueryAsync<ServicoRow>(sql, new { Termo = $"%{termo}%" });
+            var rows = await QueryAsync<ServicoRow>(sql, new { Termo = $"%{termo}%" }, cancellationToken);
 
             return rows.Select(row => Servico.Reconstituir(
                 row.IdServico,
@@ -87,10 +87,10 @@ namespace Oficina.Infrastructure.Repositorys
             )).ToList();
         }
 
-        public async Task RemoverAsync(int idServico)
+        public async Task RemoverAsync(int idServico, CancellationToken cancellationToken = default)
         {
             const string sql = $"DELETE FROM servico WHERE id_servico = @IdServico";
-             await ExecuteAsync(sql, new { IdServico = idServico });
+             await ExecuteAsync(sql, new { IdServico = idServico }, cancellationToken);
         }
     }
 }

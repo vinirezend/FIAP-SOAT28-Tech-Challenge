@@ -1,8 +1,7 @@
-namespace Oficina.Api.DTO.Status
+namespace Oficina.Api.DTO.Status;
+
+public sealed record StatusResponse
 {
-    public class StatusResponse
-    {
-        public int IdStatus { get; set; }
-        public required string Nome { get; set; }
-    }
+    public int IdStatus { get; init; }
+    public required string Nome { get; init; }
 }

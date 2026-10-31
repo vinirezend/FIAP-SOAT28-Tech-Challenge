@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
-namespace Oficina.Api.DTO.Servico
+namespace Oficina.Api.DTO.Servico;
+
+public sealed record ServicoCreateRequest
 {
-    public class ServicoCreateRequest
-    {
-        public string Nome { get; set; }
-        public string Descricao { get; set; }
-        public decimal ValorEstipulado { get; set; } 
-    }
+    [Required] public string Nome { get; init; } = string.Empty;
+    public string? Descricao { get; init; }
+
+    public decimal ValorEstipulado { get; init; }
 }

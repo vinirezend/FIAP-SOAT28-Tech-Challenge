@@ -7,6 +7,6 @@ namespace Oficina.Application.Interfaces.Resources
     {
         string GerarTokenAcesso(IEnumerable<Claim> claims);
 
-        Task<TokenDTO?> ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciaisDTO);
+        Task<TokenDTO?> ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciaisDTO, CancellationToken cancellationToken = default);
     }
 }

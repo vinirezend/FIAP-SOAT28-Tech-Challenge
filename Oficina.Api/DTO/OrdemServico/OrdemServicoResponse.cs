@@ -1,13 +1,12 @@
-namespace Oficina.Api.DTO.OrdemServico
+namespace Oficina.Api.DTO.OrdemServico;
+
+public sealed record OrdemServicoResponse
 {
-    public class OrdemServicoResponse
-    {
-        public int IdOs { get; set; }
-        public int IdVeiculo { get; set; }
-        public DateTime? DataInicio { get; set; }
-        public DateTime? DataFim { get; set; }
-        public decimal Valor { get; set; }
-        public int? IdStatus { get; set; }
-        public string? Status { get; set; }
-    }
+    public int IdOs { get; init; }
+    public int IdVeiculo { get; init; }
+    public DateTime? DataInicio { get; init; }
+    public DateTime? DataFim { get; init; }
+    public decimal Valor { get; init; }
+    public int? IdStatus { get; init; }
+    public string? Status { get; init; }
 }

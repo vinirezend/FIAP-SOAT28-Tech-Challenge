@@ -1,12 +1,11 @@
-namespace Oficina.Api.DTO.Cliente
+namespace Oficina.Api.DTO.Cliente;
+
+public sealed record ClienteResponse
 {
-    public class ClienteResponse
-    {
-        public int IdCliente { get; set; }
-        public string Nome { get; set; }
-        public string Documento { get; set; }
-        public string TipoDocumento { get; set; }
-        public string Email { get; set; }
-        public string Telefone { get; set; }
-    }
+    public int IdCliente { get; init; }
+    public required string Nome { get; init; }
+    public required string Documento { get; init; }
+    public required string TipoDocumento { get; init; }
+    public required string Email { get; init; }
+    public required string Telefone { get; init; }
 }
