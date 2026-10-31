@@ -8,6 +8,7 @@ using Oficina.Application.Interfaces.Services;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Enum;
 using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Models;
 
 namespace Oficina.Tests.Application.Services;
 
@@ -511,5 +512,89 @@ public class OrdemServicoServiceTests
         await _service.AlterarStatusAsync(1, (int)StatusOs.EmExecucao);
 
         _orcamentoServiceMock.Verify(o => o.EnviarAsync(It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ObterTempoMedioExecucaoAsync_SemFiltros_DeveRetornarMediaDoRepositorio()
+    {
+        var media = new TimeSpan(1, 4, 30, 0);
+        _repositoryMock
+            .Setup(r => r.ObterTempoMedioExecucaoAsync(null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TempoMedioExecucao(12, media));
+
+        var resultado = await _service.ObterTempoMedioExecucaoAsync(null, null, null);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(12, resultado.QuantidadeOrdens);
+        Assert.Equal(media, resultado.TempoMedio);
+    }
+
+    [Fact]
+    public async Task ObterTempoMedioExecucaoAsync_SemOrdens_DeveRetornarQuantidadeZeroETempoNulo()
+    {
+        _repositoryMock
+            .Setup(r => r.ObterTempoMedioExecucaoAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TempoMedioExecucao(0, null));
+
+        var resultado = await _service.ObterTempoMedioExecucaoAsync(null, null, null);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(0, resultado.QuantidadeOrdens);
+        Assert.Null(resultado.TempoMedio);
+    }
+
+    [Fact]
+    public async Task ObterTempoMedioExecucaoAsync_ComPeriodo_DeveConsiderarDiasEmBrasiliaComDataFinalInclusiva()
+    {
+        _repositoryMock
+            .Setup(r => r.ObterTempoMedioExecucaoAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TempoMedioExecucao(0, null));
+
+        await _service.ObterTempoMedioExecucaoAsync(new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 31), null);
+
+        _repositoryMock.Verify(r => r.ObterTempoMedioExecucaoAsync(
+            new DateTime(2026, 10, 1, 3, 0, 0),
+            new DateTime(2026, 11, 1, 3, 0, 0),
+            null,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterTempoMedioExecucaoAsync_PeriodoInvalido_DeveLancarExcecao()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.ObterTempoMedioExecucaoAsync(new DateOnly(2026, 10, 31), new DateOnly(2026, 10, 1), null));
+
+        _repositoryMock.Verify(r => r.ObterTempoMedioExecucaoAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ObterTempoMedioExecucaoAsync_ServicoInexistente_DeveRetornarNulo()
+    {
+        _servicoRepositoryMock
+            .Setup(r => r.ObterPorIdAsync(99, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Servico?)null);
+
+        var resultado = await _service.ObterTempoMedioExecucaoAsync(null, null, 99);
+
+        Assert.Null(resultado);
+        _repositoryMock.Verify(r => r.ObterTempoMedioExecucaoAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ObterTempoMedioExecucaoAsync_ComServico_DeveFiltrarPeloServico()
+    {
+        _servicoRepositoryMock
+            .Setup(r => r.ObterPorIdAsync(3, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CriarServico(3, 150m));
+        _repositoryMock
+            .Setup(r => r.ObterTempoMedioExecucaoAsync(null, null, 3, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TempoMedioExecucao(2, TimeSpan.FromHours(3)));
+
+        var resultado = await _service.ObterTempoMedioExecucaoAsync(null, null, 3);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(2, resultado.QuantidadeOrdens);
+        Assert.Equal(TimeSpan.FromHours(3), resultado.TempoMedio);
     }
 }

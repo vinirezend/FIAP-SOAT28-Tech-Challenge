@@ -3,6 +3,7 @@ using Oficina.Application.Interfaces.Resources;
 using Oficina.Domain.Entitys;
 using Oficina.Domain.Enum;
 using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Models;
 using Oficina.Infrastructure.Models;
 
 namespace Oficina.Infrastructure.Repositorys
@@ -158,6 +159,32 @@ namespace Oficina.Infrastructure.Repositorys
                 row.IdColaborador,
                 row.DataInclusao
             )).ToList();
+        }
+
+        public async Task<TempoMedioExecucao> ObterTempoMedioExecucaoAsync(DateTime? finalizadaAPartirDe, DateTime? finalizadaAntesDe, int? idServico, CancellationToken cancellationToken = default)
+        {
+            // Só entram OS que passaram pela execução e foram finalizadas: as de orçamento recusado não têm data_inicio.
+            const string sql = @"SELECT COUNT(*)::int AS quantidade_ordens,
+                                        AVG(EXTRACT(EPOCH FROM os.data_fim - os.data_inicio))::float8 AS tempo_medio_segundos
+                                 FROM os
+                                 WHERE os.data_inicio IS NOT NULL
+                                   AND os.data_fim IS NOT NULL
+                                   AND (@FinalizadaAPartirDe::timestamp IS NULL OR os.data_fim >= @FinalizadaAPartirDe)
+                                   AND (@FinalizadaAntesDe::timestamp IS NULL OR os.data_fim < @FinalizadaAntesDe)
+                                   AND (@IdServico::int IS NULL OR EXISTS (
+                                        SELECT 1 FROM os_servico
+                                        WHERE os_servico.id_os = os.id_os AND os_servico.id_servico = @IdServico))";
+
+            var row = await QueryFirstOrDefaultAsync<TempoMedioExecucaoRow>(sql, new
+            {
+                FinalizadaAPartirDe = finalizadaAPartirDe,
+                FinalizadaAntesDe = finalizadaAntesDe,
+                IdServico = idServico
+            }, cancellationToken);
+
+            return row?.TempoMedioSegundos is { } segundos
+                ? new TempoMedioExecucao(row.QuantidadeOrdens, TimeSpan.FromSeconds(segundos))
+                : new TempoMedioExecucao(0, null);
         }
 
         public async Task RemoverAsync(int idOs, CancellationToken cancellationToken = default)

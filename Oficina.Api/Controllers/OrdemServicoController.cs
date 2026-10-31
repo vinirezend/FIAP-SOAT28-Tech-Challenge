@@ -39,6 +39,22 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         TypedResults.Ok((await ordemServicoService.ObterPorVeiculoAsync(idVeiculo, cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
+    /// Tempo médio de execução (de Em Execução até Finalizada) das OS finalizadas.
+    /// Filtra opcionalmente pelo período de finalização (datas inclusivas) e por um serviço incluído na OS.
+    /// Retorna 404 quando o serviço informado não existe.
+    /// </summary>
+    [HttpGet("tempo-medio-execucao")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
+    public async Task<Results<Ok<TempoMedioExecucaoResponse>, NotFound>> ObterTempoMedioExecucaoAsync(
+        [FromQuery] DateOnly? dataInicio,
+        [FromQuery] DateOnly? dataFim,
+        [FromQuery] int? idServico,
+        CancellationToken cancellationToken) =>
+        await ordemServicoService.ObterTempoMedioExecucaoAsync(dataInicio, dataFim, idServico, cancellationToken) is { } tempoMedio
+            ? TypedResults.Ok(TransformaParaResponse(tempoMedio))
+            : TypedResults.NotFound();
+
+    /// <summary>
     /// Abre uma OS com status Recebida, registrada em nome do colaborador autenticado.
     /// </summary>
     [HttpPost]
@@ -179,6 +195,13 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         Valor = dto.Valor,
         IdStatus = dto.IdStatus,
         Status = dto.Status
+    };
+
+    private static TempoMedioExecucaoResponse TransformaParaResponse(TempoMedioExecucaoDTO dto) => new()
+    {
+        QuantidadeOrdens = dto.QuantidadeOrdens,
+        TempoMedio = dto.TempoMedio,
+        TempoMedioEmHoras = dto.TempoMedio is { } tempo ? Math.Round(tempo.TotalHours, 2) : null
     };
 
     private static OrdemServicoStatusResponse TransformaParaResponse(OrdemServicoStatusDTO dto) => new()
