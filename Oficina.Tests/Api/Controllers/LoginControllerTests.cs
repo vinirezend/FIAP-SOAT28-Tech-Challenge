@@ -1,109 +1,76 @@
-﻿
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Oficina.Api.Controllers;
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
 
-namespace Oficina.Tests.API.Controllers
+namespace Oficina.Tests.API.Controllers;
+
+public class LoginControllerTests
 {
-    public class LoginControllerTests
+    private readonly Mock<ITokenGenerator> _tokenServiceMock = new();
+    private readonly LoginController _controller;
+
+    public LoginControllerTests()
     {
-        private readonly Mock<ITokenGenerator> _tokenServiceMock;
-        private readonly LoginController _controller;
-
-        public LoginControllerTests()
+        _controller = new LoginController(_tokenServiceMock.Object)
         {
-            _tokenServiceMock = new Mock<ITokenGenerator>();
+            // Problem(...) usa o ProblemDetailsFactory do HttpContext; sem ele cai no padrão do MVC
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+    }
 
-            _controller = new LoginController(
-                _tokenServiceMock.Object);
-        }
-
-        [Fact]
-        public async Task SignIn_ComCredenciaisNulas_DeveRetornarBadRequest()
+    [Fact]
+    public async Task SignIn_ComCredenciaisInvalidas_DeveRetornarUnauthorizedComProblemDetails()
+    {
+        // Arrange
+        var credenciais = new UsuarioCredenciaisDTO
         {
-            // Arrange
-            UsuarioCredenciaisDTO credenciais = null;
+            Login = "usuario@teste.com",
+            Senha = "senhaIncorreta"
+        };
 
-            // Act
-            var resultado = await _controller.SignIn(credenciais);
+        _tokenServiceMock
+            .Setup(service => service.ValidarCredenciais(credenciais))
+            .ReturnsAsync((TokenDTO?)null);
 
-            // Assert
-            var badRequest = Assert.IsType<BadRequestObjectResult>(
-                resultado);
+        // Act
+        var resultado = await _controller.SignIn(credenciais);
 
-            Assert.Equal("Request inválida", badRequest.Value);
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(resultado.Result);
+        Assert.Equal(StatusCodes.Status401Unauthorized, objectResult.StatusCode);
 
-            _tokenServiceMock.Verify(
-                service => service.ValidarCredenciais(
-                    It.IsAny<UsuarioCredenciaisDTO>()),
-                Times.Never);
-        }
+        var problema = Assert.IsType<ProblemDetails>(objectResult.Value);
+        Assert.Equal("Login ou senha incorretos.", problema.Detail);
 
-        [Fact]
-        public async Task SignIn_ComCredenciaisInvalidas_DeveRetornarUnauthorized()
+        _tokenServiceMock.Verify(service => service.ValidarCredenciais(credenciais), Times.Once);
+    }
+
+    [Fact]
+    public async Task SignIn_ComCredenciaisValidas_DeveRetornarOkComToken()
+    {
+        // Arrange
+        var credenciais = new UsuarioCredenciaisDTO
         {
-            // Arrange
-            var credenciais = new UsuarioCredenciaisDTO()
-            {
-                Login = "usuario@teste.com",
-                Senha = "senhaIncorreta"
-            };
+            Login = "usuario@teste.com",
+            Senha = "senha123"
+        };
 
-            _tokenServiceMock
-                .Setup(service => service.ValidarCredenciais(credenciais))
-                .ReturnsAsync((TokenDTO)null);
+        const string tokenEsperado = "jwt-de-teste";
 
-            // Act
-            var resultado = await _controller.SignIn(credenciais);
+        _tokenServiceMock
+            .Setup(service => service.ValidarCredenciais(credenciais))
+            .ReturnsAsync(new TokenDTO(true, "2026-10-21T10:00:00Z", "2026-10-21T11:00:00Z", tokenEsperado));
 
-            // Assert
-            var unauthorized = Assert.IsType<UnauthorizedObjectResult>(
-                resultado);
+        // Act
+        var resultado = await _controller.SignIn(credenciais);
 
-            Assert.Equal(
-                "Login ou senha incorretos.",
-                unauthorized.Value);
+        // Assert
+        var ok = Assert.IsType<OkObjectResult>(resultado.Result);
+        Assert.Equal(tokenEsperado, ok.Value);
 
-            _tokenServiceMock.Verify(
-                service => service.ValidarCredenciais(credenciais),
-                Times.Once);
-        }
-
-        [Fact]
-        public async Task SignIn_ComCredenciaisValidas_DeveRetornarOkComToken()
-        {
-            // Arrange
-            var credenciais = new UsuarioCredenciaisDTO()
-            {
-                Login = "usuario@teste.com",
-                Senha = "senha123"
-            };
-
-            var tokenEsperado = "jwt-de-teste";
-
-            var tokenDTO = new TokenDTO(
-                true,
-                "2026-10-21T10:00:00Z",
-                "2026-10-21T11:00:00Z",
-                tokenEsperado);
-
-            _tokenServiceMock
-                .Setup(service => service.ValidarCredenciais(credenciais))
-                .ReturnsAsync(tokenDTO);
-
-            // Act
-            var resultado = await _controller.SignIn(credenciais);
-
-            // Assert
-            var ok = Assert.IsType<OkObjectResult>(resultado);
-
-            Assert.Equal(tokenEsperado, ok.Value);
-
-            _tokenServiceMock.Verify(
-                service => service.ValidarCredenciais(credenciais),
-                Times.Once);
-        }
+        _tokenServiceMock.Verify(service => service.ValidarCredenciais(credenciais), Times.Once);
     }
 }

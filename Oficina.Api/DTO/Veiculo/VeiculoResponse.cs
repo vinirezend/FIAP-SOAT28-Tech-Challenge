@@ -1,18 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace Oficina.Api.DTO.Veiculo;
 
-namespace Oficina.Api.DTO.Veiculo
+public sealed record VeiculoResponse
 {
-    public class VeiculoResponse
-    {
-        public int IdVeiculo { get; set; }
-        public string Placa { get; set; }
-        public string Modelo { get; set; }
-        public string Marca { get; set; }
-        public int Ano { get; set; }
-        public int IdCliente { get; set; }
-        public int IdTipoVeiculo { get; set; }
-    }
+    public int IdVeiculo { get; init; }
+    public required string Placa { get; init; }
+    public required string Modelo { get; init; }
+    public required string Marca { get; init; }
+    public int Ano { get; init; }
+    public int IdCliente { get; init; }
+    public int IdTipoVeiculo { get; init; }
 }

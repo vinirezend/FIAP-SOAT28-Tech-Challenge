@@ -20,5 +20,12 @@ public class OficinaApiFactory(string connectionString) : WebApplicationFactory<
         // Credenciais fictícias para passar na validação do EmailConfiguration (ValidateOnStart)
         builder.UseSetting("EmailConfigurations:User", "usuario-teste");
         builder.UseSetting("EmailConfigurations:Key", "chave-teste");
+
+        // Segredos não ficam no appsettings.json; o ambiente "Testing" precisa informá-los
+        builder.UseSetting("TokenConfigurations:Secret", "chave-jwt-de-teste-com-tamanho-suficiente");
+        builder.UseSetting("LinkAssinadoConfigurations:Secret", "chave-link-de-teste-com-tamanho-suficiente");
+
+        // Os cenários fazem vários logins seguidos do mesmo "IP"; o limite de produção (5/min) quebraria os testes
+        builder.UseSetting("RateLimiting:Login:PermitLimit", "1000");
     }
 }

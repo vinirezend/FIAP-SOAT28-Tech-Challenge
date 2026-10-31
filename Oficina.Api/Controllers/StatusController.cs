@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Oficina.Api.DTO.Status;
 using Oficina.Application.DTOs;
@@ -18,30 +19,21 @@ public class StatusController(IStatusService statusService) : ControllerBase
     /// Lista todos os status de OS.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ObterTodosAsync()
-    {
-        var status = await statusService.ObterTodosAsync();
-        return Ok(status.Select(TransformaParaResponse));
-    }
+    public async Task<Ok<IEnumerable<StatusResponse>>> ObterTodosAsync() =>
+        TypedResults.Ok((await statusService.ObterTodosAsync()).Select(TransformaParaResponse));
 
     /// <summary>
     /// Obtém um status pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> ObterPorIdAsync(int id)
-    {
-        var status = await statusService.ObterPorIdAsync(id);
-        if (status is null)
-            return NotFound();
-        return Ok(TransformaParaResponse(status));
-    }
+    public async Task<Results<Ok<StatusResponse>, NotFound>> ObterPorIdAsync(int id) =>
+        await statusService.ObterPorIdAsync(id) is { } status
+            ? TypedResults.Ok(TransformaParaResponse(status))
+            : TypedResults.NotFound();
 
-    private static StatusResponse TransformaParaResponse(StatusDTO dto)
+    private static StatusResponse TransformaParaResponse(StatusDTO dto) => new()
     {
-        return new StatusResponse
-        {
-            IdStatus = dto.IdStatus,
-            Nome = dto.Nome
-        };
-    }
+        IdStatus = dto.IdStatus,
+        Nome = dto.Nome
+    };
 }

@@ -1,14 +1,16 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Oficina.Api.DTO.Colaborador
+namespace Oficina.Api.DTO.Colaborador;
+
+public sealed record ColaboradorCreateRequest
 {
-    public class ColaboradorCreateRequest
-    {
-        public required string Nome { get; set; }
-        public required string Cpf { get; set; }
-        public required string Email { get; set; }
-        [JsonRequired]
-        public int IdDepartamento { get; set; }
-        public int? IdUsuario { get; set; }
-    }
+    [Required] public required string Nome { get; init; }
+    [Required] public required string Cpf { get; init; }
+    [Required] public required string Email { get; init; }
+
+    [JsonRequired, Range(1, int.MaxValue)]
+    public int IdDepartamento { get; init; }
+
+    public int? IdUsuario { get; init; }
 }

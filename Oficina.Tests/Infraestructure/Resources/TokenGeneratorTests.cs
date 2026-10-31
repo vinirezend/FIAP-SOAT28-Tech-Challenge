@@ -32,8 +32,11 @@ public class TokenGeneratorTests
 
         _tokenGenerator = new TokenGenerator(
             _configuration,
-            _usuarioRepositoryMock.Object);
+            _usuarioRepositoryMock.Object,
+            new PasswordHasher());
     }
+
+    private static readonly string SenhaHash = new PasswordHasher().Gerar("senha123");
 
     private static UsuarioAutenticacao CriarUsuarioValido()
     {
@@ -41,7 +44,7 @@ public class TokenGeneratorTests
         {
             IdUsuario = 1,
             Login = "usuario@teste.com",
-            Senha = "senha123",
+            Senha = SenhaHash,
             UsuarioAtivo = true,
             IdColaborador = 10,
             Cpf = "12345678900",
@@ -65,9 +68,7 @@ public class TokenGeneratorTests
         UsuarioCredenciaisDTO credenciais)
     {
         _usuarioRepositoryMock
-            .Setup(repository => repository.ObterPorCredenciais(
-                credenciais.Login,
-                credenciais.Senha))
+            .Setup(repository => repository.ObterPorLoginAsync(credenciais.Login))
             .ReturnsAsync(usuario);
     }
 
@@ -89,9 +90,7 @@ public class TokenGeneratorTests
         Assert.False(string.IsNullOrWhiteSpace(resultado.Token));
 
         _usuarioRepositoryMock.Verify(
-            repository => repository.ObterPorCredenciais(
-                credenciais.Login,
-                credenciais.Senha),
+            repository => repository.ObterPorLoginAsync(credenciais.Login),
             Times.Once);
     }
 
@@ -102,10 +101,26 @@ public class TokenGeneratorTests
         var credenciais = CriarCredenciais();
 
         _usuarioRepositoryMock
-            .Setup(repository => repository.ObterPorCredenciais(
-                credenciais.Login,
-                credenciais.Senha))
+            .Setup(repository => repository.ObterPorLoginAsync(credenciais.Login))
             .ReturnsAsync((UsuarioAutenticacao?)null);
+
+        // Act
+        var resultado = await _tokenGenerator.ValidarCredenciais(
+            credenciais);
+
+        // Assert
+        Assert.Null(resultado);
+    }
+
+    [Fact]
+    public async Task ValidarCredenciais_SenhaIncorreta_DeveRetornarNull()
+    {
+        // Arrange
+        var usuario = CriarUsuarioValido();
+        var credenciais = CriarCredenciais();
+
+        ConfigurarUsuarioEncontrado(usuario, credenciais);
+        credenciais.Senha = "senha-errada";
 
         // Act
         var resultado = await _tokenGenerator.ValidarCredenciais(

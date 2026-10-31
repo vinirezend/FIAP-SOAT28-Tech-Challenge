@@ -7,65 +7,42 @@ public static class SwaggerExtensions
 {
     private const string BearerScheme = "Bearer";
 
-    public static IServiceCollection AddSwaggerDocumentation(
-        this IServiceCollection services)
-    {
+    public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services) =>
         services.AddOpenApi(options =>
         {
             // Registra o esquema de autenticação JWT.
-            options.AddDocumentTransformer(
-                (document, context, cancellationToken) =>
+            options.AddDocumentTransformer((document, _, _) =>
+            {
+                document.Components ??= new();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                document.Components.SecuritySchemes[BearerScheme] = new OpenApiSecurityScheme
                 {
-                    document.Components ??= new OpenApiComponents();
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Description = "Informe o token JWT."
+                };
 
-                    document.Components.SecuritySchemes ??=
-                        new Dictionary<string, IOpenApiSecurityScheme>();
+                return Task.CompletedTask;
+            });
 
-                    document.Components.SecuritySchemes[BearerScheme] =
-                        new OpenApiSecurityScheme
-                        {
-                            Type = SecuritySchemeType.Http,
-                            Scheme = "bearer",
-                            BearerFormat = "JWT",
-                            Description = "Informe o token JWT."
-                        };
+            // Aplica a autenticação (e documenta o 401) somente nos endpoints protegidos.
+            options.AddOperationTransformer((operation, context, _) =>
+            {
+                var metadata = context.Description.ActionDescriptor.EndpointMetadata;
+                var requerAutenticacao = metadata.OfType<IAuthorizeData>().Any() && !metadata.OfType<IAllowAnonymous>().Any();
 
-                    return Task.CompletedTask;
-                });
-
-            // Aplica a autenticação somente aos endpoints protegidos.
-            options.AddOperationTransformer(
-                (operation, context, cancellationToken) =>
+                if (requerAutenticacao)
                 {
-                    var metadata =
-                        context.Description.ActionDescriptor.EndpointMetadata;
+                    operation.Security = [new() { [new OpenApiSecuritySchemeReference(BearerScheme, context.Document)] = [] }];
 
-                    var requiresAuthorization =
-                        metadata.OfType<IAuthorizeData>().Any();
+                    operation.Responses ??= new();
+                    operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Não autenticado ou token expirado." });
+                }
 
-                    var allowsAnonymous =
-                        metadata.OfType<IAllowAnonymous>().Any();
-
-                    if (requiresAuthorization && !allowsAnonymous)
-                    {
-                        operation.Security =
-                        [
-                            new OpenApiSecurityRequirement
-                            {
-                                {
-                                    new OpenApiSecuritySchemeReference(BearerScheme, context.Document),
-                                    new List<string>()
-                                }
-                            }
-                        ];
-                    }
-
-                    return Task.CompletedTask;
-                });
+                return Task.CompletedTask;
+            });
         });
-
-        return services;
-    }
 
     public static WebApplication UseSwaggerDocumentation(this WebApplication app)
     {

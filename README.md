@@ -53,6 +53,25 @@ docker compose down -v
 docker compose up -d --build
 ```
 
+> As senhas dos usuários são gravadas como hash PBKDF2-SHA256 (o seed em `013_insert_inicial.sql` já traz os hashes, com a senha em texto num comentário). Um volume criado antes dessa mudança ainda tem as senhas em texto puro e **o login falha** até recriar o volume com os comandos acima.
+
+### Segredos
+
+Os segredos não ficam no `appsettings.json`. No ambiente `Development` a API usa valores de desenvolvimento do `appsettings.Development.json`; em qualquer outro ambiente ela **não inicia** sem eles:
+
+| Configuração | Variável de ambiente | Regra |
+|---|---|---|
+| Chave de assinatura do JWT | `TokenConfigurations__Secret` | obrigatória, mínimo 32 caracteres |
+| Chave dos links assinados | `LinkAssinadoConfigurations__Secret` | obrigatória, mínimo 32 caracteres |
+| Usuário / chave do SMTP | `EmailConfigurations__User` / `EmailConfigurations__Key` | obrigatórias |
+
+Para usar o SMTP real ao rodar localmente, guarde as credenciais no user-secrets (fora do repositório) em vez do `launchSettings.json`:
+
+```bash
+dotnet user-secrets set "EmailConfigurations:User" "<usuario>" --project Oficina.Api
+dotnet user-secrets set "EmailConfigurations:Key" "<chave>" --project Oficina.Api
+```
+
 ---
 
 ## Opção 1 — Docker Desktop (Windows / macOS)

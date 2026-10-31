@@ -52,7 +52,7 @@ namespace Oficina.Application.Implementations.Services
             return servicos.Select(TransformaParaDTO).ToList(); 
         }
 
-        public async Task<IReadOnlyList<ServicoDTO>?> PesquisarAsync(string? termo)
+        public async Task<IReadOnlyList<ServicoDTO>> PesquisarAsync(string? termo)
         {
             var servicos = await _servicoRepository.PesquisarAsync(termo);
             return servicos is null ? Array.Empty<ServicoDTO>() : servicos.Select(TransformaParaDTO).ToList();

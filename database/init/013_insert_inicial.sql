@@ -1,11 +1,11 @@
---USUARIO
+--USUARIO (senha gravada como hash PBKDF2-SHA256; ver Oficina.Infrastructure/Resources/PasswordHasher.cs)
 INSERT INTO usuario
     (login, senha, ativo)
 VALUES
-    ('gerente@oficina.com', 'gerente123!', TRUE),
-    ('recepcao@oficina.com', 'recepcao123!', TRUE),
-    ('oficina@oficina.com', 'oficina123!', TRUE),
-    ('almoxarifado@oficina.com', 'almoxarifado123!', TRUE);
+    ('gerente@oficina.com', 'pbkdf2-sha256$100000$aSkxI5NOEpvJDGkntot+fg==$m8xjOeVrrPgjX8lngRivlLpd7L6bAMQVD/+LTDt2btY=', TRUE), -- senha: gerente123!
+    ('recepcao@oficina.com', 'pbkdf2-sha256$100000$+H7Zv4cxjHYZ04RHro6mDg==$FX7kSOVm73uTzjEkyS7qrQQZQ+xt7fw/so9yhsGZNjg=', TRUE), -- senha: recepcao123!
+    ('oficina@oficina.com', 'pbkdf2-sha256$100000$Sl8KZ5qlioOr5CV0UYakSg==$A+OVF7f/talzShNbi0k5OJ0zzmWYmWYyQD9m6QISsLI=', TRUE), -- senha: oficina123!
+    ('almoxarifado@oficina.com', 'pbkdf2-sha256$100000$t/JeUofb9E9Mq8125ddVLQ==$rknF1i+6XeAFaS8SQJR7y/dQ2LAzDHag+NIoIz/Jtaw=', TRUE); -- senha: almoxarifado123!
 
 --CLIENTE
 INSERT INTO cliente 

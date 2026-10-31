@@ -1,28 +1,28 @@
 namespace Oficina.Api.DTO.AcompanhamentoOrdemServico;
 
-public class AcompanhamentoOrdemServicoResponse
+public sealed record AcompanhamentoOrdemServicoResponse
 {
-    public int IdOs { get; set; }
-    public int? IdStatus { get; set; }
-    public string? Status { get; set; }
-    public string? DescricaoStatus { get; set; }
-    public string ClienteNome { get; set; }
-    public string Placa { get; set; }
-    public string Marca { get; set; }
-    public string Modelo { get; set; }
-    public int Ano { get; set; }
-    public DateTime? DataInicio { get; set; }
-    public DateTime? DataFim { get; set; }
-    public decimal ValorTotal { get; set; }
-    public IEnumerable<AcompanhamentoOrdemServicoEtapaResponse> Etapas { get; set; } = [];
+    public int IdOs { get; init; }
+    public int? IdStatus { get; init; }
+    public string? Status { get; init; }
+    public string? DescricaoStatus { get; init; }
+    public required string ClienteNome { get; init; }
+    public required string Placa { get; init; }
+    public required string Marca { get; init; }
+    public required string Modelo { get; init; }
+    public int Ano { get; init; }
+    public DateTime? DataInicio { get; init; }
+    public DateTime? DataFim { get; init; }
+    public decimal ValorTotal { get; init; }
+    public IEnumerable<AcompanhamentoOrdemServicoEtapaResponse> Etapas { get; init; } = [];
 }
 
-public class AcompanhamentoOrdemServicoEtapaResponse
+public sealed record AcompanhamentoOrdemServicoEtapaResponse
 {
-    public int IdStatus { get; set; }
-    public string Nome { get; set; }
+    public int IdStatus { get; init; }
+    public required string Nome { get; init; }
 
     /// <summary>Pendente, Atual, Concluida ou NaoRealizada.</summary>
-    public string Situacao { get; set; }
-    public DateTime? Data { get; set; }
+    public required string Situacao { get; init; }
+    public DateTime? Data { get; init; }
 }

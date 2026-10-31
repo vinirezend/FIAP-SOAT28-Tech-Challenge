@@ -1,136 +1,45 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Oficina.Api.Conventions;
+using Oficina.Api.ErrorHandling;
 using Oficina.Api.Extensions;
-using Oficina.Application.Implementations.Services;
-using Oficina.Application.Interfaces.Resources;
-using Oficina.Application.Interfaces.Services;
-using Oficina.Domain.Interfaces.Repositorys;
-using Oficina.Infrastructure.Resources;
-using Oficina.Infrastructure.Repositorys;
-using System.Text;
-using Oficina.Infrastructure.Configurations;
-using Oficina.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var tokenConfigurations = new TokenConfiguration();
+builder.Services
+    .AddRepositories()
+    .AddApplicationServices()
+    .AddResources()
+    .AddJwtAuthentication()
+    .AddRateLimiting(builder.Configuration)
+    .AddDatabase(builder.Configuration)
+    .AddHealthCheck()
+    .AddSwaggerDocumentation();
 
-new ConfigureFromConfigurationOptions<TokenConfiguration>(builder.Configuration.GetSection("TokenConfigurations")).Configure(tokenConfigurations);
-builder.Services.AddSingleton(tokenConfigurations);
-
-builder.Services.AddOptions<EmailConfiguration>()
-    .BindConfiguration(EmailConfiguration.SectionName)
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-
-builder.Services.AddOptions<LinkAssinadoConfiguration>()
-    .BindConfiguration(LinkAssinadoConfiguration.SectionName)
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(option =>
-{
-    option.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = tokenConfigurations.Issuer,
-        ValidAudience = tokenConfigurations.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfigurations.Secret))
-    };
-
-    option.Events = new JwtBearerEvents
-    {
-        OnChallenge = async context =>
-        {
-            // Impede a resposta padrão do middleware.
-            context.HandleResponse();
-
-            context.Response.StatusCode =
-                StatusCodes.Status401Unauthorized;
-
-            context.Response.ContentType = "application/json";
-
-            var resposta = new
-            {
-                mensagem = "Sua sessão expirou ou você não está autenticado."
-            };
-
-            await context.Response.WriteAsJsonAsync(resposta);
-        }
-    };
-});
-
-builder.Services.AddAuthorization(auth =>
-{
-    auth.AddPolicy(
-        "Bearer",
-        new AuthorizationPolicyBuilder().AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build());
-});
-
-builder.Services.AddHttpContextAccessor();
-
-// Add services to the container.
-// REPOSITORYS
-builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
-builder.Services.AddScoped<IVeiculoRepository, VeiculoRepository>();
-builder.Services.AddScoped<IInsumoRepository, InsumoRepository>();
-builder.Services.AddScoped<IServicoRepository, ServicoRepository>();
-builder.Services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
-builder.Services.AddScoped<IStatusRepository, StatusRepository>();
-builder.Services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
-
-//SERVICES
-builder.Services.AddScoped<IClienteService, ClienteService>();
-builder.Services.AddScoped<IVeiculoService, VeiculoService>();
-builder.Services.AddScoped<IInsumoService, InsumoService>();
-builder.Services.AddScoped<IServicoService, ServicoService>();
-builder.Services.AddScoped<IColaboradorService, ColaboradorService>();
-builder.Services.AddScoped<IStatusService, StatusService>();
-builder.Services.AddScoped<IOrdemServicoService, OrdemServicoService>();
-builder.Services.AddScoped<IOrcamentoService, OrcamentoService>();
-builder.Services.AddScoped<IAcompanhamentoOrdemServicoService, AcompanhamentoOrdemServicoService>();
-builder.Services.AddScoped<IEnvioLinkAssinadoService, EnvioLinkAssinadoService>();
-
-//RESOURCES
-builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
-builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-//RESOURCES
-builder.Services.AddScoped<IEmailSender, EmailSender>();
-builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddSingleton<ILinkAssinadoGenerator, LinkAssinadoGenerator>();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddControllers(options =>
-    options.Conventions.Add(new RouteTokenTransformerConvention(new KebabCaseParameterTransformer())));
-builder.Services.AddSwaggerDocumentation();
-builder.Services.AddDatabase(builder.Configuration);
-builder.Services.AddHealthCheck();
+{
+    options.Conventions.Add(new RouteTokenTransformerConvention(new KebabCaseParameterTransformer()));
+
+    // Mantém o sufixo "Async" no nome da action para nameof(...) funcionar no Url.Action
+    options.SuppressAsyncSuffixInActionNames = false;
+
+    // Erros tratados pelo GlobalExceptionHandler, documentados em todos os endpoints
+    options.Filters.Add(new ProducesResponseTypeAttribute<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json"));
+    options.Filters.Add(new ProducesResponseTypeAttribute<ProblemDetails>(StatusCodes.Status500InternalServerError, "application/problem+json"));
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+
 app.UseSwaggerDocumentation();
 
-app.UseMiddleware<ExceptionMiddleware>();
-
-app.UseHttpsRedirection();
-
 app.UseAuthentication();
-
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 app.MapHealthCheck();

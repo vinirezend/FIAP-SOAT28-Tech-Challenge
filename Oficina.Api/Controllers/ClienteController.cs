@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-using Oficina.Application.Interfaces.Services;
-using Oficina.Application.DTOs;
-using Oficina.Api.DTO.Cliente;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Oficina.Api.DTO.Cliente;
+using Oficina.Application.DTOs;
+using Oficina.Application.Interfaces.Services;
 
 namespace Oficina.Api.Controllers;
 
@@ -18,100 +19,82 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     /// Obtém um cliente pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> ObterPorIdAsync(int id)
-    {
-        var cliente = await clienteService.ObterPorIdAsync(id);
-        if (cliente is null)
-            return NotFound();
-        return Ok(TransformaParaResponse(cliente));
-    }
+    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorIdAsync(int id) =>
+        await clienteService.ObterPorIdAsync(id) is { } cliente
+            ? TypedResults.Ok(TransformaParaResponse(cliente))
+            : TypedResults.NotFound();
 
     /// <summary>
     /// Obtém um cliente pelo documento (CPF ou CNPJ).
     /// </summary>
     [HttpGet("documento/{documento}")]
-    public async Task<IActionResult> ObterPorDocumentoAsync(string documento)
-    {
-        var cliente = await clienteService.ObterPorDocumentoAsync(documento);
-        if (cliente is null)
-            return NotFound();
-        return Ok(TransformaParaResponse(cliente));
-    }
-    
+    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorDocumentoAsync(string documento) =>
+        await clienteService.ObterPorDocumentoAsync(documento) is { } cliente
+            ? TypedResults.Ok(TransformaParaResponse(cliente))
+            : TypedResults.NotFound();
+
     /// <summary>
     /// Lista todos os clientes.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ObterTodosAsync()
-    {
-        var clientes = await clienteService.ObterTodosAsync();
-        return Ok(clientes.Select(c => TransformaParaResponse(c)));
-    }
-    
+    public async Task<Ok<IEnumerable<ClienteResponse>>> ObterTodosAsync() =>
+        TypedResults.Ok((await clienteService.ObterTodosAsync()).Select(TransformaParaResponse));
+
     /// <summary>
     /// Cadastra um novo cliente; o tipo de documento é identificado a partir do CPF/CNPJ informado.
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> AdicionarAsync([FromBody] ClienteCreateRequest request)
+    public async Task<Created<ClienteResponse>> AdicionarAsync(ClienteCreateRequest request)
     {
-        var cliente = TransformaParaDTO(request);
-        var clienteAdicionado = await clienteService.AdicionarAsync(cliente);
-        return Created($"/api/cliente/{clienteAdicionado.IdCliente}", TransformaParaResponse(clienteAdicionado));
-    }       
+        var cliente = await clienteService.AdicionarAsync(TransformaParaDTO(request));
+        return TypedResults.Created(Url.Action(nameof(ObterPorIdAsync), new { id = cliente.IdCliente }), TransformaParaResponse(cliente));
+    }
 
     /// <summary>
     /// Atualiza nome, e-mail e telefone de um cliente. O documento não pode ser alterado.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> AtualizarAsync(int id, [FromBody] ClienteUpdateRequest request)
-    {
-        var cliente = TransformaParaDTO(id, request);
-        var clienteAtualizado = await clienteService.AtualizarAsync(cliente);
-        if (clienteAtualizado is null)
-            return NotFound();
-        return Ok(TransformaParaResponse(clienteAtualizado));
-    }
+    public async Task<Results<Ok<ClienteResponse>, NotFound>> AtualizarAsync(int id, ClienteUpdateRequest request) =>
+        await clienteService.AtualizarAsync(TransformaParaDTO(id, request)) is { } cliente
+            ? TypedResults.Ok(TransformaParaResponse(cliente))
+            : TypedResults.NotFound();
 
     /// <summary>
     /// Remove um cliente.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeletarAsync(int id)
+    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id)
     {
-        var cliente = await clienteService.ObterPorIdAsync(id);
-        if (cliente is null)
-            return NotFound();
+        if (await clienteService.ObterPorIdAsync(id) is null)
+            return TypedResults.NotFound();
+
         await clienteService.RemoverAsync(id);
-        return NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static ClienteDTO TransformaParaDTO(ClienteCreateRequest request) { 
-        return new ClienteDTO
-        {
-            Nome = request.Nome,
-            Documento = request.Documento,
-            Email = request.Email,
-            Telefone = request.Telefone
-        };
-     }
-    private static ClienteDTO TransformaParaDTO(int id, ClienteUpdateRequest request) { 
-        return new ClienteDTO
-        {
-            IdCliente = id,
-            Nome = request.Nome,
-            Email = request.Email,
-            Telefone = request.Telefone
-        };
-    }
-    private static ClienteResponse TransformaParaResponse(ClienteDTO dto) { 
-        return new ClienteResponse
-        {
-            IdCliente = dto.IdCliente,
-            Nome = dto.Nome,
-            Documento = dto.Documento,
-            TipoDocumento = dto.TipoDocumento,
-            Email = dto.Email,
-            Telefone = dto.Telefone
-        };
-    }
+    private static ClienteDTO TransformaParaDTO(ClienteCreateRequest request) => new()
+    {
+        Nome = request.Nome,
+        Documento = request.Documento,
+        Email = request.Email,
+        Telefone = request.Telefone
+    };
+
+    private static ClienteDTO TransformaParaDTO(int id, ClienteUpdateRequest request) => new()
+    {
+        IdCliente = id,
+        Nome = request.Nome,
+        Email = request.Email,
+        Telefone = request.Telefone
+    };
+
+    private static ClienteResponse TransformaParaResponse(ClienteDTO dto) => new()
+    {
+        IdCliente = dto.IdCliente,
+        Nome = dto.Nome,
+        Documento = dto.Documento,
+        TipoDocumento = dto.TipoDocumento,
+        Email = dto.Email,
+        Telefone = dto.Telefone
+    };
 }
