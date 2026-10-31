@@ -15,18 +15,18 @@ public class AcompanhamentoOrdemServicoService(
 {
     public static string CaminhoCliente(int idOs) => $"/api/acompanhamento-ordem-servico/{idOs}/cliente";
 
-    public async Task<AcompanhamentoOrdemServicoDTO?> ObterAsync(int idOs)
+    public async Task<AcompanhamentoOrdemServicoDTO?> ObterAsync(int idOs, CancellationToken cancellationToken = default)
     {
-        var ordemServico = await ordemServicoRepository.ObterPorIdAsync(idOs);
-        return ordemServico is null ? null : await MontarAcompanhamentoOrdemServicoAsync(ordemServico);
+        var ordemServico = await ordemServicoRepository.ObterPorIdAsync(idOs, cancellationToken);
+        return ordemServico is null ? null : await MontarAcompanhamentoOrdemServicoAsync(ordemServico, cancellationToken);
     }
 
     public async Task<LinkAssinadoDTO?> EnviarAsync(int idOs, int? minutosValidade, CancellationToken cancellationToken)
     {
-        var ordemServico = await ordemServicoRepository.ObterPorIdAsync(idOs);
+        var ordemServico = await ordemServicoRepository.ObterPorIdAsync(idOs, cancellationToken);
         if (ordemServico is null) return null;
 
-        var acompanhamento = await MontarAcompanhamentoOrdemServicoAsync(ordemServico);
+        var acompanhamento = await MontarAcompanhamentoOrdemServicoAsync(ordemServico, cancellationToken);
         if (string.IsNullOrWhiteSpace(acompanhamento.ClienteEmail))
             throw new InvalidOperationException("Cliente não possui e-mail cadastrado.");
 
@@ -47,14 +47,14 @@ public class AcompanhamentoOrdemServicoService(
         }, cancellationToken);
     }
 
-    private async Task<AcompanhamentoOrdemServicoDTO> MontarAcompanhamentoOrdemServicoAsync(OrdemServico ordemServico)
+    private async Task<AcompanhamentoOrdemServicoDTO> MontarAcompanhamentoOrdemServicoAsync(OrdemServico ordemServico, CancellationToken cancellationToken)
     {
-        var veiculo = await veiculoRepository.ObterPorIdAsync(ordemServico.IdVeiculo)
+        var veiculo = await veiculoRepository.ObterPorIdAsync(ordemServico.IdVeiculo, cancellationToken)
             ?? throw new InvalidOperationException("Veículo da OS não encontrado.");
-        var cliente = await clienteRepository.ObterPorIdAsync(veiculo.IdCliente)
+        var cliente = await clienteRepository.ObterPorIdAsync(veiculo.IdCliente, cancellationToken)
             ?? throw new InvalidOperationException("Cliente do veículo não encontrado.");
 
-        var historico = await ordemServicoRepository.ObterHistoricoStatusAsync(ordemServico.IdOs);
+        var historico = await ordemServicoRepository.ObterHistoricoStatusAsync(ordemServico.IdOs, cancellationToken);
         var etapas = MontarEtapas(ordemServico.Status, historico);
 
         return new AcompanhamentoOrdemServicoDTO

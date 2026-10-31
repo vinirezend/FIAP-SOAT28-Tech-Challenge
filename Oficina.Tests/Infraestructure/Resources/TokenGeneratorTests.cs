@@ -68,7 +68,7 @@ public class TokenGeneratorTests
         UsuarioCredenciaisDTO credenciais)
     {
         _usuarioRepositoryMock
-            .Setup(repository => repository.ObterPorLoginAsync(credenciais.Login))
+            .Setup(repository => repository.ObterPorLoginAsync(credenciais.Login, It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
     }
 
@@ -90,7 +90,7 @@ public class TokenGeneratorTests
         Assert.False(string.IsNullOrWhiteSpace(resultado.Token));
 
         _usuarioRepositoryMock.Verify(
-            repository => repository.ObterPorLoginAsync(credenciais.Login),
+            repository => repository.ObterPorLoginAsync(credenciais.Login, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -101,7 +101,7 @@ public class TokenGeneratorTests
         var credenciais = CriarCredenciais();
 
         _usuarioRepositoryMock
-            .Setup(repository => repository.ObterPorLoginAsync(credenciais.Login))
+            .Setup(repository => repository.ObterPorLoginAsync(credenciais.Login, It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioAutenticacao?)null);
 
         // Act

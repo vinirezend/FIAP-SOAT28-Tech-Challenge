@@ -19,15 +19,15 @@ public class StatusController(IStatusService statusService) : ControllerBase
     /// Lista todos os status de OS.
     /// </summary>
     [HttpGet]
-    public async Task<Ok<IEnumerable<StatusResponse>>> ObterTodosAsync() =>
-        TypedResults.Ok((await statusService.ObterTodosAsync()).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<StatusResponse>>> ObterTodosAsync(CancellationToken cancellationToken) =>
+        TypedResults.Ok((await statusService.ObterTodosAsync(cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Obtém um status pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<StatusResponse>, NotFound>> ObterPorIdAsync(int id) =>
-        await statusService.ObterPorIdAsync(id) is { } status
+    public async Task<Results<Ok<StatusResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+        await statusService.ObterPorIdAsync(id, cancellationToken) is { } status
             ? TypedResults.Ok(TransformaParaResponse(status))
             : TypedResults.NotFound();
 

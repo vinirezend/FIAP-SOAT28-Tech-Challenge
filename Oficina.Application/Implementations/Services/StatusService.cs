@@ -14,15 +14,15 @@ namespace Oficina.Application.Implementations.Services
             _statusRepository = statusRepository;
         }
 
-        public async Task<StatusDTO?> ObterPorIdAsync(int id)
+        public async Task<StatusDTO?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var status = await _statusRepository.ObterPorIdAsync(id);
+            var status = await _statusRepository.ObterPorIdAsync(id, cancellationToken);
             return status is null ? null : TransformaParaDTO(status);
         }
 
-        public async Task<IReadOnlyList<StatusDTO>> ObterTodosAsync()
+        public async Task<IReadOnlyList<StatusDTO>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
-            var status = await _statusRepository.ObterTodosAsync();
+            var status = await _statusRepository.ObterTodosAsync(cancellationToken);
             return status.Select(TransformaParaDTO).ToList();
         }
 

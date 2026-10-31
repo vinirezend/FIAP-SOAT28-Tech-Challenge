@@ -21,7 +21,7 @@ namespace Oficina.Infrastructure.Repositorys
 
         protected async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? parameters = null, CancellationToken cancellationToken = default)
         {
-            var connection = await _unitOfWork.GetConnectionAsync();
+            var connection = await _unitOfWork.GetConnectionAsync(cancellationToken);
 
             var command = new CommandDefinition(
                 sql,
@@ -34,7 +34,7 @@ namespace Oficina.Infrastructure.Repositorys
 
         protected async Task<int> ExecuteAsync(string sql, object? parameters = null, CancellationToken cancellationToken = default)
         {
-            var connection = await _unitOfWork.GetConnectionAsync();
+            var connection = await _unitOfWork.GetConnectionAsync(cancellationToken);
 
             var command = new CommandDefinition(
                 sql,
@@ -47,7 +47,7 @@ namespace Oficina.Infrastructure.Repositorys
 
         protected async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? parameters = null, CancellationToken cancellationToken = default)
         {
-            var connection = await _unitOfWork.GetConnectionAsync();
+            var connection = await _unitOfWork.GetConnectionAsync(cancellationToken);
 
             var command = new CommandDefinition(
                 sql,
@@ -60,7 +60,7 @@ namespace Oficina.Infrastructure.Repositorys
 
         protected async Task<T?> ExecuteScalarAsync<T>(string sql, object? parameters = null, CancellationToken cancellationToken = default)
         {
-            var connection = await _unitOfWork.GetConnectionAsync();
+            var connection = await _unitOfWork.GetConnectionAsync(cancellationToken);
 
             var command = new CommandDefinition(
                 sql,

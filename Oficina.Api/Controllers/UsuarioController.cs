@@ -18,8 +18,8 @@ public class UsuarioController(IUsuarioRepository usuarioRepository) : Controlle
     /// Obtém um usuário pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<UsuarioResponse>, NotFound>> ObterAsync(int id) =>
-        await usuarioRepository.ObterAsync(id) is { } usuario
+    public async Task<Results<Ok<UsuarioResponse>, NotFound>> ObterAsync(int id, CancellationToken cancellationToken) =>
+        await usuarioRepository.ObterAsync(id, cancellationToken) is { } usuario
             ? TypedResults.Ok(new UsuarioResponse { IdUsuario = usuario.IdUsuario, Login = usuario.Login, Ativo = usuario.Ativo })
             : TypedResults.NotFound();
 }

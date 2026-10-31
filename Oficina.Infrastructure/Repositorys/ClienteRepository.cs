@@ -16,7 +16,7 @@ namespace Oficina.Infrastructure.Repositorys
 
         }
 
-        public async Task<Cliente> AdicionarAsync(Cliente cliente)
+        public async Task<Cliente> AdicionarAsync(Cliente cliente, CancellationToken cancellationToken = default)
         {
             const string sql = "INSERT INTO cliente (nome, numero_documento, tipo_documento, email, telefone) VALUES (@Nome, @NumeroDocumento, @TipoDocumento, @Email, @Telefone) RETURNING id_cliente";
 
@@ -29,7 +29,7 @@ namespace Oficina.Infrastructure.Repositorys
                     TipoDocumento = (int)cliente.Documento.Tipo,
                     Email = cliente.Email.Endereco,
                     Telefone = cliente.Telefone.Numero
-                });
+                }, cancellationToken);
 
                 return Cliente.Reconstituir(
                     idCliente,
@@ -45,7 +45,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task AtualizarAsync(Cliente cliente)
+        public async Task AtualizarAsync(Cliente cliente, CancellationToken cancellationToken = default)
         {
             const string sql = $"UPDATE cliente SET nome = @Nome, numero_documento = @NumeroDocumento, tipo_documento = @TipoDocumento, email = @Email, telefone = @Telefone WHERE id_cliente = @IdCliente";
             try
@@ -58,7 +58,7 @@ namespace Oficina.Infrastructure.Repositorys
                     TipoDocumento = (int)cliente.Documento.Tipo,
                     Email = cliente.Email.Endereco,
                     Telefone = cliente.Telefone.Numero
-                });
+                }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23505")
             {
@@ -66,11 +66,11 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task<Cliente?> ObterPorDocumentoAsync(string documento)
+        public async Task<Cliente?> ObterPorDocumentoAsync(string documento, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM cliente WHERE numero_documento = @documento";
 
-            var row = await QueryFirstOrDefaultAsync<ClienteRow>(sql, new { documento });
+            var row = await QueryFirstOrDefaultAsync<ClienteRow>(sql, new { documento }, cancellationToken);
 
             if (row is null)
                 return null;
@@ -84,11 +84,11 @@ namespace Oficina.Infrastructure.Repositorys
             );
         }
 
-        public async Task<Cliente?> ObterPorIdAsync(int idCliente)
+        public async Task<Cliente?> ObterPorIdAsync(int idCliente, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM cliente WHERE id_cliente = @idCliente";
 
-            var row = await QueryFirstOrDefaultAsync<ClienteRow>(sql, new { idCliente });
+            var row = await QueryFirstOrDefaultAsync<ClienteRow>(sql, new { idCliente }, cancellationToken);
 
             if (row is null)
                 return null;
@@ -102,7 +102,7 @@ namespace Oficina.Infrastructure.Repositorys
             );
         }
 
-        public async Task<IReadOnlyList<Cliente>> ObterTodosAsync()
+        public async Task<IReadOnlyList<Cliente>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
             const string sql = @"
                   SELECT 
@@ -115,7 +115,7 @@ namespace Oficina.Infrastructure.Repositorys
                   FROM cliente;
                 ";
 
-            var rows = await QueryAsync<ClienteRow>(sql);
+            var rows = await QueryAsync<ClienteRow>(sql, cancellationToken: cancellationToken);
             return [.. rows.Select(row => Cliente.Reconstituir(
                 row.IdCliente,
                 row.Nome,
@@ -125,13 +125,13 @@ namespace Oficina.Infrastructure.Repositorys
             ))];
         }
 
-        public async Task RemoverAsync(int idCliente)
+        public async Task RemoverAsync(int idCliente, CancellationToken cancellationToken = default)
         {
 
             const string sql = $"DELETE FROM cliente WHERE id_cliente = @idCliente";
             try
             {
-                await ExecuteAsync(sql, new { idCliente });
+                await ExecuteAsync(sql, new { idCliente }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {

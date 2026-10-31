@@ -25,8 +25,8 @@ public class LoginController(ITokenGenerator tokenService) : ControllerBase
     [ProducesResponseType<string>(StatusCodes.Status200OK, "text/plain")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, "application/problem+json")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, "application/problem+json")]
-    public async Task<ActionResult<string>> SignIn(UsuarioCredenciaisDTO usuarioCredenciais) =>
-        await tokenService.ValidarCredenciais(usuarioCredenciais) is { } token
+    public async Task<ActionResult<string>> SignIn(UsuarioCredenciaisDTO usuarioCredenciais, CancellationToken cancellationToken) =>
+        await tokenService.ValidarCredenciais(usuarioCredenciais, cancellationToken) is { } token
             ? Ok(token.Token)
             : Problem("Login ou senha incorretos.", statusCode: StatusCodes.Status401Unauthorized);
 }

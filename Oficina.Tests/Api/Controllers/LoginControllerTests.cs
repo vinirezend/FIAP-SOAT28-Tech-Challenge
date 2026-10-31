@@ -32,11 +32,11 @@ public class LoginControllerTests
         };
 
         _tokenServiceMock
-            .Setup(service => service.ValidarCredenciais(credenciais))
+            .Setup(service => service.ValidarCredenciais(credenciais, It.IsAny<CancellationToken>()))
             .ReturnsAsync((TokenDTO?)null);
 
         // Act
-        var resultado = await _controller.SignIn(credenciais);
+        var resultado = await _controller.SignIn(credenciais, CancellationToken.None);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(resultado.Result);
@@ -45,7 +45,7 @@ public class LoginControllerTests
         var problema = Assert.IsType<ProblemDetails>(objectResult.Value);
         Assert.Equal("Login ou senha incorretos.", problema.Detail);
 
-        _tokenServiceMock.Verify(service => service.ValidarCredenciais(credenciais), Times.Once);
+        _tokenServiceMock.Verify(service => service.ValidarCredenciais(credenciais, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -61,16 +61,16 @@ public class LoginControllerTests
         const string tokenEsperado = "jwt-de-teste";
 
         _tokenServiceMock
-            .Setup(service => service.ValidarCredenciais(credenciais))
+            .Setup(service => service.ValidarCredenciais(credenciais, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenDTO(true, "2026-10-21T10:00:00Z", "2026-10-21T11:00:00Z", tokenEsperado));
 
         // Act
-        var resultado = await _controller.SignIn(credenciais);
+        var resultado = await _controller.SignIn(credenciais, CancellationToken.None);
 
         // Assert
         var ok = Assert.IsType<OkObjectResult>(resultado.Result);
         Assert.Equal(tokenEsperado, ok.Value);
 
-        _tokenServiceMock.Verify(service => service.ValidarCredenciais(credenciais), Times.Once);
+        _tokenServiceMock.Verify(service => service.ValidarCredenciais(credenciais, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

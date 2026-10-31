@@ -19,15 +19,15 @@ public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     /// Lista todos os veículos.
     /// </summary>
     [HttpGet]
-    public async Task<Ok<IEnumerable<VeiculoResponse>>> ObterTodosAsync() =>
-        TypedResults.Ok((await veiculoService.ObterTodosAsync()).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<VeiculoResponse>>> ObterTodosAsync(CancellationToken cancellationToken) =>
+        TypedResults.Ok((await veiculoService.ObterTodosAsync(cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Obtém um veículo pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<VeiculoResponse>, NotFound>> ObterPorIdAsync(int id) =>
-        await veiculoService.ObterPorIdAsync(id) is { } veiculo
+    public async Task<Results<Ok<VeiculoResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+        await veiculoService.ObterPorIdAsync(id, cancellationToken) is { } veiculo
             ? TypedResults.Ok(TransformaParaResponse(veiculo))
             : TypedResults.NotFound();
 
@@ -35,8 +35,8 @@ public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     /// Obtém um veículo pela placa.
     /// </summary>
     [HttpGet("placa/{placa}")]
-    public async Task<Results<Ok<VeiculoResponse>, NotFound>> ObterPorPlacaAsync(string placa) =>
-        await veiculoService.ObterPorPlacaAsync(placa) is { } veiculo
+    public async Task<Results<Ok<VeiculoResponse>, NotFound>> ObterPorPlacaAsync(string placa, CancellationToken cancellationToken) =>
+        await veiculoService.ObterPorPlacaAsync(placa, cancellationToken) is { } veiculo
             ? TypedResults.Ok(TransformaParaResponse(veiculo))
             : TypedResults.NotFound();
 
@@ -44,9 +44,9 @@ public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     /// Cadastra um novo veículo vinculado a um cliente.
     /// </summary>
     [HttpPost]
-    public async Task<Created<VeiculoResponse>> AdicionarAsync(VeiculoRequest request)
+    public async Task<Created<VeiculoResponse>> AdicionarAsync(VeiculoRequest request, CancellationToken cancellationToken)
     {
-        var veiculo = await veiculoService.AdicionarAsync(TransformaParaDTO(0, request));
+        var veiculo = await veiculoService.AdicionarAsync(TransformaParaDTO(0, request), cancellationToken);
         return TypedResults.Created(Url.Action(nameof(ObterPorIdAsync), new { id = veiculo.IdVeiculo }), TransformaParaResponse(veiculo));
     }
 
@@ -54,8 +54,8 @@ public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     /// Atualiza os dados de um veículo.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<VeiculoResponse>, NotFound>> AtualizarAsync(int id, VeiculoRequest request) =>
-        await veiculoService.AtualizarAsync(TransformaParaDTO(id, request)) is { } veiculo
+    public async Task<Results<Ok<VeiculoResponse>, NotFound>> AtualizarAsync(int id, VeiculoRequest request, CancellationToken cancellationToken) =>
+        await veiculoService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } veiculo
             ? TypedResults.Ok(TransformaParaResponse(veiculo))
             : TypedResults.NotFound();
 
@@ -63,12 +63,12 @@ public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     /// Remove um veículo.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> RemoverAsync(int id)
+    public async Task<Results<NoContent, NotFound>> RemoverAsync(int id, CancellationToken cancellationToken)
     {
-        if (await veiculoService.ObterPorIdAsync(id) is null)
+        if (await veiculoService.ObterPorIdAsync(id, cancellationToken) is null)
             return TypedResults.NotFound();
 
-        await veiculoService.RemoverAsync(id);
+        await veiculoService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();
     }
 

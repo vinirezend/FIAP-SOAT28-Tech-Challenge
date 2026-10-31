@@ -19,8 +19,8 @@ public class ServicoController(IServicoService servicoService) : ControllerBase
     /// Obtém um serviço pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<ServicoResponse>, NotFound>> ObterPorIdAsync(int id) =>
-        await servicoService.ObterPorIdAsync(id) is { } servico
+    public async Task<Results<Ok<ServicoResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+        await servicoService.ObterPorIdAsync(id, cancellationToken) is { } servico
             ? TypedResults.Ok(TransformaParaResponse(servico))
             : TypedResults.NotFound();
 
@@ -28,23 +28,23 @@ public class ServicoController(IServicoService servicoService) : ControllerBase
     /// Lista todos os serviços.
     /// </summary>
     [HttpGet]
-    public async Task<Ok<IEnumerable<ServicoResponse>>> ObterTodosAsync() =>
-        TypedResults.Ok((await servicoService.ObterTodosAsync()).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<ServicoResponse>>> ObterTodosAsync(CancellationToken cancellationToken) =>
+        TypedResults.Ok((await servicoService.ObterTodosAsync(cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Pesquisa serviços pelo termo informado.
     /// </summary>
     [HttpGet("pesquisar/{termo}")]
-    public async Task<Ok<IEnumerable<ServicoResponse>>> PesquisarAsync(string termo) =>
-        TypedResults.Ok((await servicoService.PesquisarAsync(termo)).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<ServicoResponse>>> PesquisarAsync(string termo, CancellationToken cancellationToken) =>
+        TypedResults.Ok((await servicoService.PesquisarAsync(termo, cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Cadastra um novo serviço, já ativo.
     /// </summary>
     [HttpPost]
-    public async Task<Created<ServicoResponse>> AdicionarAsync(ServicoCreateRequest request)
+    public async Task<Created<ServicoResponse>> AdicionarAsync(ServicoCreateRequest request, CancellationToken cancellationToken)
     {
-        var servico = await servicoService.AdicionarAsync(TransformaParaDTO(request));
+        var servico = await servicoService.AdicionarAsync(TransformaParaDTO(request), cancellationToken);
         return TypedResults.Created(Url.Action(nameof(ObterPorIdAsync), new { id = servico.IdServico }), TransformaParaResponse(servico));
     }
 
@@ -52,8 +52,8 @@ public class ServicoController(IServicoService servicoService) : ControllerBase
     /// Atualiza os dados de um serviço, incluindo se está ativo.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<ServicoResponse>, NotFound>> AtualizarAsync(int id, ServicoUpdateRequest request) =>
-        await servicoService.AtualizarAsync(TransformaParaDTO(id, request)) is { } servico
+    public async Task<Results<Ok<ServicoResponse>, NotFound>> AtualizarAsync(int id, ServicoUpdateRequest request, CancellationToken cancellationToken) =>
+        await servicoService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } servico
             ? TypedResults.Ok(TransformaParaResponse(servico))
             : TypedResults.NotFound();
 
@@ -61,12 +61,12 @@ public class ServicoController(IServicoService servicoService) : ControllerBase
     /// Remove um serviço.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id)
+    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
-        if (await servicoService.ObterPorIdAsync(id) is null)
+        if (await servicoService.ObterPorIdAsync(id, cancellationToken) is null)
             return TypedResults.NotFound();
 
-        await servicoService.RemoverAsync(id);
+        await servicoService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();
     }
 

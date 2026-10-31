@@ -23,8 +23,8 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
     /// Orçamento da OS com cliente, veículo, itens e total.
     /// </summary>
     [HttpGet("{idOs:int}")]
-    public async Task<Results<Ok<OrcamentoResponse>, NotFound>> ObterAsync(int idOs) =>
-        await orcamentoService.ObterAsync(idOs) is { } orcamento
+    public async Task<Results<Ok<OrcamentoResponse>, NotFound>> ObterAsync(int idOs, CancellationToken cancellationToken) =>
+        await orcamentoService.ObterAsync(idOs, cancellationToken) is { } orcamento
             ? TypedResults.Ok(TransformaParaResponse(orcamento))
             : TypedResults.NotFound();
 
@@ -46,7 +46,7 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
     [HttpGet("{idOs:int}/aprovar")]
     [Produces("text/html")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public Task<ContentResult> ConfirmarAprovacaoAsync(int idOs) => PaginaConfirmacaoAsync(idOs, aprovar: true);
+    public Task<ContentResult> ConfirmarAprovacaoAsync(int idOs, CancellationToken cancellationToken) => PaginaConfirmacaoAsync(idOs, aprovar: true, cancellationToken);
 
     /// <summary>
     /// Aberto pelo botão "Recusar" do e-mail: mostra a confirmação, que faz POST no mesmo link assinado.
@@ -56,7 +56,7 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
     [HttpGet("{idOs:int}/recusar")]
     [Produces("text/html")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public Task<ContentResult> ConfirmarRecusaAsync(int idOs) => PaginaConfirmacaoAsync(idOs, aprovar: false);
+    public Task<ContentResult> ConfirmarRecusaAsync(int idOs, CancellationToken cancellationToken) => PaginaConfirmacaoAsync(idOs, aprovar: false, cancellationToken);
 
     /// <summary>
     /// Confirma a aprovação do orçamento pelo cliente (via link assinado) e libera a execução da OS.
@@ -66,11 +66,11 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
     [HttpPost("{idOs:int}/aprovar")]
     [Produces("text/html")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ContentResult> AprovarAsync(int idOs)
+    public async Task<ContentResult> AprovarAsync(int idOs, CancellationToken cancellationToken)
     {
         try
         {
-            return await orcamentoService.AprovarAsync(idOs) is null
+            return await orcamentoService.AprovarAsync(idOs, cancellationToken) is null
                 ? PaginaNaoEncontrado()
                 : Pagina("Orçamento aprovado", $"Obrigado! A execução da ordem de serviço nº {idOs} será iniciada.");
         }
@@ -88,11 +88,11 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
     [HttpPost("{idOs:int}/recusar")]
     [Produces("text/html")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ContentResult> RecusarAsync(int idOs)
+    public async Task<ContentResult> RecusarAsync(int idOs, CancellationToken cancellationToken)
     {
         try
         {
-            return await orcamentoService.RecusarAsync(idOs) is null
+            return await orcamentoService.RecusarAsync(idOs, cancellationToken) is null
                 ? PaginaNaoEncontrado()
                 : Pagina("Orçamento recusado", $"A ordem de serviço nº {idOs} foi finalizada sem execução dos serviços.");
         }
@@ -102,9 +102,9 @@ public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServi
         }
     }
 
-    private async Task<ContentResult> PaginaConfirmacaoAsync(int idOs, bool aprovar)
+    private async Task<ContentResult> PaginaConfirmacaoAsync(int idOs, bool aprovar, CancellationToken cancellationToken)
     {
-        var ordemServico = await ordemServicoService.ObterPorIdAsync(idOs);
+        var ordemServico = await ordemServicoService.ObterPorIdAsync(idOs, cancellationToken);
         if (ordemServico is null)
             return PaginaNaoEncontrado();
 

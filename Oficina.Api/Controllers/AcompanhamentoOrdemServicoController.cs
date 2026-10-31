@@ -22,8 +22,8 @@ public class AcompanhamentoOrdemServicoController(IAcompanhamentoOrdemServicoSer
     /// Status atual da OS e etapas do fluxo, com as datas em que cada uma foi alcançada.
     /// </summary>
     [HttpGet("{idOs:int}")]
-    public async Task<Results<Ok<AcompanhamentoOrdemServicoResponse>, NotFound>> ObterAsync(int idOs) =>
-        await acompanhamentoOrdemServicoService.ObterAsync(idOs) is { } acompanhamento
+    public async Task<Results<Ok<AcompanhamentoOrdemServicoResponse>, NotFound>> ObterAsync(int idOs, CancellationToken cancellationToken) =>
+        await acompanhamentoOrdemServicoService.ObterAsync(idOs, cancellationToken) is { } acompanhamento
             ? TypedResults.Ok(TransformaParaResponse(acompanhamento))
             : TypedResults.NotFound();
 
@@ -44,11 +44,11 @@ public class AcompanhamentoOrdemServicoController(IAcompanhamentoOrdemServicoSer
     [HttpGet("{idOs:int}/cliente")]
     [Produces("text/html")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ContentResult> VisualizarAsync(int idOs)
+    public async Task<ContentResult> VisualizarAsync(int idOs, CancellationToken cancellationToken)
     {
         try
         {
-            return await acompanhamentoOrdemServicoService.ObterAsync(idOs) is { } acompanhamento
+            return await acompanhamentoOrdemServicoService.ObterAsync(idOs, cancellationToken) is { } acompanhamento
                 ? PaginaHtml.Criar(TemplatesAcompanhamentoOrdemServico.GerarPagina(acompanhamento))
                 : PaginaHtml.Criar(TemplatesAcompanhamentoOrdemServico.GerarPaginaMensagem("Ordem de serviço não encontrada", "Entre em contato com a oficina."), StatusCodes.Status404NotFound);
         }

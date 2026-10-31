@@ -20,7 +20,7 @@ namespace Oficina.Infrastructure.Repositorys
 
         }
 
-        public async Task<Colaborador> AdicionarAsync(Colaborador colaborador)
+        public async Task<Colaborador> AdicionarAsync(Colaborador colaborador, CancellationToken cancellationToken = default)
         {
             const string sql = "INSERT INTO colaborador (nome, cpf, email, ativo, id_departamento, id_usuario) VALUES (@Nome, @Cpf, @Email, @Ativo, @IdDepartamento, @IdUsuario) RETURNING id_colaborador";
             try
@@ -33,7 +33,7 @@ namespace Oficina.Infrastructure.Repositorys
                     colaborador.Ativo,
                     IdDepartamento = (int)colaborador.IdDepartamento,
                     colaborador.IdUsuario
-                });
+                }, cancellationToken);
 
                 return Colaborador.Reconstituir(idColaborador, colaborador.Nome, colaborador.Cpf, colaborador.Email, colaborador.Ativo, colaborador.IdDepartamento, colaborador.IdUsuario);
             }
@@ -47,7 +47,7 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task AtualizarAsync(Colaborador colaborador)
+        public async Task AtualizarAsync(Colaborador colaborador, CancellationToken cancellationToken = default)
         {
             const string sql = "UPDATE colaborador SET nome = @Nome, email = @Email, ativo = @Ativo, id_departamento = @IdDepartamento, id_usuario = @IdUsuario WHERE id_colaborador = @IdColaborador";
             try
@@ -60,7 +60,7 @@ namespace Oficina.Infrastructure.Repositorys
                     colaborador.Ativo,
                     IdDepartamento = (int)colaborador.IdDepartamento,
                     colaborador.IdUsuario
-                });
+                }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23505")
             {
@@ -72,30 +72,30 @@ namespace Oficina.Infrastructure.Repositorys
             }
         }
 
-        public async Task<Colaborador?> ObterPorIdAsync(int idColaborador)
+        public async Task<Colaborador?> ObterPorIdAsync(int idColaborador, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT {Colunas} FROM colaborador WHERE id_colaborador = @IdColaborador";
 
-            var row = await QueryFirstOrDefaultAsync<ColaboradorRow>(sql, new { IdColaborador = idColaborador });
+            var row = await QueryFirstOrDefaultAsync<ColaboradorRow>(sql, new { IdColaborador = idColaborador }, cancellationToken);
 
             return row is null ? null : Reconstituir(row);
         }
 
-        public async Task<IReadOnlyList<Colaborador>> ObterTodosAsync()
+        public async Task<IReadOnlyList<Colaborador>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT {Colunas} FROM colaborador ORDER BY nome";
 
-            var rows = await QueryAsync<ColaboradorRow>(sql);
+            var rows = await QueryAsync<ColaboradorRow>(sql, cancellationToken: cancellationToken);
 
             return rows.Select(Reconstituir).ToList();
         }
 
-        public async Task RemoverAsync(int idColaborador)
+        public async Task RemoverAsync(int idColaborador, CancellationToken cancellationToken = default)
         {
             const string sql = "DELETE FROM colaborador WHERE id_colaborador = @IdColaborador";
             try
             {
-                await ExecuteAsync(sql, new { IdColaborador = idColaborador });
+                await ExecuteAsync(sql, new { IdColaborador = idColaborador }, cancellationToken);
             }
             catch (PostgresException ex) when (ex.SqlState is "23503")
             {

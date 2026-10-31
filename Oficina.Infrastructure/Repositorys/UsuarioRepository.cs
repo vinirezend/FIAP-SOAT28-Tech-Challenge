@@ -7,14 +7,14 @@ namespace Oficina.Infrastructure.Repositorys;
 
 public class UsuarioRepository(IUnitOfWork unitOfWork) : BaseRepository(unitOfWork), IUsuarioRepository
 {
-    public Task<Usuario?> ObterAsync(int idUsuario)
+    public Task<Usuario?> ObterAsync(int idUsuario, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT id_usuario, login, ativo FROM usuario WHERE id_usuario = @idUsuario";
 
-        return QueryFirstOrDefaultAsync<Usuario>(sql, new { idUsuario });
+        return QueryFirstOrDefaultAsync<Usuario>(sql, new { idUsuario }, cancellationToken);
     }
 
-    public Task<UsuarioAutenticacao?> ObterPorLoginAsync(string login)
+    public Task<UsuarioAutenticacao?> ObterPorLoginAsync(string login, CancellationToken cancellationToken = default)
     {
         const string sql = @"SELECT
                                 usuario.id_usuario AS IdUsuario,
@@ -31,6 +31,6 @@ public class UsuarioRepository(IUnitOfWork unitOfWork) : BaseRepository(unitOfWo
                                     ON colaborador.id_usuario = usuario.id_usuario
                             WHERE usuario.login = @login;";
 
-        return QueryFirstOrDefaultAsync<UsuarioAutenticacao>(sql, new { login });
+        return QueryFirstOrDefaultAsync<UsuarioAutenticacao>(sql, new { login }, cancellationToken);
     }
 }

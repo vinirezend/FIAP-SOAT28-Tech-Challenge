@@ -19,8 +19,8 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     /// Obtém um cliente pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorIdAsync(int id) =>
-        await clienteService.ObterPorIdAsync(id) is { } cliente
+    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+        await clienteService.ObterPorIdAsync(id, cancellationToken) is { } cliente
             ? TypedResults.Ok(TransformaParaResponse(cliente))
             : TypedResults.NotFound();
 
@@ -28,8 +28,8 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     /// Obtém um cliente pelo documento (CPF ou CNPJ).
     /// </summary>
     [HttpGet("documento/{documento}")]
-    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorDocumentoAsync(string documento) =>
-        await clienteService.ObterPorDocumentoAsync(documento) is { } cliente
+    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorDocumentoAsync(string documento, CancellationToken cancellationToken) =>
+        await clienteService.ObterPorDocumentoAsync(documento, cancellationToken) is { } cliente
             ? TypedResults.Ok(TransformaParaResponse(cliente))
             : TypedResults.NotFound();
 
@@ -37,16 +37,16 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     /// Lista todos os clientes.
     /// </summary>
     [HttpGet]
-    public async Task<Ok<IEnumerable<ClienteResponse>>> ObterTodosAsync() =>
-        TypedResults.Ok((await clienteService.ObterTodosAsync()).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<ClienteResponse>>> ObterTodosAsync(CancellationToken cancellationToken) =>
+        TypedResults.Ok((await clienteService.ObterTodosAsync(cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Cadastra um novo cliente; o tipo de documento é identificado a partir do CPF/CNPJ informado.
     /// </summary>
     [HttpPost]
-    public async Task<Created<ClienteResponse>> AdicionarAsync(ClienteCreateRequest request)
+    public async Task<Created<ClienteResponse>> AdicionarAsync(ClienteCreateRequest request, CancellationToken cancellationToken)
     {
-        var cliente = await clienteService.AdicionarAsync(TransformaParaDTO(request));
+        var cliente = await clienteService.AdicionarAsync(TransformaParaDTO(request), cancellationToken);
         return TypedResults.Created(Url.Action(nameof(ObterPorIdAsync), new { id = cliente.IdCliente }), TransformaParaResponse(cliente));
     }
 
@@ -54,8 +54,8 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     /// Atualiza nome, e-mail e telefone de um cliente. O documento não pode ser alterado.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<ClienteResponse>, NotFound>> AtualizarAsync(int id, ClienteUpdateRequest request) =>
-        await clienteService.AtualizarAsync(TransformaParaDTO(id, request)) is { } cliente
+    public async Task<Results<Ok<ClienteResponse>, NotFound>> AtualizarAsync(int id, ClienteUpdateRequest request, CancellationToken cancellationToken) =>
+        await clienteService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } cliente
             ? TypedResults.Ok(TransformaParaResponse(cliente))
             : TypedResults.NotFound();
 
@@ -63,12 +63,12 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     /// Remove um cliente.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id)
+    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
-        if (await clienteService.ObterPorIdAsync(id) is null)
+        if (await clienteService.ObterPorIdAsync(id, cancellationToken) is null)
             return TypedResults.NotFound();
 
-        await clienteService.RemoverAsync(id);
+        await clienteService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();
     }
 

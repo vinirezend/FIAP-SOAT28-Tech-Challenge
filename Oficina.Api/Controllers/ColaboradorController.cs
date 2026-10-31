@@ -19,15 +19,15 @@ public class ColaboradorController(IColaboradorService colaboradorService) : Con
     /// Lista todos os colaboradores.
     /// </summary>
     [HttpGet]
-    public async Task<Ok<IEnumerable<ColaboradorResponse>>> ObterTodosAsync() =>
-        TypedResults.Ok((await colaboradorService.ObterTodosAsync()).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<ColaboradorResponse>>> ObterTodosAsync(CancellationToken cancellationToken) =>
+        TypedResults.Ok((await colaboradorService.ObterTodosAsync(cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Obtém um colaborador pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<ColaboradorResponse>, NotFound>> ObterPorIdAsync(int id) =>
-        await colaboradorService.ObterPorIdAsync(id) is { } colaborador
+    public async Task<Results<Ok<ColaboradorResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+        await colaboradorService.ObterPorIdAsync(id, cancellationToken) is { } colaborador
             ? TypedResults.Ok(TransformaParaResponse(colaborador))
             : TypedResults.NotFound();
 
@@ -35,9 +35,9 @@ public class ColaboradorController(IColaboradorService colaboradorService) : Con
     /// Cadastra um novo colaborador.
     /// </summary>
     [HttpPost]
-    public async Task<Created<ColaboradorResponse>> AdicionarAsync(ColaboradorCreateRequest request)
+    public async Task<Created<ColaboradorResponse>> AdicionarAsync(ColaboradorCreateRequest request, CancellationToken cancellationToken)
     {
-        var colaborador = await colaboradorService.AdicionarAsync(TransformaParaDTO(request));
+        var colaborador = await colaboradorService.AdicionarAsync(TransformaParaDTO(request), cancellationToken);
         return TypedResults.Created(Url.Action(nameof(ObterPorIdAsync), new { id = colaborador.IdColaborador }), TransformaParaResponse(colaborador));
     }
 
@@ -45,8 +45,8 @@ public class ColaboradorController(IColaboradorService colaboradorService) : Con
     /// Atualiza os dados de um colaborador. O CPF não pode ser alterado.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<ColaboradorResponse>, NotFound>> AtualizarAsync(int id, ColaboradorUpdateRequest request) =>
-        await colaboradorService.AtualizarAsync(TransformaParaDTO(id, request)) is { } colaborador
+    public async Task<Results<Ok<ColaboradorResponse>, NotFound>> AtualizarAsync(int id, ColaboradorUpdateRequest request, CancellationToken cancellationToken) =>
+        await colaboradorService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } colaborador
             ? TypedResults.Ok(TransformaParaResponse(colaborador))
             : TypedResults.NotFound();
 
@@ -55,14 +55,14 @@ public class ColaboradorController(IColaboradorService colaboradorService) : Con
     /// </summary>
     [HttpDelete("{id:int}")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict, "application/problem+json")]
-    public async Task<Results<NoContent, NotFound, ProblemHttpResult>> DeletarAsync(int id)
+    public async Task<Results<NoContent, NotFound, ProblemHttpResult>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
-        if (await colaboradorService.ObterPorIdAsync(id) is null)
+        if (await colaboradorService.ObterPorIdAsync(id, cancellationToken) is null)
             return TypedResults.NotFound();
 
         try
         {
-            await colaboradorService.RemoverAsync(id);
+            await colaboradorService.RemoverAsync(id, cancellationToken);
             return TypedResults.NoContent();
         }
         catch (InvalidOperationException ex)

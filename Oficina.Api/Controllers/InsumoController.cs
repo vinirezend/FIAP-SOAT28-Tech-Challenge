@@ -19,8 +19,8 @@ public class InsumoController(IInsumoService insumoService) : ControllerBase
     /// Obtém um insumo pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<InsumoResponse>, NotFound>> ObterPorIdAsync(int id) =>
-        await insumoService.ObterPorIdAsync(id) is { } insumo
+    public async Task<Results<Ok<InsumoResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+        await insumoService.ObterPorIdAsync(id, cancellationToken) is { } insumo
             ? TypedResults.Ok(TransformaParaResponse(insumo))
             : TypedResults.NotFound();
 
@@ -28,23 +28,23 @@ public class InsumoController(IInsumoService insumoService) : ControllerBase
     /// Lista todos os insumos.
     /// </summary>
     [HttpGet]
-    public async Task<Ok<IEnumerable<InsumoResponse>>> ObterTodosAsync() =>
-        TypedResults.Ok((await insumoService.ObterTodosAsync()).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<InsumoResponse>>> ObterTodosAsync(CancellationToken cancellationToken) =>
+        TypedResults.Ok((await insumoService.ObterTodosAsync(cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Pesquisa insumos pelo termo informado.
     /// </summary>
     [HttpGet("pesquisar/{termo}")]
-    public async Task<Ok<IEnumerable<InsumoResponse>>> PesquisarAsync(string termo) =>
-        TypedResults.Ok((await insumoService.PesquisarAsync(termo)).Select(TransformaParaResponse));
+    public async Task<Ok<IEnumerable<InsumoResponse>>> PesquisarAsync(string termo, CancellationToken cancellationToken) =>
+        TypedResults.Ok((await insumoService.PesquisarAsync(termo, cancellationToken)).Select(TransformaParaResponse));
 
     /// <summary>
     /// Cadastra um novo insumo com a quantidade inicial em estoque.
     /// </summary>
     [HttpPost]
-    public async Task<Created<InsumoResponse>> AdicionarAsync(InsumoCreateRequest request)
+    public async Task<Created<InsumoResponse>> AdicionarAsync(InsumoCreateRequest request, CancellationToken cancellationToken)
     {
-        var insumo = await insumoService.AdicionarAsync(TransformaParaDTO(request));
+        var insumo = await insumoService.AdicionarAsync(TransformaParaDTO(request), cancellationToken);
         return TypedResults.Created(Url.Action(nameof(ObterPorIdAsync), new { id = insumo.IdInsumo }), TransformaParaResponse(insumo));
     }
 
@@ -52,8 +52,8 @@ public class InsumoController(IInsumoService insumoService) : ControllerBase
     /// Atualiza os dados de um insumo, incluindo quantidades em estoque e reservada.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<InsumoResponse>, NotFound>> AtualizarAsync(int id, InsumoUpdateRequest request) =>
-        await insumoService.AtualizarAsync(TransformaParaDTO(id, request)) is { } insumo
+    public async Task<Results<Ok<InsumoResponse>, NotFound>> AtualizarAsync(int id, InsumoUpdateRequest request, CancellationToken cancellationToken) =>
+        await insumoService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } insumo
             ? TypedResults.Ok(TransformaParaResponse(insumo))
             : TypedResults.NotFound();
 
@@ -61,12 +61,12 @@ public class InsumoController(IInsumoService insumoService) : ControllerBase
     /// Remove um insumo.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id)
+    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
-        if (await insumoService.ObterPorIdAsync(id) is null)
+        if (await insumoService.ObterPorIdAsync(id, cancellationToken) is null)
             return TypedResults.NotFound();
 
-        await insumoService.RemoverAsync(id);
+        await insumoService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();
     }
 
@@ -74,29 +74,29 @@ public class InsumoController(IInsumoService insumoService) : ControllerBase
     /// Dá entrada da quantidade informada no estoque do insumo.
     /// </summary>
     [HttpPatch("{idInsumo:int}/adicionar-estoque/{quantidade:int}")]
-    public async Task<Ok<InsumoQuantidadeResponse>> AdicionarEstoqueAsync(int idInsumo, int quantidade) =>
-        TypedResults.Ok(TransformaParaResponse(await insumoService.AdicionarEstoqueAsync(idInsumo, quantidade)));
+    public async Task<Ok<InsumoQuantidadeResponse>> AdicionarEstoqueAsync(int idInsumo, int quantidade, CancellationToken cancellationToken) =>
+        TypedResults.Ok(TransformaParaResponse(await insumoService.AdicionarEstoqueAsync(idInsumo, quantidade, cancellationToken)));
 
     /// <summary>
     /// Dá baixa da quantidade informada no estoque do insumo.
     /// </summary>
     [HttpPatch("{idInsumo:int}/retirar-estoque/{quantidade:int}")]
-    public async Task<Ok<InsumoQuantidadeResponse>> RetirarEstoqueAsync(int idInsumo, int quantidade) =>
-        TypedResults.Ok(TransformaParaResponse(await insumoService.RetirarEstoqueAsync(idInsumo, quantidade)));
+    public async Task<Ok<InsumoQuantidadeResponse>> RetirarEstoqueAsync(int idInsumo, int quantidade, CancellationToken cancellationToken) =>
+        TypedResults.Ok(TransformaParaResponse(await insumoService.RetirarEstoqueAsync(idInsumo, quantidade, cancellationToken)));
 
     /// <summary>
     /// Reserva a quantidade informada do insumo.
     /// </summary>
     [HttpPatch("{idInsumo:int}/adicionar-reserva/{quantidade:int}")]
-    public async Task<Ok<InsumoQuantidadeResponse>> AdicionarReservaAsync(int idInsumo, int quantidade) =>
-        TypedResults.Ok(TransformaParaResponse(await insumoService.AdicionarReservaAsync(idInsumo, quantidade)));
+    public async Task<Ok<InsumoQuantidadeResponse>> AdicionarReservaAsync(int idInsumo, int quantidade, CancellationToken cancellationToken) =>
+        TypedResults.Ok(TransformaParaResponse(await insumoService.AdicionarReservaAsync(idInsumo, quantidade, cancellationToken)));
 
     /// <summary>
     /// Libera a quantidade informada da reserva do insumo.
     /// </summary>
     [HttpPatch("{idInsumo:int}/retirar-reserva/{quantidade:int}")]
-    public async Task<Ok<InsumoQuantidadeResponse>> RetirarReservaAsync(int idInsumo, int quantidade) =>
-        TypedResults.Ok(TransformaParaResponse(await insumoService.RetirarReservaAsync(idInsumo, quantidade)));
+    public async Task<Ok<InsumoQuantidadeResponse>> RetirarReservaAsync(int idInsumo, int quantidade, CancellationToken cancellationToken) =>
+        TypedResults.Ok(TransformaParaResponse(await insumoService.RetirarReservaAsync(idInsumo, quantidade, cancellationToken)));
 
     private static InsumoDTO TransformaParaDTO(InsumoCreateRequest request) => new()
     {

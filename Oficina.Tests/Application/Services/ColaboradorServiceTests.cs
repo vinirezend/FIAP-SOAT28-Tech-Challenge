@@ -25,8 +25,8 @@ public class ColaboradorServiceTests
     public async Task AdicionarAsync_DeveCriarColaboradorAtivo()
     {
         _repositoryMock
-            .Setup(r => r.AdicionarAsync(It.IsAny<Colaborador>()))
-            .ReturnsAsync((Colaborador c) => Colaborador.Reconstituir(7, c.Nome, c.Cpf, c.Email, c.Ativo, c.IdDepartamento, c.IdUsuario));
+            .Setup(r => r.AdicionarAsync(It.IsAny<Colaborador>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Colaborador c, CancellationToken _) => Colaborador.Reconstituir(7, c.Nome, c.Cpf, c.Email, c.Ativo, c.IdDepartamento, c.IdUsuario));
 
         var resultado = await _service.AdicionarAsync(new ColaboradorDTO
         {
@@ -57,7 +57,7 @@ public class ColaboradorServiceTests
     [Fact]
     public async Task AtualizarAsync_DeveAtualizarSemAlterarCpf()
     {
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(CriarColaborador());
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(CriarColaborador());
 
         var resultado = await _service.AtualizarAsync(new ColaboradorDTO
         {
@@ -73,7 +73,7 @@ public class ColaboradorServiceTests
         Assert.Equal("Oficina 2", resultado.Nome);
         Assert.Equal("50118487442", resultado.Cpf);
         Assert.False(resultado.Ativo);
-        _repositoryMock.Verify(r => r.AtualizarAsync(It.IsAny<Colaborador>()), Times.Once);
+        _repositoryMock.Verify(r => r.AtualizarAsync(It.IsAny<Colaborador>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class ColaboradorServiceTests
     [Fact]
     public async Task ObterTodosAsync_DeveRetornarColaboradores()
     {
-        _repositoryMock.Setup(r => r.ObterTodosAsync()).ReturnsAsync([CriarColaborador()]);
+        _repositoryMock.Setup(r => r.ObterTodosAsync(It.IsAny<CancellationToken>())).ReturnsAsync([CriarColaborador()]);
 
         var resultado = await _service.ObterTodosAsync();
 
@@ -97,7 +97,7 @@ public class ColaboradorServiceTests
     [Fact]
     public async Task ObterPorIdAsync_DeveRetornarColaborador()
     {
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(CriarColaborador());
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(CriarColaborador());
 
         var resultado = await _service.ObterPorIdAsync(1);
 
@@ -111,6 +111,6 @@ public class ColaboradorServiceTests
     {
         await _service.RemoverAsync(1);
 
-        _repositoryMock.Verify(r => r.RemoverAsync(1), Times.Once);
+        _repositoryMock.Verify(r => r.RemoverAsync(1, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

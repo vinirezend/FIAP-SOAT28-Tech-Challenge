@@ -5,7 +5,7 @@ namespace Oficina.Application.Interfaces.Resources
 {
     public interface IUnitOfWork : IAsyncDisposable
     {
-        Task<DbConnection> GetConnectionAsync();
+        Task<DbConnection> GetConnectionAsync(CancellationToken cancellationToken = default);
 
         DbTransaction? Transaction { get; }
 

@@ -31,27 +31,27 @@ public class OrcamentoServiceTests
         _timeProviderMock.Setup(t => t.GetUtcNow()).Returns(Agora);
 
         _veiculoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(3))
+            .Setup(r => r.ObterPorIdAsync(3, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Veiculo.Reconstituir(3, 9, Placa.Criar("FFF2026"), "Gol", "Volkswagen", 2019, TipoVeiculo.Carro));
         _clienteRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(9))
+            .Setup(r => r.ObterPorIdAsync(9, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Cliente.Reconstituir(9, "Lucas <Ferreira>", Documento.Criar("32887790056"), Email.Criar("lucas@example.com"), Telefone.Criar("(19) 98888-8888")));
 
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterServicosAsync(1))
+            .Setup(r => r.ObterServicosAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync([OrdemServicoServico.Reconstituir(10, 1, 5, 2, 80m)]);
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterInsumosAsync(1))
+            .Setup(r => r.ObterInsumosAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync([OrdemServicoInsumo.Reconstituir(11, 1, 7, 4, 42.9m)]);
         _servicoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(5))
+            .Setup(r => r.ObterPorIdAsync(5, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Servico.Reconstituir(5, "Troca de óleo", "Descrição", 80m, true));
         _insumoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(7))
+            .Setup(r => r.ObterPorIdAsync(7, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Insumo.Reconstituir(7, "Óleo 5W30", "Descrição", 42.9m, true, 40, 4));
 
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterHistoricoStatusAsync(1))
+            .Setup(r => r.ObterHistoricoStatusAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync([
                 OrdemServicoStatus.Reconstituir(1, 1, StatusOs.Recebida, 2, Agora.DateTime),
                 OrdemServicoStatus.Reconstituir(2, 1, StatusOs.AguardandoAprovacao, IdColaboradorAprovacao, Agora.DateTime)
@@ -74,7 +74,7 @@ public class OrcamentoServiceTests
 
     private void ConfigurarOs(StatusOs? status) =>
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(1))
+            .Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(OrdemServico.Reconstituir(1, 3, null, null, 331.6m, status));
 
     [Fact]
@@ -135,7 +135,7 @@ public class OrcamentoServiceTests
     {
         ConfigurarOs(StatusOs.AguardandoAprovacao);
         _servicoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(5))
+            .Setup(r => r.ObterPorIdAsync(5, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Servico.Reconstituir(5, "<script>x</script>", "Descrição", 80m, true));
 
         await _service.EnviarAsync(1, null, CancellationToken.None);
@@ -174,8 +174,8 @@ public class OrcamentoServiceTests
         _ordemServicoRepositoryMock.Verify(r => r.AlterarStatusAsync(
             It.Is<OrdemServico>(os => os.Status == StatusOs.EmExecucao),
             IdColaboradorAprovacao,
-            Agora.DateTime), Times.Once);
-        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+            Agora.DateTime, It.IsAny<CancellationToken>()), Times.Once);
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -187,11 +187,11 @@ public class OrcamentoServiceTests
 
         Assert.Equal((int)StatusOs.Finalizada, resultado!.IdStatus);
         Assert.Equal(Agora.DateTime, resultado.DataFim);
-        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(7, 4), Times.Once);
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(7, 4, It.IsAny<CancellationToken>()), Times.Once);
         _ordemServicoRepositoryMock.Verify(r => r.AlterarStatusAsync(
             It.Is<OrdemServico>(os => os.Status == StatusOs.Finalizada),
             IdColaboradorAprovacao,
-            Agora.DateTime), Times.Once);
+            Agora.DateTime, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -200,8 +200,8 @@ public class OrcamentoServiceTests
         ConfigurarOs(StatusOs.EmExecucao);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.RecusarAsync(1));
-        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        _ordemServicoRepositoryMock.Verify(r => r.AlterarStatusAsync(It.IsAny<OrdemServico>(), It.IsAny<int>(), It.IsAny<DateTime>()), Times.Never);
+        _insumoRepositoryMock.Verify(r => r.RetirarReservaAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        _ordemServicoRepositoryMock.Verify(r => r.AlterarStatusAsync(It.IsAny<OrdemServico>(), It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

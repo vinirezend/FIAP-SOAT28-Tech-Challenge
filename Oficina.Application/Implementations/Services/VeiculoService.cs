@@ -14,7 +14,7 @@ namespace Oficina.Application.Implementations.Services
         {
             _veiculoRepository = veiculoRepository;
         }
-        public async Task<VeiculoDTO> AdicionarAsync(VeiculoDTO veiculo)
+        public async Task<VeiculoDTO> AdicionarAsync(VeiculoDTO veiculo, CancellationToken cancellationToken = default)
         {
             var veiculoEntity = Veiculo.Criar(
                 veiculo.IdCliente,
@@ -24,13 +24,13 @@ namespace Oficina.Application.Implementations.Services
                 veiculo.Ano,
                 (TipoVeiculo)veiculo.IdTipoVeiculo
             );
-            veiculoEntity = await _veiculoRepository.AdicionarAsync(veiculoEntity);
+            veiculoEntity = await _veiculoRepository.AdicionarAsync(veiculoEntity, cancellationToken);
             return TransformaParaDTO(veiculoEntity);
         }
 
-        public async Task<VeiculoDTO?> AtualizarAsync(VeiculoDTO veiculo)
+        public async Task<VeiculoDTO?> AtualizarAsync(VeiculoDTO veiculo, CancellationToken cancellationToken = default)
         {
-            var veiculoEntity = await _veiculoRepository.ObterPorIdAsync(veiculo.IdVeiculo);
+            var veiculoEntity = await _veiculoRepository.ObterPorIdAsync(veiculo.IdVeiculo, cancellationToken);
             if (veiculoEntity is null) return null;
 
             veiculoEntity.Atualizar(
@@ -42,30 +42,30 @@ namespace Oficina.Application.Implementations.Services
                 (TipoVeiculo)veiculo.IdTipoVeiculo
             );
 
-            await _veiculoRepository.AtualizarAsync(veiculoEntity);
+            await _veiculoRepository.AtualizarAsync(veiculoEntity, cancellationToken);
             return TransformaParaDTO(veiculoEntity);
         }
 
-        public async Task<VeiculoDTO?> ObterPorIdAsync(int id)
+        public async Task<VeiculoDTO?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var veiculo = await _veiculoRepository.ObterPorIdAsync(id);
+            var veiculo = await _veiculoRepository.ObterPorIdAsync(id, cancellationToken);
             return veiculo is null ? null : TransformaParaDTO(veiculo); 
         }
 
-        public async Task<VeiculoDTO?> ObterPorPlacaAsync(string placa)
+        public async Task<VeiculoDTO?> ObterPorPlacaAsync(string placa, CancellationToken cancellationToken = default)
         {
-            var veiculo = await _veiculoRepository.ObterPorPlacaAsync(placa);
+            var veiculo = await _veiculoRepository.ObterPorPlacaAsync(placa, cancellationToken);
             return veiculo is null ? null : TransformaParaDTO(veiculo);
         }
 
-        public async Task<IReadOnlyList<VeiculoDTO>> ObterTodosAsync()
+        public async Task<IReadOnlyList<VeiculoDTO>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
-            var veiculos = await _veiculoRepository.ObterTodosAsync();
+            var veiculos = await _veiculoRepository.ObterTodosAsync(cancellationToken);
             return veiculos.Select(TransformaParaDTO).ToList();
         }
-        public Task RemoverAsync(int id)
+        public Task RemoverAsync(int id, CancellationToken cancellationToken = default)
         {
-            return _veiculoRepository.RemoverAsync(id);
+            return _veiculoRepository.RemoverAsync(id, cancellationToken);
         }
         private static VeiculoDTO TransformaParaDTO(Veiculo veiculo)
         {

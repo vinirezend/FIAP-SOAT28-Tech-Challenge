@@ -8,7 +8,7 @@ namespace Oficina.Application.Implementations.Services;
 
 public class ClienteService(IClienteRepository clienteRepository) : IClienteService
 {
-    public async Task<ClienteDTO> AdicionarAsync(ClienteDTO cliente)
+    public async Task<ClienteDTO> AdicionarAsync(ClienteDTO cliente, CancellationToken cancellationToken = default)
     {
         var clienteEntity = Cliente.Criar(
             cliente.Nome,
@@ -16,12 +16,12 @@ public class ClienteService(IClienteRepository clienteRepository) : IClienteServ
             Email.Criar(cliente.Email),
             Telefone.Criar(cliente.Telefone)
         );
-        clienteEntity = await clienteRepository.AdicionarAsync(clienteEntity);
+        clienteEntity = await clienteRepository.AdicionarAsync(clienteEntity, cancellationToken);
         return TransformaParaDTO(clienteEntity);
     }
-    public async Task<ClienteDTO?> AtualizarAsync(ClienteDTO cliente)
+    public async Task<ClienteDTO?> AtualizarAsync(ClienteDTO cliente, CancellationToken cancellationToken = default)
     {
-        var clienteRecord = await clienteRepository.ObterPorIdAsync(cliente.IdCliente);
+        var clienteRecord = await clienteRepository.ObterPorIdAsync(cliente.IdCliente, cancellationToken);
         if (clienteRecord is null)
             return null;
         clienteRecord.Atualizar(
@@ -29,27 +29,27 @@ public class ClienteService(IClienteRepository clienteRepository) : IClienteServ
             Email.Criar(cliente.Email),
             Telefone.Criar(cliente.Telefone)
         );
-        await clienteRepository.AtualizarAsync(clienteRecord);
+        await clienteRepository.AtualizarAsync(clienteRecord, cancellationToken);
         return TransformaParaDTO(clienteRecord);
     }
-    public async Task<ClienteDTO?> ObterPorIdAsync(int id)
+    public async Task<ClienteDTO?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var clienteEntity = await clienteRepository.ObterPorIdAsync(id);
+        var clienteEntity = await clienteRepository.ObterPorIdAsync(id, cancellationToken);
         return clienteEntity is null ? null : TransformaParaDTO(clienteEntity);
     }
-    public async Task<ClienteDTO?> ObterPorDocumentoAsync(string documento)
+    public async Task<ClienteDTO?> ObterPorDocumentoAsync(string documento, CancellationToken cancellationToken = default)
     {
-        var clienteEntity = await clienteRepository.ObterPorDocumentoAsync(documento);
+        var clienteEntity = await clienteRepository.ObterPorDocumentoAsync(documento, cancellationToken);
         return clienteEntity is null ? null : TransformaParaDTO(clienteEntity);
     }
-    public async Task<IReadOnlyList<ClienteDTO>> ObterTodosAsync()
+    public async Task<IReadOnlyList<ClienteDTO>> ObterTodosAsync(CancellationToken cancellationToken = default)
     {
-        var clientes = await clienteRepository.ObterTodosAsync();
+        var clientes = await clienteRepository.ObterTodosAsync(cancellationToken);
         return clientes.Select(TransformaParaDTO).ToList();
     }
-    public Task RemoverAsync(int id)
+    public Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
-        return clienteRepository.RemoverAsync(id);
+        return clienteRepository.RemoverAsync(id, cancellationToken);
     }
     private static ClienteDTO TransformaParaDTO(Cliente cliente)
     {

@@ -27,10 +27,10 @@ public class AcompanhamentoOrdemServicoServiceTests
     public AcompanhamentoOrdemServicoServiceTests()
     {
         _veiculoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(3))
+            .Setup(r => r.ObterPorIdAsync(3, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Veiculo.Reconstituir(3, 9, Placa.Criar("FFF2026"), "Gol", "Volkswagen", 2019, TipoVeiculo.Carro));
         _clienteRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(9))
+            .Setup(r => r.ObterPorIdAsync(9, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Cliente.Reconstituir(9, "Lucas Ferreira", Documento.Criar("32887790056"), Email.Criar("lucas@example.com"), Telefone.Criar("(19) 98888-8888")));
 
         _envioLinkAssinadoServiceMock
@@ -48,10 +48,10 @@ public class AcompanhamentoOrdemServicoServiceTests
     private void ConfigurarOs(StatusOs? status, params OrdemServicoStatus[] historico)
     {
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(1))
+            .Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(OrdemServico.Reconstituir(1, 3, null, null, 331.6m, status));
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterHistoricoStatusAsync(1))
+            .Setup(r => r.ObterHistoricoStatusAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(historico);
     }
 
@@ -134,7 +134,7 @@ public class AcompanhamentoOrdemServicoServiceTests
     public async Task ObterAsync_VeiculoNaoEncontrado_DeveLancarInvalidOperationException()
     {
         _ordemServicoRepositoryMock
-            .Setup(r => r.ObterPorIdAsync(1))
+            .Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(OrdemServico.Reconstituir(1, 77, null, null, 0m, StatusOs.Recebida));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ObterAsync(1));

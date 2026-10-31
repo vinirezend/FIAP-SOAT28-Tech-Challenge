@@ -19,7 +19,7 @@ public class StatusServiceTests
     public async Task ObterTodosAsync_DeveRetornarStatus()
     {
         _repositoryMock
-            .Setup(r => r.ObterTodosAsync())
+            .Setup(r => r.ObterTodosAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync([Status.Reconstituir(1, "Recebida"), Status.Reconstituir(2, "Em diagnóstico")]);
 
         var resultado = await _service.ObterTodosAsync();
@@ -30,7 +30,7 @@ public class StatusServiceTests
     [Fact]
     public async Task ObterPorIdAsync_DeveRetornarStatus()
     {
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(Status.Reconstituir(1, "Recebida"));
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(Status.Reconstituir(1, "Recebida"));
 
         var resultado = await _service.ObterPorIdAsync(1);
 

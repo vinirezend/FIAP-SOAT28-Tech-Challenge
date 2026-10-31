@@ -38,21 +38,21 @@ namespace Oficina.Application.Implementations.Services
         public static string CaminhoAprovar(int idOs) => $"/api/orcamento/{idOs}/aprovar";
         public static string CaminhoRecusar(int idOs) => $"/api/orcamento/{idOs}/recusar";
 
-        public async Task<OrcamentoDTO?> ObterAsync(int idOs)
+        public async Task<OrcamentoDTO?> ObterAsync(int idOs, CancellationToken cancellationToken = default)
         {
-            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
-            return ordemServico is null ? null : await MontarOrcamentoAsync(ordemServico);
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs, cancellationToken);
+            return ordemServico is null ? null : await MontarOrcamentoAsync(ordemServico, cancellationToken);
         }
 
         public async Task<LinkAssinadoDTO?> EnviarAsync(int idOs, int? minutosValidade, CancellationToken cancellationToken)
         {
-            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs, cancellationToken);
             if (ordemServico is null) return null;
 
             if (ordemServico.Status != StatusOs.AguardandoAprovacao)
                 throw new InvalidOperationException("O orçamento só pode ser enviado com a OS em Aguardando aprovação.");
 
-            var orcamento = await MontarOrcamentoAsync(ordemServico);
+            var orcamento = await MontarOrcamentoAsync(ordemServico, cancellationToken);
             if (string.IsNullOrWhiteSpace(orcamento.ClienteEmail))
                 throw new InvalidOperationException("Cliente não possui e-mail cadastrado.");
 
@@ -81,55 +81,55 @@ namespace Oficina.Application.Implementations.Services
             }, cancellationToken);
         }
 
-        public async Task<OrdemServicoDTO?> AprovarAsync(int idOs)
+        public async Task<OrdemServicoDTO?> AprovarAsync(int idOs, CancellationToken cancellationToken = default)
         {
-            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs, cancellationToken);
             if (ordemServico is null) return null;
 
             var dataAprovacao = Agora();
             ordemServico.AprovarOrcamento(dataAprovacao);
 
-            var idColaborador = await ObterColaboradorResponsavelAsync(idOs);
-            await _ordemServicoRepository.AlterarStatusAsync(ordemServico, idColaborador, dataAprovacao);
+            var idColaborador = await ObterColaboradorResponsavelAsync(idOs, cancellationToken);
+            await _ordemServicoRepository.AlterarStatusAsync(ordemServico, idColaborador, dataAprovacao, cancellationToken);
             return TransformaParaDTO(ordemServico);
         }
 
-        public async Task<OrdemServicoDTO?> RecusarAsync(int idOs)
+        public async Task<OrdemServicoDTO?> RecusarAsync(int idOs, CancellationToken cancellationToken = default)
         {
-            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs);
+            var ordemServico = await _ordemServicoRepository.ObterPorIdAsync(idOs, cancellationToken);
             if (ordemServico is null) return null;
 
             var dataRecusa = Agora();
             ordemServico.RecusarOrcamento(dataRecusa);
 
-            var idColaborador = await ObterColaboradorResponsavelAsync(idOs);
+            var idColaborador = await ObterColaboradorResponsavelAsync(idOs, cancellationToken);
 
-            var insumos = await _ordemServicoRepository.ObterInsumosAsync(idOs);
+            var insumos = await _ordemServicoRepository.ObterInsumosAsync(idOs, cancellationToken);
             foreach (var item in insumos)
-                await _insumoRepository.RetirarReservaAsync(item.IdInsumo, item.Quantidade);
+                await _insumoRepository.RetirarReservaAsync(item.IdInsumo, item.Quantidade, cancellationToken);
 
-            await _ordemServicoRepository.AlterarStatusAsync(ordemServico, idColaborador, dataRecusa);
+            await _ordemServicoRepository.AlterarStatusAsync(ordemServico, idColaborador, dataRecusa, cancellationToken);
             return TransformaParaDTO(ordemServico);
         }
 
-        private async Task<OrcamentoDTO> MontarOrcamentoAsync(OrdemServico ordemServico)
+        private async Task<OrcamentoDTO> MontarOrcamentoAsync(OrdemServico ordemServico, CancellationToken cancellationToken)
         {
-            var veiculo = await _veiculoRepository.ObterPorIdAsync(ordemServico.IdVeiculo)
+            var veiculo = await _veiculoRepository.ObterPorIdAsync(ordemServico.IdVeiculo, cancellationToken)
                 ?? throw new InvalidOperationException("Veículo da OS não encontrado.");
-            var cliente = await _clienteRepository.ObterPorIdAsync(veiculo.IdCliente)
+            var cliente = await _clienteRepository.ObterPorIdAsync(veiculo.IdCliente, cancellationToken)
                 ?? throw new InvalidOperationException("Cliente do veículo não encontrado.");
 
             var servicos = new List<OrcamentoItemDTO>();
-            foreach (var item in await _ordemServicoRepository.ObterServicosAsync(ordemServico.IdOs))
+            foreach (var item in await _ordemServicoRepository.ObterServicosAsync(ordemServico.IdOs, cancellationToken))
             {
-                var servico = await _servicoRepository.ObterPorIdAsync(item.IdServico);
+                var servico = await _servicoRepository.ObterPorIdAsync(item.IdServico, cancellationToken);
                 servicos.Add(TransformaParaItem(servico?.Nome, item.Quantidade, item.ValorCobrado, item.ValorTotal));
             }
 
             var insumos = new List<OrcamentoItemDTO>();
-            foreach (var item in await _ordemServicoRepository.ObterInsumosAsync(ordemServico.IdOs))
+            foreach (var item in await _ordemServicoRepository.ObterInsumosAsync(ordemServico.IdOs, cancellationToken))
             {
-                var insumo = await _insumoRepository.ObterPorIdAsync(item.IdInsumo);
+                var insumo = await _insumoRepository.ObterPorIdAsync(item.IdInsumo, cancellationToken);
                 insumos.Add(TransformaParaItem(insumo?.Nome, item.Quantidade, item.ValorCobrado, item.ValorTotal));
             }
 
@@ -154,9 +154,9 @@ namespace Oficina.Application.Implementations.Services
         /// O cliente responde sem login, mas o histórico exige colaborador:
         /// registra em nome de quem colocou a OS em Aguardando aprovação.
         /// </summary>
-        private async Task<int> ObterColaboradorResponsavelAsync(int idOs)
+        private async Task<int> ObterColaboradorResponsavelAsync(int idOs, CancellationToken cancellationToken)
         {
-            var historico = await _ordemServicoRepository.ObterHistoricoStatusAsync(idOs);
+            var historico = await _ordemServicoRepository.ObterHistoricoStatusAsync(idOs, cancellationToken);
             return historico.LastOrDefault(h => h.Status == StatusOs.AguardandoAprovacao)?.IdColaborador
                 ?? throw new InvalidOperationException("Histórico da OS não possui registro de Aguardando aprovação.");
         }

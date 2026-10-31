@@ -4,11 +4,11 @@ namespace Oficina.Domain.Interfaces.Repositorys
 {
     public interface IClienteRepository
     {
-        Task<Cliente?> ObterPorIdAsync(int idCliente);
-        Task<Cliente?> ObterPorDocumentoAsync(string documento);
-        Task<IReadOnlyList<Cliente>> ObterTodosAsync();
-        Task<Cliente> AdicionarAsync(Cliente cliente);
-        Task AtualizarAsync(Cliente cliente);
-        Task RemoverAsync(int idCliente);
+        Task<Cliente?> ObterPorIdAsync(int idCliente, CancellationToken cancellationToken = default);
+        Task<Cliente?> ObterPorDocumentoAsync(string documento, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Cliente>> ObterTodosAsync(CancellationToken cancellationToken = default);
+        Task<Cliente> AdicionarAsync(Cliente cliente, CancellationToken cancellationToken = default);
+        Task AtualizarAsync(Cliente cliente, CancellationToken cancellationToken = default);
+        Task RemoverAsync(int idCliente, CancellationToken cancellationToken = default);
     }
 }

@@ -31,9 +31,9 @@ namespace Oficina.Infrastructure.Resources
 
         private const string Date_Format = "yyyy-MM-ddTHH:mm:ss";
         
-        public async Task<TokenDTO?> ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciais)
+        public async Task<TokenDTO?> ValidarCredenciais(UsuarioCredenciaisDTO usuarioCredenciais, CancellationToken cancellationToken = default)
         {
-            var usuario = await usuarioRepository.ObterPorLoginAsync(usuarioCredenciais.Login);
+            var usuario = await usuarioRepository.ObterPorLoginAsync(usuarioCredenciais.Login, cancellationToken);
 
             if (usuario is null || !usuario.UsuarioAtivo || !passwordHasher.Verificar(usuarioCredenciais.Senha, usuario.Senha)) return null;
 

@@ -20,11 +20,11 @@ namespace Oficina.Infrastructure.Resources
             _dataSource = dataSource;
         }
 
-        public async Task<DbConnection> GetConnectionAsync()
+        public async Task<DbConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
         {
             if (_connection is null)
             {
-                _connection = await _dataSource.OpenConnectionAsync();
+                _connection = await _dataSource.OpenConnectionAsync(cancellationToken);
             }
 
             return _connection;
@@ -40,7 +40,7 @@ namespace Oficina.Infrastructure.Resources
                     "Já existe uma transação ativa nesta unidade de trabalho.");
             }
 
-            var connection = await GetConnectionAsync();
+            var connection = await GetConnectionAsync(cancellationToken);
 
             await using var transaction =
                 await connection.BeginTransactionAsync(cancellationToken);

@@ -13,7 +13,7 @@ namespace Oficina.Infrastructure.Repositorys
     {
         public InsumoRepository(IUnitOfWork unitOfWork) : base(unitOfWork) { }
 
-        public async Task<Insumo> AdicionarAsync(Insumo insumo)
+        public async Task<Insumo> AdicionarAsync(Insumo insumo, CancellationToken cancellationToken = default)
         {
             const string sql = $"INSERT INTO insumo (nome, descricao, ativo, quantidade_estoque, quantidade_reservada,valor_unitario) VALUES (@Nome, @Descricao, @Ativo, @QuantidadeEstoque, @QuantidadeReservada, @ValorUnitario ) RETURNING id_insumo";
 
@@ -25,7 +25,7 @@ namespace Oficina.Infrastructure.Repositorys
                 insumo.QuantidadeEstoque,
                 insumo.QuantidadeReservada,
                 insumo.ValorUnitario
-            });
+            }, cancellationToken);
 
             return Insumo.Reconstituir(
             idInsumo,
@@ -38,7 +38,7 @@ namespace Oficina.Infrastructure.Repositorys
             );
         }
 
-        public async Task AtualizarAsync(Insumo insumo)
+        public async Task AtualizarAsync(Insumo insumo, CancellationToken cancellationToken = default)
         {
             const string sql = $"UPDATE insumo SET nome = @Nome, descricao = @Descricao, ativo = @Ativo, quantidade_estoque = @QuantidadeEstoque, quantidade_reservada = @QuantidadeReservada, valor_unitario = @ValorUnitario WHERE id_insumo = @IdInsumo";
             await ExecuteAsync(sql, new
@@ -50,13 +50,13 @@ namespace Oficina.Infrastructure.Repositorys
                 insumo.QuantidadeReservada,
                 insumo.ValorUnitario,
                 insumo.IdInsumo
-            });
+            }, cancellationToken);
         }
 
-        public async Task<Insumo?> ObterPorIdAsync(int idInsumo)
+        public async Task<Insumo?> ObterPorIdAsync(int idInsumo, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM insumo WHERE id_insumo = @IdInsumo";
-            var row = await QueryFirstOrDefaultAsync<InsumoRow>(sql, new { IdInsumo = idInsumo });
+            var row = await QueryFirstOrDefaultAsync<InsumoRow>(sql, new { IdInsumo = idInsumo }, cancellationToken);
 
             if (row == null)
                 return null;
@@ -72,11 +72,11 @@ namespace Oficina.Infrastructure.Repositorys
             );
         }
 
-        public async Task<IReadOnlyList<Insumo>> ObterTodosAsync()
+        public async Task<IReadOnlyList<Insumo>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM insumo";
 
-            var rows = await QueryAsync<InsumoRow>(sql);
+            var rows = await QueryAsync<InsumoRow>(sql, cancellationToken: cancellationToken);
 
             return rows.Select(row => Insumo.Reconstituir(
                 row.IdInsumo,
@@ -89,11 +89,11 @@ namespace Oficina.Infrastructure.Repositorys
             )).ToList();
         }
 
-        public async Task<IReadOnlyList<Insumo>?> PesquisarAsync(string? termo)
+        public async Task<IReadOnlyList<Insumo>?> PesquisarAsync(string? termo, CancellationToken cancellationToken = default)
         {
             const string sql = $"SELECT * FROM insumo WHERE nome ILIKE @Termo OR descricao ILIKE @Termo";
 
-            var rows = await QueryAsync<InsumoRow>(sql, new { Termo = $"%{termo}%" });
+            var rows = await QueryAsync<InsumoRow>(sql, new { Termo = $"%{termo}%" }, cancellationToken);
 
             return rows.Select(row => Insumo.Reconstituir(
                 row.IdInsumo,
@@ -106,90 +106,90 @@ namespace Oficina.Infrastructure.Repositorys
             )).ToList();
         }
 
-        public async Task RemoverAsync(int idInsumo)
+        public async Task RemoverAsync(int idInsumo, CancellationToken cancellationToken = default)
         {
             const string sql = $"DELETE FROM insumo WHERE id_insumo = @IdInsumo";
-            await ExecuteAsync(sql, new { IdInsumo = idInsumo });
+            await ExecuteAsync(sql, new { IdInsumo = idInsumo }, cancellationToken);
         }
 
-        public async Task<int> ObterQuantidadeEstoqueAsync(int idInsumo)
+        public async Task<int> ObterQuantidadeEstoqueAsync(int idInsumo, CancellationToken cancellationToken = default)
         {
             string sql = @"SELECT 
                                 quantidade_estoque
                             FROM insumo 
                             WHERE id_insumo = @idInsumo;";
 
-            return await QueryFirstOrDefaultAsync<int>(sql, new { idInsumo });
+            return await QueryFirstOrDefaultAsync<int>(sql, new { idInsumo }, cancellationToken);
         }
 
-        public async Task<int> ObterQuantidadeDisponivelAsync(int idInsumo)
+        public async Task<int> ObterQuantidadeDisponivelAsync(int idInsumo, CancellationToken cancellationToken = default)
         {
             string sql = @"SELECT 
                                 quantidade_estoque - quantidade_reservada 
                             FROM insumo 
                             WHERE id_insumo = @idInsumo;";
 
-            return await QueryFirstOrDefaultAsync<int>(sql, new { idInsumo });
+            return await QueryFirstOrDefaultAsync<int>(sql, new { idInsumo }, cancellationToken);
         }
 
-        public async Task<int> ObterQuantidadeReservadaAsync(int idInsumo)
+        public async Task<int> ObterQuantidadeReservadaAsync(int idInsumo, CancellationToken cancellationToken = default)
         {
             string sql = @"SELECT 
                                 quantidade_reservada 
                             FROM insumo 
                             WHERE id_insumo = @idInsumo;";
 
-            return await QueryFirstOrDefaultAsync<int>(sql, new { idInsumo });
+            return await QueryFirstOrDefaultAsync<int>(sql, new { idInsumo }, cancellationToken);
         }
 
-        public async Task AdicionarEstoqueAsync(int idInsumo, int quantidade)
+        public async Task AdicionarEstoqueAsync(int idInsumo, int quantidade, CancellationToken cancellationToken = default)
         {
             string sql = @"UPDATE insumo
                                     SET quantidade_estoque = quantidade_estoque + @quantidade
                                     WHERE id_insumo = @idInsumo;";
 
-            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade });
+            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade }, cancellationToken);
 
             if (retorno == 0)
                 throw new BusinessException("Insumo não localizado.");
         }
 
-        public async Task RetirarEstoqueAsync(int idInsumo, int quantidade)
+        public async Task RetirarEstoqueAsync(int idInsumo, int quantidade, CancellationToken cancellationToken = default)
         {
             string sql = @"UPDATE insumo
                                 SET quantidade_estoque = quantidade_estoque - @quantidade
                                 WHERE id_insumo = @idInsumo
                                     AND quantidade_estoque - quantidade_reservada >= @quantidade;";
 
-            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade });
+            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade }, cancellationToken);
 
             if (retorno == 0)
                 throw new BusinessException(
                     "Insumo não localizado ou quantidade disponível insuficiente em estoque.");
         }
 
-        public async Task AdicionarReservaAsync(int idInsumo, int quantidade)
+        public async Task AdicionarReservaAsync(int idInsumo, int quantidade, CancellationToken cancellationToken = default)
         {
             string sql = @"UPDATE insumo
                                     SET quantidade_reservada = quantidade_reservada + @quantidade
                                     WHERE id_insumo = @idInsumo
                                       AND quantidade_estoque - quantidade_reservada >= @quantidade;";
 
-            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade });
+            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade }, cancellationToken);
 
             if (retorno == 0)
                 throw new BusinessException(
                     "Insumo não localizado ou quantidade disponível insuficiente para reserva.");
         }
 
-        public async Task RetirarReservaAsync(int idInsumo, int quantidade)
+        public async Task RetirarReservaAsync(int idInsumo, int quantidade, CancellationToken cancellationToken = default)
         {
             string sql = @"UPDATE insumo
                                     SET quantidade_reservada = quantidade_reservada - @quantidade
                                     WHERE id_insumo = @idInsumo
                                       AND quantidade_reservada >= @quantidade;";
 
-            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade });
+            var retorno = await ExecuteAsync(sql, new { idInsumo, quantidade }, cancellationToken);
 
             if (retorno == 0)
                 throw new BusinessException(

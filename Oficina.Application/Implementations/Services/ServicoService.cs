@@ -14,19 +14,19 @@ namespace Oficina.Application.Implementations.Services
             _servicoRepository = servicoRepository;
         }
 
-        public async Task<ServicoDTO> AdicionarAsync(ServicoDTO servico)
+        public async Task<ServicoDTO> AdicionarAsync(ServicoDTO servico, CancellationToken cancellationToken = default)
         {
             var servicoEntity = Servico.Criar(
                 servico.Nome,
                 servico.Descricao,
                 servico.ValorEstipulado);
-                servicoEntity = await _servicoRepository.AdicionarAsync(servicoEntity);
+                servicoEntity = await _servicoRepository.AdicionarAsync(servicoEntity, cancellationToken);
                 return TransformaParaDTO(servicoEntity);
         }
 
-        public async Task<ServicoDTO?> AtualizarAsync(ServicoDTO servico)
+        public async Task<ServicoDTO?> AtualizarAsync(ServicoDTO servico, CancellationToken cancellationToken = default)
         {
-            var servicoRecord = await _servicoRepository.ObterPorIdAsync(servico.IdServico);
+            var servicoRecord = await _servicoRepository.ObterPorIdAsync(servico.IdServico, cancellationToken);
             if (servicoRecord == null)
                 return null;
                 
@@ -36,31 +36,31 @@ namespace Oficina.Application.Implementations.Services
                 servico.ValorEstipulado,
                 servico.Ativo);
 
-            await _servicoRepository.AtualizarAsync(servicoRecord);
+            await _servicoRepository.AtualizarAsync(servicoRecord, cancellationToken);
             return TransformaParaDTO(servicoRecord);
         }
 
-        public async Task<ServicoDTO?> ObterPorIdAsync(int idServico)
+        public async Task<ServicoDTO?> ObterPorIdAsync(int idServico, CancellationToken cancellationToken = default)
         {
-            var servico = await _servicoRepository.ObterPorIdAsync(idServico);  
+            var servico = await _servicoRepository.ObterPorIdAsync(idServico, cancellationToken);  
             return servico is null ? null : TransformaParaDTO(servico);
         }
 
-        public async Task<IReadOnlyList<ServicoDTO>> ObterTodosAsync()
+        public async Task<IReadOnlyList<ServicoDTO>> ObterTodosAsync(CancellationToken cancellationToken = default)
         {
-            var servicos = await _servicoRepository.ObterTodosAsync();
+            var servicos = await _servicoRepository.ObterTodosAsync(cancellationToken);
             return servicos.Select(TransformaParaDTO).ToList(); 
         }
 
-        public async Task<IReadOnlyList<ServicoDTO>> PesquisarAsync(string? termo)
+        public async Task<IReadOnlyList<ServicoDTO>> PesquisarAsync(string? termo, CancellationToken cancellationToken = default)
         {
-            var servicos = await _servicoRepository.PesquisarAsync(termo);
+            var servicos = await _servicoRepository.PesquisarAsync(termo, cancellationToken);
             return servicos is null ? Array.Empty<ServicoDTO>() : servicos.Select(TransformaParaDTO).ToList();
         }
 
-        public async Task RemoverAsync(int idServico)
+        public async Task RemoverAsync(int idServico, CancellationToken cancellationToken = default)
         {
-            await _servicoRepository.RemoverAsync(idServico);
+            await _servicoRepository.RemoverAsync(idServico, cancellationToken);
         }
 
         private ServicoDTO TransformaParaDTO(Servico servico)
