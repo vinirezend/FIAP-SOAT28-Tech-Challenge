@@ -2,19 +2,13 @@ using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Application.Templates;
-using System.Text.Encodings.Web;
-using System.Text.RegularExpressions;
-using System.Text.Unicode;
 
 namespace Oficina.Application.Implementations.Services;
 
-public partial class EnvioLinkAssinadoService(ILinkAssinadoGenerator linkAssinadoGenerator, IEmailSender emailSender) : IEnvioLinkAssinadoService
+public class EnvioLinkAssinadoService(ILinkAssinadoGenerator linkAssinadoGenerator, IEmailSender emailSender) : IEnvioLinkAssinadoService
 {
     public const string PlaceholderLink = "link";
     public const string PlaceholderExpiraEm = "expiraEm";
-
-    // Escapa < > & " ' mas mantém acentos legíveis no HTML (ex.: "João" em vez de "Jo&#227;o")
-    private static readonly HtmlEncoder Encoder = HtmlEncoder.Create(UnicodeRanges.All);
 
     public async Task<LinkAssinadoDTO> EnviarAsync(EnvioLinkAssinadoDTO envio, CancellationToken cancellationToken)
     {
@@ -33,7 +27,7 @@ public partial class EnvioLinkAssinadoService(ILinkAssinadoGenerator linkAssinad
         {
             Assunto = envio.Assunto,
             EnderecoDestinatario = envio.EmailDestinatario,
-            CorpoHtml = PreencherTemplate(envio.TemplateHtml, parametros, envio.ParametrosHtml)
+            CorpoHtml = TemplateHtml.Renderizar(envio.Template, parametros, envio.ParametrosHtml)
         };
 
         await emailSender.EnviarAsync(email, cancellationToken);
@@ -61,25 +55,4 @@ public partial class EnvioLinkAssinadoService(ILinkAssinadoGenerator linkAssinad
 
         return new LinkAssinadoDTO { Url = principal?.Url ?? string.Empty, ExpiraEm = expiraEm.Value, Links = links };
     }
-
-    private static string PreencherTemplate(string template, Dictionary<string, string> parametros, IReadOnlyDictionary<string, string> parametrosHtml)
-    {
-        var html = new Dictionary<string, string>(parametrosHtml, StringComparer.OrdinalIgnoreCase);
-
-        return Placeholder().Replace(template, match =>
-        {
-            var nome = match.Groups[1].Value;
-
-            if (parametros.TryGetValue(nome, out var valor))
-                return Encoder.Encode(valor);
-
-            if (html.TryGetValue(nome, out var trechoHtml))
-                return trechoHtml;
-
-            throw new InvalidOperationException($"O template de e-mail usa o placeholder {{{{{nome}}}}}, mas nenhum valor foi informado.");
-        });
-    }
-
-    [GeneratedRegex(@"\{\{\s*(\w+)\s*\}\}")]
-    private static partial Regex Placeholder();
 }

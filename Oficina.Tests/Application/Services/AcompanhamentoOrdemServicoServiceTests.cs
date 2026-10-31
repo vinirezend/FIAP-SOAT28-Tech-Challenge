@@ -10,7 +10,7 @@ using Oficina.Domain.ValueObjects;
 
 namespace Oficina.Tests.Application.Services;
 
-public class AcompanhamentoServiceTests
+public class AcompanhamentoOrdemServicoServiceTests
 {
     private static readonly DateTime Recebida = new(2026, 10, 27, 12, 0, 0);
     private static readonly DateTime Diagnostico = new(2026, 10, 28, 13, 0, 0);
@@ -20,11 +20,11 @@ public class AcompanhamentoServiceTests
     private readonly Mock<IVeiculoRepository> _veiculoRepositoryMock = new();
     private readonly Mock<IClienteRepository> _clienteRepositoryMock = new();
     private readonly Mock<IEnvioLinkAssinadoService> _envioLinkAssinadoServiceMock = new();
-    private readonly AcompanhamentoService _service;
+    private readonly AcompanhamentoOrdemServicoService _service;
 
     private EnvioLinkAssinadoDTO? _envio;
 
-    public AcompanhamentoServiceTests()
+    public AcompanhamentoOrdemServicoServiceTests()
     {
         _veiculoRepositoryMock
             .Setup(r => r.ObterPorIdAsync(3))
@@ -36,9 +36,9 @@ public class AcompanhamentoServiceTests
         _envioLinkAssinadoServiceMock
             .Setup(s => s.EnviarAsync(It.IsAny<EnvioLinkAssinadoDTO>(), It.IsAny<CancellationToken>()))
             .Callback<EnvioLinkAssinadoDTO, CancellationToken>((envio, _) => _envio = envio)
-            .ReturnsAsync(new LinkAssinadoDTO { Url = "https://api.oficina.test/api/acompanhamento/1/cliente?expira=1&assinatura=abc" });
+            .ReturnsAsync(new LinkAssinadoDTO { Url = "https://api.oficina.test/api/acompanhamentoordemservico/1/cliente?expira=1&assinatura=abc" });
 
-        _service = new AcompanhamentoService(
+        _service = new AcompanhamentoOrdemServicoService(
             _ordemServicoRepositoryMock.Object,
             _veiculoRepositoryMock.Object,
             _clienteRepositoryMock.Object,
@@ -58,7 +58,7 @@ public class AcompanhamentoServiceTests
     private static OrdemServicoStatus Historico(int id, StatusOs status, DateTime data) =>
         OrdemServicoStatus.Reconstituir(id, 1, status, 2, data);
 
-    private static AcompanhamentoEtapaDTO Etapa(AcompanhamentoDTO acompanhamento, StatusOs status) =>
+    private static AcompanhamentoOrdemServicoEtapaDTO Etapa(AcompanhamentoOrdemServicoDTO acompanhamento, StatusOs status) =>
         acompanhamento.Etapas.Single(e => e.IdStatus == (int)status);
 
     [Fact]
@@ -74,7 +74,7 @@ public class AcompanhamentoServiceTests
         Assert.NotNull(acompanhamento);
         Assert.Equal((int)StatusOs.AguardandoAprovacao, acompanhamento.IdStatus);
         Assert.Equal("Aguardando aprovação", acompanhamento.Status);
-        Assert.Equal(TemplatesAcompanhamento.DescricaoStatus(StatusOs.AguardandoAprovacao), acompanhamento.DescricaoStatus);
+        Assert.Equal(TemplatesAcompanhamentoOrdemServico.DescricaoStatus(StatusOs.AguardandoAprovacao), acompanhamento.DescricaoStatus);
         Assert.Equal("Lucas Ferreira", acompanhamento.ClienteNome);
         Assert.Equal("FFF2026", acompanhamento.Placa);
         Assert.Equal(331.6m, acompanhamento.ValorTotal);
@@ -104,7 +104,7 @@ public class AcompanhamentoServiceTests
         Assert.NotNull(acompanhamento);
         Assert.Equal(SituacaoEtapa.NaoRealizada, Etapa(acompanhamento, StatusOs.EmExecucao).Situacao);
         Assert.Equal(SituacaoEtapa.Atual, Etapa(acompanhamento, StatusOs.Finalizada).Situacao);
-        Assert.Equal(TemplatesAcompanhamento.DescricaoOrcamentoRecusado, acompanhamento.DescricaoStatus);
+        Assert.Equal(TemplatesAcompanhamentoOrdemServico.DescricaoOrcamentoRecusado, acompanhamento.DescricaoStatus);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class AcompanhamentoServiceTests
 
         Assert.NotNull(acompanhamento);
         Assert.Equal(SituacaoEtapa.Concluida, Etapa(acompanhamento, StatusOs.EmExecucao).Situacao);
-        Assert.Equal(TemplatesAcompanhamento.DescricaoStatus(StatusOs.Finalizada), acompanhamento.DescricaoStatus);
+        Assert.Equal(TemplatesAcompanhamentoOrdemServico.DescricaoStatus(StatusOs.Finalizada), acompanhamento.DescricaoStatus);
     }
 
     [Fact]
@@ -151,10 +151,10 @@ public class AcompanhamentoServiceTests
 
         Assert.NotNull(resultado);
         Assert.NotNull(_envio);
-        Assert.Equal("/api/acompanhamento/1/cliente", _envio.Caminho);
+        Assert.Equal("/api/acompanhamentoordemservico/1/cliente", _envio.Caminho);
         Assert.Equal("lucas@example.com", _envio.EmailDestinatario);
-        Assert.Equal(TemplatesEmail.AcompanhamentoAssunto, _envio.Assunto);
-        Assert.Equal(TemplatesEmail.AcompanhamentoHtml, _envio.TemplateHtml);
+        Assert.Equal(TemplatesEmail.AcompanhamentoOrdemServicoAssunto, _envio.Assunto);
+        Assert.Equal(NomesTemplate.AcompanhamentoOrdemServico.Email, _envio.Template);
         Assert.Equal(120, _envio.MinutosValidade);
         Assert.Equal("Lucas Ferreira", _envio.Parametros["nome"]);
         Assert.Equal("1", _envio.Parametros["idOs"]);

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Oficina.Api.DTO.Acompanhamento;
+using Oficina.Api.DTO.AcompanhamentoOrdemServico;
 using Oficina.Api.Filters;
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Services;
@@ -14,7 +14,7 @@ namespace Oficina.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class AcompanhamentoController(IAcompanhamentoService acompanhamentoService) : ControllerBase
+public class AcompanhamentoOrdemServicoController(IAcompanhamentoOrdemServicoService acompanhamentoOrdemServicoService) : ControllerBase
 {
     /// <summary>
     /// Status atual da OS e etapas do fluxo, com as datas em que cada uma foi alcançada.
@@ -24,7 +24,7 @@ public class AcompanhamentoController(IAcompanhamentoService acompanhamentoServi
     {
         try
         {
-            var acompanhamento = await acompanhamentoService.ObterAsync(idOs);
+            var acompanhamento = await acompanhamentoOrdemServicoService.ObterAsync(idOs);
             if (acompanhamento is null)
                 return NotFound();
             return Ok(TransformaParaResponse(acompanhamento));
@@ -43,7 +43,7 @@ public class AcompanhamentoController(IAcompanhamentoService acompanhamentoServi
     {
         try
         {
-            var link = await acompanhamentoService.EnviarAsync(idOs, minutosValidade, cancellationToken);
+            var link = await acompanhamentoOrdemServicoService.EnviarAsync(idOs, minutosValidade, cancellationToken);
             if (link is null)
                 return NotFound();
             return Ok(link);
@@ -64,14 +64,14 @@ public class AcompanhamentoController(IAcompanhamentoService acompanhamentoServi
     {
         try
         {
-            var acompanhamento = await acompanhamentoService.ObterAsync(idOs);
+            var acompanhamento = await acompanhamentoOrdemServicoService.ObterAsync(idOs);
             if (acompanhamento is null)
-                return Html(TemplatesAcompanhamento.GerarPaginaMensagem("Ordem de serviço não encontrada", "Entre em contato com a oficina."), StatusCodes.Status404NotFound);
-            return Html(TemplatesAcompanhamento.GerarPagina(acompanhamento));
+                return Html(TemplatesAcompanhamentoOrdemServico.GerarPaginaMensagem("Ordem de serviço não encontrada", "Entre em contato com a oficina."), StatusCodes.Status404NotFound);
+            return Html(TemplatesAcompanhamentoOrdemServico.GerarPagina(acompanhamento));
         }
         catch (InvalidOperationException)
         {
-            return Html(TemplatesAcompanhamento.GerarPaginaMensagem("Não foi possível carregar o andamento", "Entre em contato com a oficina."), StatusCodes.Status400BadRequest);
+            return Html(TemplatesAcompanhamentoOrdemServico.GerarPaginaMensagem("Não foi possível carregar o andamento", "Entre em contato com a oficina."), StatusCodes.Status400BadRequest);
         }
     }
 
@@ -82,9 +82,8 @@ public class AcompanhamentoController(IAcompanhamentoService acompanhamentoServi
         StatusCode = statusCode
     };
 
-    private static AcompanhamentoResponse TransformaParaResponse(AcompanhamentoDTO dto)
-    {
-        return new AcompanhamentoResponse
+    private static AcompanhamentoOrdemServicoResponse TransformaParaResponse(AcompanhamentoOrdemServicoDTO dto) =>
+        new()
         {
             IdOs = dto.IdOs,
             IdStatus = dto.IdStatus,
@@ -100,16 +99,13 @@ public class AcompanhamentoController(IAcompanhamentoService acompanhamentoServi
             ValorTotal = dto.ValorTotal,
             Etapas = dto.Etapas.Select(TransformaParaResponse)
         };
-    }
 
-    private static AcompanhamentoEtapaResponse TransformaParaResponse(AcompanhamentoEtapaDTO dto)
-    {
-        return new AcompanhamentoEtapaResponse
+    private static AcompanhamentoOrdemServicoEtapaResponse TransformaParaResponse(AcompanhamentoOrdemServicoEtapaDTO dto) =>
+        new()
         {
             IdStatus = dto.IdStatus,
             Nome = dto.Nome,
             Situacao = dto.Situacao.ToString(),
             Data = dto.Data
         };
-    }
 }

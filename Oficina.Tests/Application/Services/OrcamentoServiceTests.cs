@@ -115,7 +115,7 @@ public class OrcamentoServiceTests
         Assert.NotNull(_envio);
         Assert.Equal("lucas@example.com", _envio.EmailDestinatario);
         Assert.Equal(TemplatesEmail.OrcamentoAssunto, _envio.Assunto);
-        Assert.Equal(TemplatesEmail.OrcamentoHtml, _envio.TemplateHtml);
+        Assert.Equal(NomesTemplate.Orcamento.Email, _envio.Template);
         Assert.Equal(60, _envio.MinutosValidade);
         Assert.Null(_envio.Caminho);
         Assert.Equal("/api/orcamento/1/aprovar", _envio.LinksAssinados["aprovar"]);

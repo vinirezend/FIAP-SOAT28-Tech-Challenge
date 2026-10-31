@@ -3,15 +3,13 @@ using Oficina.Application.Interfaces.Services;
 using Oficina.Application.DTOs;
 using Oficina.Api.DTO.Cliente;
 using Microsoft.AspNetCore.Authorization;
-using Oficina.Api.Filters;
-using Oficina.Application.Templates;
 
 namespace Oficina.Api.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class ClienteController(IClienteService clienteService, IEnvioLinkAssinadoService envioLinkAssinadoService) : ControllerBase
+public class ClienteController(IClienteService clienteService) : ControllerBase
 {
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObterPorIdAsync(int id)
@@ -54,44 +52,6 @@ public class ClienteController(IClienteService clienteService, IEnvioLinkAssinad
         if (clienteAtualizado is null)
             return NotFound();
         return Ok(TransformaParaResponse(clienteAtualizado));
-    }
-
-    /// <summary>
-    /// Gera um link pré-assinado com os dados do cliente e envia para o e-mail cadastrado.
-    /// </summary>
-    [HttpPost("{id:int}/link-assinado")]
-    public async Task<IActionResult> EnviarLinkAssinadoAsync(int id, [FromQuery] int? minutosValidade, CancellationToken cancellationToken)
-    {
-        var cliente = await clienteService.ObterPorIdAsync(id);
-        if (cliente is null)
-            return NotFound();
-        if (string.IsNullOrWhiteSpace(cliente.Email))
-            return BadRequest("Cliente não possui e-mail cadastrado.");
-
-        var link = await envioLinkAssinadoService.EnviarAsync(new EnvioLinkAssinadoDTO
-        {
-            Caminho = $"/api/cliente/{id}/compartilhado",
-            EmailDestinatario = cliente.Email,
-            Assunto = TemplatesEmail.DadosClienteAssunto,
-            TemplateHtml = TemplatesEmail.DadosClienteHtml,
-            Parametros = new Dictionary<string, string> { ["nome"] = cliente.Nome },
-            MinutosValidade = minutosValidade
-        }, cancellationToken);
-        return Ok(link);
-    }
-
-    /// <summary>
-    /// Acesso do cliente pelo link recebido por e-mail: dispensa o token JWT, mas exige assinatura válida.
-    /// </summary>
-    [AllowAnonymous]
-    [LinkAssinado]
-    [HttpGet("{id:int}/compartilhado")]
-    public async Task<IActionResult> ObterCompartilhadoAsync(int id)
-    {
-        var cliente = await clienteService.ObterPorIdAsync(id);
-        if (cliente is null)
-            return NotFound();
-        return Ok(TransformaParaResponse(cliente));
     }
 
     [HttpDelete("{id:int}")]

@@ -4,14 +4,14 @@ using Oficina.Domain.Enum;
 
 namespace Oficina.Tests.Application.Templates;
 
-public class TemplatesAcompanhamentoTests
+public class TemplatesAcompanhamentoOrdemServicoTests
 {
-    private static AcompanhamentoDTO Acompanhamento(StatusOs status, string modelo = "Gol") => new()
+    private static AcompanhamentoOrdemServicoDTO Acompanhamento(StatusOs status, string modelo = "Gol") => new()
     {
         IdOs = 1,
         IdStatus = (int)status,
-        Status = TemplatesAcompanhamento.NomeStatus(status),
-        DescricaoStatus = TemplatesAcompanhamento.DescricaoStatus(status),
+        Status = TemplatesAcompanhamentoOrdemServico.NomeStatus(status),
+        DescricaoStatus = TemplatesAcompanhamentoOrdemServico.DescricaoStatus(status),
         ClienteNome = "Lucas Ferreira",
         ClienteEmail = "lucas@example.com",
         Placa = "FFF2026",
@@ -30,7 +30,7 @@ public class TemplatesAcompanhamentoTests
     [Fact]
     public void GerarPagina_DeveExibirStatusEtapasEDatasNoHorarioDeBrasilia()
     {
-        var html = TemplatesAcompanhamento.GerarPagina(Acompanhamento(StatusOs.EmDiagnostico));
+        var html = TemplatesAcompanhamentoOrdemServico.GerarPagina(Acompanhamento(StatusOs.EmDiagnostico));
 
         Assert.Contains("Ordem de serviço nº 1", html);
         Assert.Contains("Volkswagen Gol (FFF2026)", html);
@@ -43,7 +43,7 @@ public class TemplatesAcompanhamentoTests
     [Fact]
     public void GerarPagina_AntesDoOrcamento_NaoDeveExibirValor()
     {
-        var html = TemplatesAcompanhamento.GerarPagina(Acompanhamento(StatusOs.EmDiagnostico));
+        var html = TemplatesAcompanhamentoOrdemServico.GerarPagina(Acompanhamento(StatusOs.EmDiagnostico));
 
         Assert.DoesNotContain("Valor do orçamento", html);
     }
@@ -51,7 +51,7 @@ public class TemplatesAcompanhamentoTests
     [Fact]
     public void GerarPagina_AposOrcamento_DeveExibirValor()
     {
-        var html = TemplatesAcompanhamento.GerarPagina(Acompanhamento(StatusOs.AguardandoAprovacao));
+        var html = TemplatesAcompanhamentoOrdemServico.GerarPagina(Acompanhamento(StatusOs.AguardandoAprovacao));
 
         Assert.Contains("Valor do orçamento", html);
         Assert.Contains(TemplatesOrcamento.FormatarMoeda(331.6m), html);
@@ -60,7 +60,7 @@ public class TemplatesAcompanhamentoTests
     [Fact]
     public void GerarPagina_DadosComHtml_DeveCodificar()
     {
-        var html = TemplatesAcompanhamento.GerarPagina(Acompanhamento(StatusOs.EmDiagnostico, "<script>x</script>"));
+        var html = TemplatesAcompanhamentoOrdemServico.GerarPagina(Acompanhamento(StatusOs.EmDiagnostico, "<script>x</script>"));
 
         Assert.DoesNotContain("<script>", html);
         Assert.Contains("&lt;script&gt;", html);

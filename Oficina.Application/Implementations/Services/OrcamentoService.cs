@@ -60,7 +60,7 @@ namespace Oficina.Application.Implementations.Services
             {
                 EmailDestinatario = orcamento.ClienteEmail,
                 Assunto = TemplatesEmail.OrcamentoAssunto,
-                TemplateHtml = TemplatesEmail.OrcamentoHtml,
+                Template = NomesTemplate.Orcamento.Email,
                 Parametros = new Dictionary<string, string>
                 {
                     ["nome"] = orcamento.ClienteNome,
