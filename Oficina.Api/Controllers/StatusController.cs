@@ -15,6 +15,8 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class StatusController(IStatusService statusService) : ControllerBase
 {
+    private const string statusNaoEncontrado = "status não encontrado.";
+
     /// <summary>
     /// Lista todos os status de OS.
     /// </summary>
@@ -26,10 +28,10 @@ public class StatusController(IStatusService statusService) : ControllerBase
     /// Obtém um status pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<StatusResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<StatusResponse>, NotFound<string>>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
         await statusService.ObterPorIdAsync(id, cancellationToken) is { } status
             ? TypedResults.Ok(TransformaParaResponse(status))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(statusNaoEncontrado);
 
     private static StatusResponse TransformaParaResponse(StatusDTO dto) => new()
     {
