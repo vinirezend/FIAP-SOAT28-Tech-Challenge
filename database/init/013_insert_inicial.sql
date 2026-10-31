@@ -99,15 +99,3 @@ VALUES
     ('Em execução'),
     ('Finalizada'),
     ('Entregue');
-
---OS STATUS
-INSERT INTO os_status
-    (id_os, id_status, id_colaborador)
-VALUES
-    (1, 1, 2);
-
---OS COLABORADOR
-INSERT INTO os_colaborador
-    (id_os, id_colaborador)
-VALUES
-    (1, 2);
