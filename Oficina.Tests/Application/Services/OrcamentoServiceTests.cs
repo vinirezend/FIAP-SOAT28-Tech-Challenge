@@ -3,9 +3,9 @@ using Oficina.Application.DTOs;
 using Oficina.Application.Implementations.Services;
 using Oficina.Application.Interfaces.Services;
 using Oficina.Application.Templates;
-using Oficina.Domain.Entitys;
+using Oficina.Domain.Entities;
 using Oficina.Domain.Enum;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Interfaces.Repositories;
 using Oficina.Domain.ValueObjects;
 
 namespace Oficina.Tests.Application.Services;

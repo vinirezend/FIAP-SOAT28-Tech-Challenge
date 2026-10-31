@@ -1,7 +1,7 @@
 using Moq;
 using Oficina.Application.Implementations.Services;
-using Oficina.Domain.Entitys;
-using Oficina.Domain.Interfaces.Repositorys;
+using Oficina.Domain.Entities;
+using Oficina.Domain.Interfaces.Repositories;
 
 namespace Oficina.Tests.Application.Services;
 
