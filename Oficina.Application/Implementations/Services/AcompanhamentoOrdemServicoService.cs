@@ -13,7 +13,7 @@ public class AcompanhamentoOrdemServicoService(
     IClienteRepository clienteRepository,
     IEnvioLinkAssinadoService envioLinkAssinadoService) : IAcompanhamentoOrdemServicoService
 {
-    public static string CaminhoCliente(int idOs) => $"/api/acompanhamentoordemservico/{idOs}/cliente";
+    public static string CaminhoCliente(int idOs) => $"/api/acompanhamento-ordem-servico/{idOs}/cliente";
 
     public async Task<AcompanhamentoOrdemServicoDTO?> ObterAsync(int idOs)
     {

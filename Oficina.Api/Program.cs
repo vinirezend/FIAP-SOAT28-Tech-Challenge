@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Oficina.Api.Conventions;
 using Oficina.Api.Extensions;
 using Oficina.Application.Implementations.Services;
 using Oficina.Application.Interfaces.Resources;
@@ -111,7 +113,8 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<ILinkAssinadoGenerator, LinkAssinadoGenerator>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+    options.Conventions.Add(new RouteTokenTransformerConvention(new KebabCaseParameterTransformer())));
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddHealthCheck();

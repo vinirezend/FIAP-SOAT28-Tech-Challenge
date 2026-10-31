@@ -8,14 +8,14 @@ namespace Oficina.Tests.Application.Services;
 
 public class EnvioLinkAssinadoServiceTests
 {
-    private const string Caminho = "/api/acompanhamentoordemservico/1/cliente";
+    private const string Caminho = "/api/acompanhamento-ordem-servico/1/cliente";
 
     private readonly Mock<ILinkAssinadoGenerator> _linkAssinadoGeneratorMock = new();
     private readonly Mock<IEmailSender> _emailSenderMock = new();
     private readonly EnvioLinkAssinadoService _service;
     private readonly LinkAssinadoDTO _link = new()
     {
-        Url = "https://api.oficina.test/api/acompanhamentoordemservico/1/cliente?expira=1&assinatura=abc",
+        Url = "https://api.oficina.test/api/acompanhamento-ordem-servico/1/cliente?expira=1&assinatura=abc",
         ExpiraEm = new DateTimeOffset(2026, 1, 1, 15, 0, 0, TimeSpan.Zero)
     };
 
@@ -69,7 +69,7 @@ public class EnvioLinkAssinadoServiceTests
         Assert.NotNull(_emailEnviado);
         Assert.Equal("cliente@teste.com", _emailEnviado!.EnderecoDestinatario);
         Assert.Equal(TemplatesEmail.AcompanhamentoOrdemServicoAssunto, _emailEnviado.Assunto);
-        Assert.Contains("href=\"https://api.oficina.test/api/acompanhamentoordemservico/1/cliente?expira=1&amp;assinatura=abc\"", _emailEnviado.CorpoHtml);
+        Assert.Contains("href=\"https://api.oficina.test/api/acompanhamento-ordem-servico/1/cliente?expira=1&amp;assinatura=abc\"", _emailEnviado.CorpoHtml);
         Assert.Contains("Ana &lt;Silva&gt;", _emailEnviado.CorpoHtml);
         Assert.Contains("01/01/2026 às 12:00", _emailEnviado.CorpoHtml);
         Assert.DoesNotContain("{{", _emailEnviado.CorpoHtml);

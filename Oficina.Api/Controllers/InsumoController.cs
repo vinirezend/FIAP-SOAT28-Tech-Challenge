@@ -93,7 +93,7 @@ namespace Oficina.Api.Controllers
         /// <summary>
         /// Dá entrada da quantidade informada no estoque do insumo.
         /// </summary>
-        [HttpPatch("{idInsumo:int}/AdicionarEstoque/{quantidade:int}")]
+        [HttpPatch("{idInsumo:int}/adicionar-estoque/{quantidade:int}")]
         public async Task<IActionResult> AdicionarEstoque(int idInsumo, int quantidade)
         {
             var retorno = await _insumoService.AdicionarEstoqueAsync(idInsumo, quantidade);
@@ -104,7 +104,7 @@ namespace Oficina.Api.Controllers
         /// <summary>
         /// Dá baixa da quantidade informada no estoque do insumo.
         /// </summary>
-        [HttpPatch("{idInsumo:int}/RetirarEstoque/{quantidade:int}")]
+        [HttpPatch("{idInsumo:int}/retirar-estoque/{quantidade:int}")]
         public async Task<IActionResult> RetirarEstoque(int idInsumo, int quantidade)
         {
             var retorno = await _insumoService.RetirarEstoqueAsync(idInsumo, quantidade);
@@ -115,7 +115,7 @@ namespace Oficina.Api.Controllers
         /// <summary>
         /// Reserva a quantidade informada do insumo.
         /// </summary>
-        [HttpPatch("{idInsumo:int}/AdicionarReserva/{quantidade:int}")]
+        [HttpPatch("{idInsumo:int}/adicionar-reserva/{quantidade:int}")]
         public async Task<IActionResult> AdicionarReserva(int idInsumo, int quantidade)
         {
             var retorno = await _insumoService.AdicionarReservaAsync(idInsumo, quantidade);
@@ -126,7 +126,7 @@ namespace Oficina.Api.Controllers
         /// <summary>
         /// Libera a quantidade informada da reserva do insumo.
         /// </summary>
-        [HttpPatch("{idInsumo:int}/RetirarReserva/{quantidade:int}")]
+        [HttpPatch("{idInsumo:int}/retirar-reserva/{quantidade:int}")]
         public async Task<IActionResult> RetirarReserva(int idInsumo, int quantidade)
         {
             var retorno = await _insumoService.RetirarReservaAsync(idInsumo, quantidade);

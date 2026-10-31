@@ -55,7 +55,7 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
         try
         {
             var ordemServicoAdicionada = await ordemServicoService.AdicionarAsync(new OrdemServicoDTO { IdVeiculo = request.IdVeiculo });
-            return Created($"/api/ordemservico/{ordemServicoAdicionada.IdOs}", TransformaParaResponse(ordemServicoAdicionada));
+            return Created($"/api/ordem-servico/{ordemServicoAdicionada.IdOs}", TransformaParaResponse(ordemServicoAdicionada));
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
@@ -136,7 +136,7 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
             var servico = await ordemServicoService.AdicionarServicoAsync(id, request.IdServico, request.Quantidade);
             if (servico is null)
                 return NotFound();
-            return Created($"/api/ordemservico/{id}/servicos/{servico.IdOsServico}", TransformaParaResponse(servico));
+            return Created($"/api/ordem-servico/{id}/servicos/{servico.IdOsServico}", TransformaParaResponse(servico));
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
@@ -203,7 +203,7 @@ public class OrdemServicoController(IOrdemServicoService ordemServicoService) : 
             var insumo = await ordemServicoService.AdicionarInsumoAsync(id, request.IdInsumo, request.Quantidade);
             if (insumo is null)
                 return NotFound();
-            return Created($"/api/ordemservico/{id}/insumos/{insumo.IdOsInsumo}", TransformaParaResponse(insumo));
+            return Created($"/api/ordem-servico/{id}/insumos/{insumo.IdOsInsumo}", TransformaParaResponse(insumo));
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {

@@ -36,7 +36,7 @@ public class AcompanhamentoOrdemServicoServiceTests
         _envioLinkAssinadoServiceMock
             .Setup(s => s.EnviarAsync(It.IsAny<EnvioLinkAssinadoDTO>(), It.IsAny<CancellationToken>()))
             .Callback<EnvioLinkAssinadoDTO, CancellationToken>((envio, _) => _envio = envio)
-            .ReturnsAsync(new LinkAssinadoDTO { Url = "https://api.oficina.test/api/acompanhamentoordemservico/1/cliente?expira=1&assinatura=abc" });
+            .ReturnsAsync(new LinkAssinadoDTO { Url = "https://api.oficina.test/api/acompanhamento-ordem-servico/1/cliente?expira=1&assinatura=abc" });
 
         _service = new AcompanhamentoOrdemServicoService(
             _ordemServicoRepositoryMock.Object,
@@ -151,7 +151,7 @@ public class AcompanhamentoOrdemServicoServiceTests
 
         Assert.NotNull(resultado);
         Assert.NotNull(_envio);
-        Assert.Equal("/api/acompanhamentoordemservico/1/cliente", _envio.Caminho);
+        Assert.Equal("/api/acompanhamento-ordem-servico/1/cliente", _envio.Caminho);
         Assert.Equal("lucas@example.com", _envio.EmailDestinatario);
         Assert.Equal(TemplatesEmail.AcompanhamentoOrdemServicoAssunto, _envio.Assunto);
         Assert.Equal(NomesTemplate.AcompanhamentoOrdemServico.Email, _envio.Template);

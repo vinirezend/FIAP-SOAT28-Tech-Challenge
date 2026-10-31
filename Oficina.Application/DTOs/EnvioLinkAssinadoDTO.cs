@@ -6,7 +6,7 @@ namespace Oficina.Application.DTOs;
 public class EnvioLinkAssinadoDTO
 {
     /// <summary>
-    /// Caminho do endpoint liberado pelo link (ex.: /api/acompanhamentoordemservico/1/cliente), usado no placeholder {{link}}.
+    /// Caminho do endpoint liberado pelo link (ex.: /api/acompanhamento-ordem-servico/1/cliente), usado no placeholder {{link}}.
     /// Opcional quando LinksAssinados é informado.
     /// </summary>
     public string? Caminho { get; set; }
