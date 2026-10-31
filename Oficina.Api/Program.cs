@@ -98,6 +98,7 @@ builder.Services.AddScoped<IColaboradorService, ColaboradorService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<IOrdemServicoService, OrdemServicoService>();
 builder.Services.AddScoped<IOrcamentoService, OrcamentoService>();
+builder.Services.AddScoped<IAcompanhamentoService, AcompanhamentoService>();
 builder.Services.AddScoped<IEnvioLinkAssinadoService, EnvioLinkAssinadoService>();
 
 //RESOURCES

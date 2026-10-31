@@ -1,6 +1,7 @@
 using Oficina.Application.DTOs;
 using Oficina.Application.Interfaces.Resources;
 using Oficina.Application.Interfaces.Services;
+using Oficina.Application.Templates;
 using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
@@ -21,7 +22,7 @@ public partial class EnvioLinkAssinadoService(ILinkAssinadoGenerator linkAssinad
 
         var parametros = new Dictionary<string, string>(envio.Parametros, StringComparer.OrdinalIgnoreCase)
         {
-            [PlaceholderExpiraEm] = ConverterParaHorarioDeBrasilia(resultado.ExpiraEm).ToString("dd/MM/yyyy 'às' HH:mm")
+            [PlaceholderExpiraEm] = HorarioBrasilia.Converter(resultado.ExpiraEm).ToString("dd/MM/yyyy 'às' HH:mm")
         };
         if (!string.IsNullOrEmpty(resultado.Url))
             parametros[PlaceholderLink] = resultado.Url;
@@ -78,11 +79,6 @@ public partial class EnvioLinkAssinadoService(ILinkAssinadoGenerator linkAssinad
             throw new InvalidOperationException($"O template de e-mail usa o placeholder {{{{{nome}}}}}, mas nenhum valor foi informado.");
         });
     }
-
-    private static DateTimeOffset ConverterParaHorarioDeBrasilia(DateTimeOffset data) =>
-        TimeZoneInfo.TryFindSystemTimeZoneById("America/Sao_Paulo", out var fusoHorario)
-            ? TimeZoneInfo.ConvertTime(data, fusoHorario)
-            : data.ToOffset(TimeSpan.FromHours(-3));
 
     [GeneratedRegex(@"\{\{\s*(\w+)\s*\}\}")]
     private static partial Regex Placeholder();
