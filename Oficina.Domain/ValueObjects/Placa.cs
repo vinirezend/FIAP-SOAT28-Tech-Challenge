@@ -2,9 +2,10 @@ using System.Text.RegularExpressions;
 
 namespace Oficina.Domain.ValueObjects
 {
-    public sealed record Placa
+    public sealed partial record Placa
     {
-            private static readonly Regex Formato = new(@"^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$", RegexOptions.Compiled);
+    [GeneratedRegex(@"^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$", RegexOptions.None, matchTimeoutMilliseconds: 100)]
+    private static partial Regex Formato();
 
     public string Numero { get; }
 
@@ -14,7 +15,7 @@ namespace Oficina.Domain.ValueObjects
     {
         var normalizada = (valor ?? "").ToUpperInvariant().Trim().Replace("-", "").Replace(" ", "");
 
-        if (!Formato.IsMatch(normalizada))
+        if (!Formato().IsMatch(normalizada))
             throw new ArgumentException("Placa inválida.");
 
         return new Placa(normalizada);

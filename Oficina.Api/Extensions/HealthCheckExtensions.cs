@@ -54,6 +54,6 @@ public static class HealthCheckExtensions
             })
         };
 
-        return context.Response.WriteAsync(JsonSerializer.Serialize(response, JsonSerializerOptions.Web));
+        return context.Response.WriteAsync(JsonSerializer.Serialize(response, JsonSerializerOptions.Web), context.RequestAborted);
     }
 }

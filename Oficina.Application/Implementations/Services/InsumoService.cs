@@ -82,14 +82,7 @@ namespace Oficina.Application.Implementations.Services
 
             await _insumoRepository.AdicionarEstoqueAsync(idInsumo, quantidade, cancellationToken);
 
-            var insumo = await _insumoRepository.ObterPorIdAsync(idInsumo, cancellationToken);
-
-            return new InsumoQuantidadeDTO()
-            {
-                Nome = insumo.Nome,
-                QuantidadeEstoque = insumo.QuantidadeEstoque,
-                QuantidadeReservada = insumo.QuantidadeReservada
-            };
+            return await ObterQuantidadesAsync(idInsumo, cancellationToken);
         }
 
         public async Task<InsumoQuantidadeDTO> RetirarEstoqueAsync(int idInsumo, int quantidade, CancellationToken cancellationToken = default)
@@ -98,14 +91,7 @@ namespace Oficina.Application.Implementations.Services
 
             await _insumoRepository.RetirarEstoqueAsync(idInsumo, quantidade, cancellationToken);
 
-            var insumo = await _insumoRepository.ObterPorIdAsync(idInsumo, cancellationToken);
-
-            return new InsumoQuantidadeDTO()
-            {
-                Nome = insumo.Nome,
-                QuantidadeEstoque = insumo.QuantidadeEstoque,
-                QuantidadeReservada = insumo.QuantidadeReservada
-            };
+            return await ObterQuantidadesAsync(idInsumo, cancellationToken);
         }
 
         public async Task<InsumoQuantidadeDTO> AdicionarReservaAsync(int idInsumo, int quantidade, CancellationToken cancellationToken = default)
@@ -114,14 +100,7 @@ namespace Oficina.Application.Implementations.Services
 
             await _insumoRepository.AdicionarReservaAsync(idInsumo, quantidade, cancellationToken);
 
-            var insumo = await _insumoRepository.ObterPorIdAsync(idInsumo, cancellationToken);
-
-            return new InsumoQuantidadeDTO()
-            {
-                Nome = insumo.Nome,
-                QuantidadeEstoque = insumo.QuantidadeEstoque,
-                QuantidadeReservada = insumo.QuantidadeReservada
-            };
+            return await ObterQuantidadesAsync(idInsumo, cancellationToken);
         }
 
         public async Task<InsumoQuantidadeDTO> RetirarReservaAsync(int idInsumo, int quantidade, CancellationToken cancellationToken = default)
@@ -130,7 +109,13 @@ namespace Oficina.Application.Implementations.Services
 
             await _insumoRepository.RetirarReservaAsync(idInsumo, quantidade, cancellationToken);
 
-            var insumo = await _insumoRepository.ObterPorIdAsync(idInsumo, cancellationToken);
+            return await ObterQuantidadesAsync(idInsumo, cancellationToken);
+        }
+
+        private async Task<InsumoQuantidadeDTO> ObterQuantidadesAsync(int idInsumo, CancellationToken cancellationToken)
+        {
+            var insumo = await _insumoRepository.ObterPorIdAsync(idInsumo, cancellationToken)
+                ?? throw new BusinessException("Insumo não localizado.");
 
             return new InsumoQuantidadeDTO()
             {

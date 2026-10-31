@@ -27,21 +27,21 @@ namespace Oficina.Tests.Domain.Entitys
         [Theory]
         [InlineData("", "Marca 1", 2020, TipoVeiculo.Carro)]
         [InlineData(null, "Marca 2", 2021, TipoVeiculo.Carro)]
-        public void CriarVeiculo_ComModeloInvalido_DeveLancarExcecao(string modelo, string marca, int ano, TipoVeiculo tipoVeiculo)
+        public void CriarVeiculo_ComModeloInvalido_DeveLancarExcecao(string? modelo, string marca, int ano, TipoVeiculo tipoVeiculo)
         {
             var placaObj = Placa.Criar("ABC1234");
 
-            Assert.Throws<ArgumentException>(() => Veiculo.Criar(1, placaObj, modelo, marca, ano, tipoVeiculo));
+            Assert.Throws<ArgumentException>(() => Veiculo.Criar(1, placaObj, modelo!, marca, ano, tipoVeiculo));
         }
 
         [Theory]
         [InlineData("Modelo 1", "", 2020, TipoVeiculo.Carro)]
         [InlineData("Modelo 2", null, 2021, TipoVeiculo.Carro)]
-        public void CriarVeiculo_ComMarcaInvalida_DeveLancarExcecao(string modelo, string marca, int ano, TipoVeiculo tipoVeiculo)
+        public void CriarVeiculo_ComMarcaInvalida_DeveLancarExcecao(string modelo, string? marca, int ano, TipoVeiculo tipoVeiculo)
         {
             var placaObj = Placa.Criar("ABC1234");
 
-            Assert.Throws<ArgumentException>(() => Veiculo.Criar(1, placaObj, modelo, marca, ano, tipoVeiculo)) ;
+            Assert.Throws<ArgumentException>(() => Veiculo.Criar(1, placaObj, modelo, marca!, ano, tipoVeiculo)) ;
         }
 
         [Theory]
@@ -81,12 +81,12 @@ namespace Oficina.Tests.Domain.Entitys
         [Theory]
         [InlineData("", "Marca 1", 2020, TipoVeiculo.Carro)]
         [InlineData(null, "Marca 2", 2021, TipoVeiculo.Carro)]
-        public void AtualizarVeiculo_ComModeloInvalido_DeveLancarExcecao(string modelo, string marca, int ano, TipoVeiculo tipoVeiculo)
+        public void AtualizarVeiculo_ComModeloInvalido_DeveLancarExcecao(string? modelo, string marca, int ano, TipoVeiculo tipoVeiculo)
         {
             var placaObj = Placa.Criar("ABC1234");
             var veiculo = Veiculo.Criar(1, placaObj, "Modelo Inicial", "Marca Inicial", 2010, TipoVeiculo.Carro);
 
-            Assert.Throws<ArgumentException>(() => veiculo.Atualizar(1, placaObj, modelo, marca, ano, tipoVeiculo));
+            Assert.Throws<ArgumentException>(() => veiculo.Atualizar(1, placaObj, modelo!, marca, ano, tipoVeiculo));
         }
 
         [Theory]
@@ -110,11 +110,11 @@ namespace Oficina.Tests.Domain.Entitys
         [Theory]
         [InlineData(1, "", "Marca 1", 2020)]
         [InlineData(2, null, "Marca 2", 2021)]
-        public void ReconstituirVeiculo_ComModeloInvalido_DeveLancarExcecao(int idVeiculo, string modelo, string marca, int ano)
+        public void ReconstituirVeiculo_ComModeloInvalido_DeveLancarExcecao(int idVeiculo, string? modelo, string marca, int ano)
         {
             var placaObj = Placa.Criar("ABC1234");
 
-            Assert.Throws<ArgumentException>(() => Veiculo.Reconstituir(idVeiculo, 1, placaObj, modelo, marca, ano, TipoVeiculo.Carro));
+            Assert.Throws<ArgumentException>(() => Veiculo.Reconstituir(idVeiculo, 1, placaObj, modelo!, marca, ano, TipoVeiculo.Carro));
         }
     }
 }
