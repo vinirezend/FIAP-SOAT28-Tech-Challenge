@@ -10,6 +10,7 @@ CREATE TABLE colaborador (
     CONSTRAINT pk_colaborador PRIMARY KEY (id_colaborador),
     CONSTRAINT uq_colaborador_cpf UNIQUE (cpf),
     CONSTRAINT uq_colaborador_email UNIQUE (email),
+    CONSTRAINT uq_colaborador_id_usuario UNIQUE (id_usuario),
     CONSTRAINT fk_colaborador_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 );
 
