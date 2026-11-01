@@ -5,12 +5,12 @@ using System.Security.Claims;
 
 namespace Oficina.Tests.Infraestructure.Resources
 {
-    public class CurrentUserTests
+    public class CurrentUserServiceTests
     {
         private readonly DefaultHttpContext _httpContext;
         private readonly CurrentUserService _service;
 
-        public CurrentUserTests()
+        public CurrentUserServiceTests()
         {
             _httpContext = new DefaultHttpContext();
 
