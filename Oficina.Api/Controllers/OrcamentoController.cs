@@ -19,24 +19,25 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class OrcamentoController(IOrcamentoService orcamentoService, IOrdemServicoService ordemServicoService) : ControllerBase
 {
+    private const string osNaoEncontrada = "Ordem de serviço não encontrada.";
     /// <summary>
     /// Orçamento da OS com cliente, veículo, itens e total.
     /// </summary>
     [HttpGet("{idOs:int}")]
-    public async Task<Results<Ok<OrcamentoResponse>, NotFound>> ObterAsync(int idOs, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<OrcamentoResponse>, NotFound<string>>> ObterAsync(int idOs, CancellationToken cancellationToken) =>
         await orcamentoService.ObterAsync(idOs, cancellationToken) is { } orcamento
             ? TypedResults.Ok(TransformaParaResponse(orcamento))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Reenvia o orçamento por e-mail ao cliente, com os botões de aprovar e recusar.
     /// O envio também acontece automaticamente quando a OS passa para Aguardando aprovação.
     /// </summary>
     [HttpPost("{idOs:int}/envio")]
-    public async Task<Results<Ok<LinkAssinadoDTO>, NotFound>> EnviarAsync(int idOs, [FromQuery] int? minutosValidade, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<LinkAssinadoDTO>, NotFound<string>>> EnviarAsync(int idOs, [FromQuery] int? minutosValidade, CancellationToken cancellationToken) =>
         await orcamentoService.EnviarAsync(idOs, minutosValidade, cancellationToken) is { } link
             ? TypedResults.Ok(link)
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Aberto pelo botão "Aprovar" do e-mail: mostra a confirmação, que faz POST no mesmo link assinado.

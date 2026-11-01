@@ -15,23 +15,25 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class ClienteController(IClienteService clienteService) : ControllerBase
 {
+    private const string clienteNaoEncontrado = "Cliente não encontrado.";
+
     /// <summary>
     /// Obtém um cliente pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<ClienteResponse>, NotFound<string>>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
         await clienteService.ObterPorIdAsync(id, cancellationToken) is { } cliente
             ? TypedResults.Ok(TransformaParaResponse(cliente))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(clienteNaoEncontrado);
 
     /// <summary>
     /// Obtém um cliente pelo documento (CPF ou CNPJ).
     /// </summary>
     [HttpGet("documento/{documento}")]
-    public async Task<Results<Ok<ClienteResponse>, NotFound>> ObterPorDocumentoAsync(string documento, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<ClienteResponse>, NotFound<string>>> ObterPorDocumentoAsync(string documento, CancellationToken cancellationToken) =>
         await clienteService.ObterPorDocumentoAsync(documento, cancellationToken) is { } cliente
             ? TypedResults.Ok(TransformaParaResponse(cliente))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(clienteNaoEncontrado);
 
     /// <summary>
     /// Lista todos os clientes.
@@ -54,19 +56,19 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     /// Atualiza nome, e-mail e telefone de um cliente. O documento não pode ser alterado.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<ClienteResponse>, NotFound>> AtualizarAsync(int id, ClienteUpdateRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<ClienteResponse>, NotFound<string>>> AtualizarAsync(int id, ClienteUpdateRequest request, CancellationToken cancellationToken) =>
         await clienteService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } cliente
             ? TypedResults.Ok(TransformaParaResponse(cliente))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(clienteNaoEncontrado);
 
     /// <summary>
     /// Remove um cliente.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id, CancellationToken cancellationToken)
+    public async Task<Results<NoContent, NotFound<string>>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
         if (await clienteService.ObterPorIdAsync(id, cancellationToken) is null)
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(clienteNaoEncontrado);
 
         await clienteService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();

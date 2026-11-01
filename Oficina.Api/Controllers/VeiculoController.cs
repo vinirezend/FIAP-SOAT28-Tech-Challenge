@@ -15,6 +15,8 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
 {
+    private const string veiculoNaoEncontrado = "Veículo não encontrado.";
+
     /// <summary>
     /// Lista todos os veículos.
     /// </summary>
@@ -26,19 +28,19 @@ public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     /// Obtém um veículo pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<VeiculoResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<VeiculoResponse>, NotFound<string>>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
         await veiculoService.ObterPorIdAsync(id, cancellationToken) is { } veiculo
             ? TypedResults.Ok(TransformaParaResponse(veiculo))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(veiculoNaoEncontrado);
 
     /// <summary>
     /// Obtém um veículo pela placa.
     /// </summary>
     [HttpGet("placa/{placa}")]
-    public async Task<Results<Ok<VeiculoResponse>, NotFound>> ObterPorPlacaAsync(string placa, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<VeiculoResponse>, NotFound<string>>> ObterPorPlacaAsync(string placa, CancellationToken cancellationToken) =>
         await veiculoService.ObterPorPlacaAsync(placa, cancellationToken) is { } veiculo
             ? TypedResults.Ok(TransformaParaResponse(veiculo))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(veiculoNaoEncontrado);
 
     /// <summary>
     /// Cadastra um novo veículo vinculado a um cliente.
@@ -54,19 +56,19 @@ public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     /// Atualiza os dados de um veículo.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<VeiculoResponse>, NotFound>> AtualizarAsync(int id, VeiculoRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<VeiculoResponse>, NotFound<string>>> AtualizarAsync(int id, VeiculoRequest request, CancellationToken cancellationToken) =>
         await veiculoService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } veiculo
             ? TypedResults.Ok(TransformaParaResponse(veiculo))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(veiculoNaoEncontrado);
 
     /// <summary>
     /// Remove um veículo.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> RemoverAsync(int id, CancellationToken cancellationToken)
+    public async Task<Results<NoContent, NotFound<string>>> RemoverAsync(int id, CancellationToken cancellationToken)
     {
         if (await veiculoService.ObterPorIdAsync(id, cancellationToken) is null)
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(veiculoNaoEncontrado);
 
         await veiculoService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();

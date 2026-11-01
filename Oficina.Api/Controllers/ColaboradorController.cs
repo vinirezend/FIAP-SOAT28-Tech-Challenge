@@ -15,6 +15,8 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class ColaboradorController(IColaboradorService colaboradorService) : ControllerBase
 {
+    private const string colaboradorNaoEncontrado = "Colaborador não encontrado.";
+
     /// <summary>
     /// Lista todos os colaboradores.
     /// </summary>
@@ -26,10 +28,10 @@ public class ColaboradorController(IColaboradorService colaboradorService) : Con
     /// Obtém um colaborador pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<ColaboradorResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<ColaboradorResponse>, NotFound<string>>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
         await colaboradorService.ObterPorIdAsync(id, cancellationToken) is { } colaborador
             ? TypedResults.Ok(TransformaParaResponse(colaborador))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(colaboradorNaoEncontrado);
 
     /// <summary>
     /// Cadastra um novo colaborador.
@@ -45,20 +47,20 @@ public class ColaboradorController(IColaboradorService colaboradorService) : Con
     /// Atualiza os dados de um colaborador. O CPF não pode ser alterado.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<ColaboradorResponse>, NotFound>> AtualizarAsync(int id, ColaboradorUpdateRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<ColaboradorResponse>, NotFound<string>>> AtualizarAsync(int id, ColaboradorUpdateRequest request, CancellationToken cancellationToken) =>
         await colaboradorService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } colaborador
             ? TypedResults.Ok(TransformaParaResponse(colaborador))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(colaboradorNaoEncontrado);
 
     /// <summary>
     /// Remove um colaborador. Retorna 409 quando há registros vinculados que impedem a remoção.
     /// </summary>
     [HttpDelete("{id:int}")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict, "application/problem+json")]
-    public async Task<Results<NoContent, NotFound, ProblemHttpResult>> DeletarAsync(int id, CancellationToken cancellationToken)
+    public async Task<Results<NoContent, NotFound<string>, ProblemHttpResult>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
         if (await colaboradorService.ObterPorIdAsync(id, cancellationToken) is null)
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(colaboradorNaoEncontrado);
 
         try
         {

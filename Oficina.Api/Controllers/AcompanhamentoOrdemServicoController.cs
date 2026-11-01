@@ -18,23 +18,25 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class AcompanhamentoOrdemServicoController(IAcompanhamentoOrdemServicoService acompanhamentoOrdemServicoService) : ControllerBase
 {
+    private const string osNaoEncontrada = "Ordem de serviço não encontrada.";
+
     /// <summary>
     /// Status atual da OS e etapas do fluxo, com as datas em que cada uma foi alcançada.
     /// </summary>
     [HttpGet("{idOs:int}")]
-    public async Task<Results<Ok<AcompanhamentoOrdemServicoResponse>, NotFound>> ObterAsync(int idOs, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<AcompanhamentoOrdemServicoResponse>, NotFound<string>>> ObterAsync(int idOs, CancellationToken cancellationToken) =>
         await acompanhamentoOrdemServicoService.ObterAsync(idOs, cancellationToken) is { } acompanhamento
             ? TypedResults.Ok(TransformaParaResponse(acompanhamento))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Envia ao cliente, por e-mail, um link assinado para acompanhar a OS sem login.
     /// </summary>
     [HttpPost("{idOs:int}/envio")]
-    public async Task<Results<Ok<LinkAssinadoDTO>, NotFound>> EnviarAsync(int idOs, [FromQuery] int? minutosValidade, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<LinkAssinadoDTO>, NotFound<string>>> EnviarAsync(int idOs, [FromQuery] int? minutosValidade, CancellationToken cancellationToken) =>
         await acompanhamentoOrdemServicoService.EnviarAsync(idOs, minutosValidade, cancellationToken) is { } link
             ? TypedResults.Ok(link)
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(osNaoEncontrada);
 
     /// <summary>
     /// Página aberta pelo cliente a partir do link do e-mail, com o andamento atualizado a cada acesso.
