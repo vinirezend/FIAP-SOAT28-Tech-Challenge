@@ -15,14 +15,16 @@ namespace Oficina.Api.Controllers;
 [Route("api/[controller]")]
 public class ServicoController(IServicoService servicoService) : ControllerBase
 {
+    private const string servicoNaoEncontrado = "Serviço não encontrado.";
+
     /// <summary>
     /// Obtém um serviço pelo id.
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<Results<Ok<ServicoResponse>, NotFound>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<ServicoResponse>, NotFound<string>>> ObterPorIdAsync(int id, CancellationToken cancellationToken) =>
         await servicoService.ObterPorIdAsync(id, cancellationToken) is { } servico
             ? TypedResults.Ok(TransformaParaResponse(servico))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(servicoNaoEncontrado);
 
     /// <summary>
     /// Lista todos os serviços.
@@ -52,19 +54,19 @@ public class ServicoController(IServicoService servicoService) : ControllerBase
     /// Atualiza os dados de um serviço, incluindo se está ativo.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<ServicoResponse>, NotFound>> AtualizarAsync(int id, ServicoUpdateRequest request, CancellationToken cancellationToken) =>
+    public async Task<Results<Ok<ServicoResponse>, NotFound<string>>> AtualizarAsync(int id, ServicoUpdateRequest request, CancellationToken cancellationToken) =>
         await servicoService.AtualizarAsync(TransformaParaDTO(id, request), cancellationToken) is { } servico
             ? TypedResults.Ok(TransformaParaResponse(servico))
-            : TypedResults.NotFound();
+            : TypedResults.NotFound(servicoNaoEncontrado);
 
     /// <summary>
     /// Remove um serviço.
     /// </summary>
     [HttpDelete("{id:int}")]
-    public async Task<Results<NoContent, NotFound>> DeletarAsync(int id, CancellationToken cancellationToken)
+    public async Task<Results<NoContent, NotFound<string>>> DeletarAsync(int id, CancellationToken cancellationToken)
     {
         if (await servicoService.ObterPorIdAsync(id, cancellationToken) is null)
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(servicoNaoEncontrado);
 
         await servicoService.RemoverAsync(id, cancellationToken);
         return TypedResults.NoContent();
