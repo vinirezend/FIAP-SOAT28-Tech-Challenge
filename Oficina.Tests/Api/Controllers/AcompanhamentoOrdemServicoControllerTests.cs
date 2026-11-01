@@ -86,7 +86,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion
@@ -112,7 +112,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.EnviarAsync(99, null, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion

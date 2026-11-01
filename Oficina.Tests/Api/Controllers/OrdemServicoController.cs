@@ -121,7 +121,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterPorIdAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -179,7 +179,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterTempoMedioExecucaoAsync(null, null, 99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion
@@ -220,7 +220,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.AtualizarAsync(99, new OrdemServicoRequest { IdVeiculo = 1 }, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion
@@ -254,7 +254,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterHistoricoStatusAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.AlterarStatusAsync(99, new AlterarStatusRequest { IdStatus = 4 }, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion
@@ -302,7 +302,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterServicosAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -326,7 +326,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.AdicionarServicoAsync(99, new AdicionarServicoRequest { IdServico = 5, Quantidade = 2 }, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -348,7 +348,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.AlterarQuantidadeServicoAsync(10, 99, new AlterarQuantidadeServicoRequest { Quantidade = 4 }, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -383,7 +383,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterInsumosAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -407,7 +407,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.AdicionarInsumoAsync(99, new AdicionarInsumoRequest { IdInsumo = 6, Quantidade = 3 }, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -429,7 +429,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.AlterarQuantidadeInsumoAsync(10, 99, new AlterarQuantidadeInsumoRequest { Quantidade = 5 }, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         [Fact]
@@ -452,7 +452,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.DeletarAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
             _serviceMock.Verify(s => s.RemoverAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 

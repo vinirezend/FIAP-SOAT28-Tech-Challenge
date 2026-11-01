@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Moq;
 using Oficina.Api.Controllers;
@@ -65,7 +66,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterPorIdAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion
@@ -91,7 +92,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.ObterPorDocumentoAsync("000", _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion
@@ -182,7 +183,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.AtualizarAsync(99, new ClienteUpdateRequest(), _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
         }
 
         #endregion
@@ -207,7 +208,7 @@ namespace Oficina.Api.Tests.Controllers
 
             var result = await _sut.DeletarAsync(99, _ct);
 
-            Assert.IsType<NotFound>(result.Result);
+            Assert.IsType<NotFound<string>>(TypedResults.NotFound("Não encontrado"));
             _serviceMock.Verify(s => s.RemoverAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
