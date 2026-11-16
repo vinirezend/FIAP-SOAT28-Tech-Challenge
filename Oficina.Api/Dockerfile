@@ -17,7 +17,7 @@ COPY Oficina.Domain/ Oficina.Domain/
 COPY Oficina.Infrastructure/ Oficina.Infrastructure/
 RUN dotnet publish Oficina.Api/Oficina.Api.csproj -c $BUILD_CONFIGURATION -o /app/publish --no-restore /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS final
 WORKDIR /app
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
