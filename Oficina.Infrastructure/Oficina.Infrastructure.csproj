@@ -6,7 +6,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.89" />
+		<PackageReference Include="Dapper" Version="2.1.100" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.13" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.14" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.14" />
